@@ -19,6 +19,7 @@ async function handleAmountInput(event: Event): Promise<void> {
         page.props.locale,
     );
 
+    input.value = formatted.value;
     modelValue.value = formatted.value;
     selectOnMouseUp.value = false;
     await nextTick();
@@ -65,7 +66,7 @@ function handleBlur(): void {
         spellcheck="false"
         @blur="handleBlur"
         @focus="handleFocus"
-        @input="handleAmountInput"
+        @input.capture="handleAmountInput"
         @mouseup="handleMouseUp"
     />
 </template>

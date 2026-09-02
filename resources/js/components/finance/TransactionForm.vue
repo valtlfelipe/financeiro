@@ -8,6 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { formatMinorForInput, parseMoneyInputToMinor } from '@/lib/money-input';
 import { store, update } from '@/routes/transactions';
 import { useOnline } from '@/composables/useOnline';
@@ -30,6 +36,8 @@ const emit = defineEmits<{ saved: [] }>();
 const { t } = useI18n();
 const page = usePage();
 const networkOnline = useOnline();
+const transferHintOpen = ref(false);
+const canTransfer = computed(() => props.accounts.length >= 2);
 
 const amount = ref(formatMinorForInput(0, page.props.locale));
 const form = useForm({
@@ -69,7 +77,7 @@ function hydrate(transaction?: Transaction | null): void {
         form.reset();
         amount.value = formatMinorForInput(0, page.props.locale);
         form.account_id = String(props.accounts[0]?.id ?? '');
-        form.category_id = String(availableCategories.value[0]?.id ?? '');
+        form.category_id = '';
         form.due_on =
             props.defaultDueOn ?? new Date().toISOString().slice(0, 10);
         return;
@@ -109,7 +117,7 @@ watch(
                 (category) => String(category.id) === form.category_id,
             )
         ) {
-            form.category_id = String(availableCategories.value[0]?.id ?? '');
+            form.category_id = '';
         }
     },
 );
@@ -141,7 +149,10 @@ function submit(): void {
             data.type === 'transfer'
                 ? Number(data.destination_account_id)
                 : null,
-        category_id: data.type === 'transfer' ? null : Number(data.category_id),
+        category_id:
+            data.type === 'transfer' || data.category_id === ''
+                ? null
+                : Number(data.category_id),
         account_id: Number(data.account_id),
         series_kind:
             editing.value || data.series_kind === '' ? null : data.series_kind,
@@ -169,7 +180,7 @@ function submit(): void {
             :aria-label="t('finance.transactions.filters.type')"
         >
             <button
-                v-for="type in ['expense', 'income', 'transfer'] as const"
+                v-for="type in ['expense', 'income'] as const"
                 :key="type"
                 type="button"
                 class="min-h-11 rounded-xl border px-2 text-xs font-bold transition-colors"
@@ -178,27 +189,52 @@ function submit(): void {
                         ? 'border-primary bg-primary text-white'
                         : 'border-border text-muted-foreground bg-white'
                 "
-                :disabled="type === 'transfer' && accounts.length < 2"
-                :title="
-                    type === 'transfer' && accounts.length < 2
-                        ? t(
-                              'finance.transactions.form.transferRequiresTwoAccounts',
-                          )
-                        : undefined
-                "
+                :aria-pressed="form.type === type"
                 @click="form.type = type"
             >
                 {{ t(`finance.transactions.type.${type}`) }}
             </button>
+            <TooltipProvider>
+                <Tooltip
+                    :open="transferHintOpen && !canTransfer"
+                    :disabled="canTransfer"
+                    disable-closing-trigger
+                    @update:open="transferHintOpen = $event"
+                >
+                    <TooltipTrigger as-child>
+                        <button
+                            type="button"
+                            class="min-h-11 rounded-xl border px-2 text-xs font-bold transition-colors aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+                            :class="
+                                form.type === 'transfer'
+                                    ? 'border-primary bg-primary text-white'
+                                    : 'border-border text-muted-foreground bg-white'
+                            "
+                            :aria-disabled="!canTransfer"
+                            :aria-pressed="form.type === 'transfer'"
+                            @click="
+                                canTransfer
+                                    ? (form.type = 'transfer')
+                                    : (transferHintOpen = true)
+                            "
+                        >
+                            {{ t('finance.transactions.type.transfer') }}
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                        class="max-w-64"
+                        side="bottom"
+                        :collision-padding="16"
+                    >
+                        {{
+                            t(
+                                'finance.transactions.form.transferRequiresTwoAccounts',
+                            )
+                        }}
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
         </div>
-
-        <p
-            v-if="accounts.length < 2"
-            role="status"
-            class="bg-forecast/10 text-forecast rounded-xl px-3 py-2 text-sm"
-        >
-            {{ t('finance.transactions.form.transferRequiresTwoAccounts') }}
-        </p>
 
         <div class="grid gap-2">
             <Label for="description">{{
@@ -228,7 +264,7 @@ function submit(): void {
                     id="amount"
                     v-model="amount"
                     required
-                    class="font-data h-12 pl-10 text-lg font-medium"
+                    class="font-data pl-10 text-base font-medium"
                     :placeholder="
                         t('finance.transactions.form.amountPlaceholder')
                     "
@@ -289,8 +325,14 @@ function submit(): void {
                     id="category_id"
                     v-model="form.category_id"
                     class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                    :class="{
+                        'text-muted-foreground': form.category_id === '',
+                    }"
                     required
                 >
+                    <option value="" disabled>
+                        {{ t('finance.transactions.form.categoryPlaceholder') }}
+                    </option>
                     <option
                         v-for="category in availableCategories"
                         :key="category.id"
@@ -440,7 +482,7 @@ function submit(): void {
         <Button
             type="submit"
             size="lg"
-            class="w-full"
+            class="h-11 w-full"
             :disabled="
                 form.processing ||
                 online === false ||

@@ -62,6 +62,7 @@
                 "destinationAccount": "Conta de destino",
                 "transferRequiresTwoAccounts": "Cadastre pelo menos duas contas para criar uma transferência.",
                 "category": "Categoria",
+                "categoryPlaceholder": "Selecione uma categoria",
                 "date": "Data prevista",
                 "notes": "Observação",
                 "notesPlaceholder": "Inclua algum detalhe útil",

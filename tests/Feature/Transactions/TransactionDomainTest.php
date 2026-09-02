@@ -138,6 +138,25 @@ test('transaction validation rejects mismatched categories and cross-workspace a
     ])->assertSessionHasErrors(['account_id', 'category_id']);
 });
 
+test('income and expense transactions require an explicit category', function (TransactionType $type) {
+    $response = $this->actingAs($this->user)
+        ->from(route('transactions.index'))
+        ->post(route('transactions.store'), [
+            'type' => $type->value,
+            'amount_minor' => 5050,
+            'description' => 'Sem categoria',
+            'account_id' => $this->account->id,
+            'category_id' => null,
+            'due_on' => '2026-09-02',
+        ]);
+
+    $response->assertRedirect(route('transactions.index'))->assertSessionHasErrors(['category_id']);
+    $this->assertDatabaseCount('transactions', 0);
+})->with([
+    'income' => TransactionType::Income,
+    'expense' => TransactionType::Expense,
+]);
+
 test('a valid transfer is persisted between two accounts without a category', function () {
     $response = $this->actingAs($this->user)
         ->from(route('transactions.index'))
