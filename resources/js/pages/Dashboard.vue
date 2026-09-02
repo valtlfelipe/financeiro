@@ -3,15 +3,13 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ArrowRight, Landmark, Sparkles } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import SummaryGrid from '@/components/finance/SummaryGrid.vue';
 import TransactionRow from '@/components/finance/TransactionRow.vue';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
 import { index as transactions } from '@/routes/transactions';
-import type { MonthlySummary, Transaction } from '@/types';
+import type { Transaction } from '@/types';
 
 const props = defineProps<{
     month: string;
-    summary: MonthlySummary;
     accounts: Array<{
         id: number;
         name: string;
@@ -23,7 +21,6 @@ const props = defineProps<{
 const { t } = useI18n();
 const page = usePage();
 const { formatMoney, formatMonth } = useFinanceFormat();
-const summaryState = ref(props.summary);
 const recent = ref([...props.recentTransactions]);
 
 watch(
@@ -33,14 +30,11 @@ watch(
     },
 );
 
-function updateTransaction(item: Transaction, summary: MonthlySummary): void {
+function updateTransaction(item: Transaction): void {
     recent.value = recent.value.map((transaction) =>
         transaction.id === item.id ? item : transaction,
     );
-    if ('planned_income_minor' in summary) {
-        summaryState.value = summary;
-        router.reload({ only: ['accounts'] });
-    }
+    router.reload({ only: ['accounts'] });
 }
 </script>
 
@@ -77,8 +71,6 @@ function updateTransaction(item: Transaction, summary: MonthlySummary): void {
                 {{ t('finance.overview.viewAll') }}<ArrowRight class="size-4" />
             </Link>
         </header>
-
-        <SummaryGrid :summary="summaryState" />
 
         <div
             class="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(17rem,0.65fr)]"

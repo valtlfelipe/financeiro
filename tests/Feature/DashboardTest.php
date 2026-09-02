@@ -60,6 +60,8 @@ class DashboardTest extends TestCase
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Dashboard')
+            ->missing('summary')
+            ->has('accounts', 1)
             ->has('recentTransactions', 1)
             ->where('recentTransactions.0.description', 'Receita pendente')
             ->where('recentTransactions.0.dueOn', '2026-09-02')

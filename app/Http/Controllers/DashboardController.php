@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Transactions\MonthlySummary;
 use App\Http\Resources\TransactionResource;
 use App\Models\Account;
 use App\TransactionType;
@@ -16,7 +15,7 @@ class DashboardController extends Controller
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request, MonthlySummary $summary): Response
+    public function __invoke(Request $request): Response
     {
         $workspace = $request->user()->currentWorkspaceOrFail();
         $month = $this->month($request->string('month')->toString());
@@ -30,7 +29,6 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'month' => $month->format('Y-m'),
-            'summary' => $summary->handle($workspace, $month),
             'accounts' => $workspace->accounts()->where('is_archived', false)->get()
                 ->map(fn (Account $account): array => [
                     'id' => $account->id,
