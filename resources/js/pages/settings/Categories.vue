@@ -3,16 +3,25 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { Archive, Plus, Tags } from '@lucide/vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useOnline } from '@/composables/useOnline';
 import { destroy, store } from '@/routes/categories';
 import type { Category } from '@/types';
 
 defineProps<{ categories: Category[] }>();
 const { t } = useI18n();
 const showForm = ref(false);
+const online = useOnline();
+const archiveForm = useForm({});
+
+function archive(category: Category): void {
+    if (archiveForm.processing || !online.value) return;
+    archiveForm.delete(destroy.url(category.id), { preserveScroll: true });
+}
 const form = useForm({
     name: '',
     type: 'expense',
@@ -128,14 +137,42 @@ function submit(): void {
                         {{ t(`finance.categories.types.${category.type}`) }}
                     </p>
                 </div>
-                <Button
+                <ConfirmationDialog
                     v-if="!category.isArchived"
-                    variant="ghost"
-                    size="icon"
-                    :aria-label="t('finance.categories.archive')"
-                    @click="$inertia.delete(destroy.url(category.id))"
-                    ><Archive class="size-4"
-                /></Button>
+                    :title="t('finance.categories.archiveTitle')"
+                    :description="
+                        t('finance.categories.archiveDescription', {
+                            name: category.name,
+                        })
+                    "
+                    :confirm-label="t('finance.categories.archiveAction')"
+                    :processing="archiveForm.processing"
+                    :disabled="!online"
+                    :error="
+                        Object.values(archiveForm.errors).find(
+                            (message): message is string =>
+                                typeof message === 'string',
+                        )
+                    "
+                    @confirm="archive(category)"
+                >
+                    <template #trigger>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="size-11 shrink-0"
+                            :disabled="!online || archiveForm.processing"
+                            :aria-label="
+                                t('finance.categories.archiveLabel', {
+                                    name: category.name,
+                                })
+                            "
+                            @click="archiveForm.clearErrors()"
+                        >
+                            <Archive class="size-4" aria-hidden="true" />
+                        </Button>
+                    </template>
+                </ConfirmationDialog>
                 <span
                     v-else
                     class="bg-muted text-muted-foreground rounded-full px-3 py-1 text-xs font-bold"
