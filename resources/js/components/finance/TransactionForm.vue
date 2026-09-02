@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import {
     Tooltip,
     TooltipContent,
@@ -425,16 +426,37 @@ function submit(): void {
             <InputError :message="form.errors.installments" />
         </div>
 
-        <label
-            class="border-border flex min-h-11 items-center gap-3 rounded-xl border px-3 text-sm font-semibold"
+        <div
+            class="border-border flex items-center justify-between gap-4 rounded-2xl border px-4"
         >
-            <input
+            <Label
+                for="transaction_settled"
+                class="flex min-h-16 flex-1 cursor-pointer flex-col items-start justify-center gap-1 py-3"
+            >
+                <span>{{ t('finance.transactions.form.settled') }}</span>
+                <span
+                    id="settled_hint"
+                    class="text-muted-foreground text-xs leading-relaxed font-normal"
+                    >{{
+                        t(
+                            form.settled
+                                ? 'finance.transactions.form.settledHint'
+                                : 'finance.transactions.form.pendingHint',
+                        )
+                    }}</span
+                >
+            </Label>
+            <Switch
+                id="transaction_settled"
                 v-model="form.settled"
-                type="checkbox"
-                class="accent-primary size-4"
+                aria-describedby="settled_hint"
+                :disabled="
+                    form.processing || online === false || !networkOnline
+                "
+                class="relative h-6 w-11 before:absolute before:inset-x-0 before:-inset-y-3 motion-reduce:transition-none [&_[data-slot=switch-thumb]]:size-5 [&_[data-slot=switch-thumb]]:data-[state=checked]:translate-x-[calc(100%+2px)] motion-reduce:[&_[data-slot=switch-thumb]]:transition-none"
             />
-            {{ t('finance.transactions.form.settled') }}
-        </label>
+        </div>
+        <InputError :message="form.errors.settled" />
 
         <div v-if="editing && transaction?.series" class="grid gap-2">
             <Label for="scope">{{

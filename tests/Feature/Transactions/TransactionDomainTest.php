@@ -180,3 +180,22 @@ test('a valid transfer is persisted between two accounts without a category', fu
         'category_id' => null,
     ]);
 });
+
+test('the settlement choice persists when creating a transaction', function (bool $settled) {
+    $this->travelTo(CarbonImmutable::parse('2026-09-02 12:00:00'));
+
+    $this->actingAs($this->user)->post(route('transactions.store'), [
+        'type' => 'expense',
+        'amount_minor' => 1234,
+        'description' => 'Estado do pagamento',
+        'account_id' => $this->account->id,
+        'category_id' => $this->expenseCategory->id,
+        'due_on' => '2026-09-02',
+        'settled' => $settled,
+    ])->assertSessionHasNoErrors()->assertRedirect();
+
+    $this->assertDatabaseHas('transactions', [
+        'description' => 'Estado do pagamento',
+        'settled_at' => $settled ? now()->toDateTimeString() : null,
+    ]);
+})->with(['pending' => false, 'settled' => true]);
