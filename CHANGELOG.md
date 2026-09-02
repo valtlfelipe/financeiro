@@ -4,6 +4,32 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-02
+
+### Added
+
+- Menu do usuário com edição de perfil, opções de aparência e saída da sessão.
+- Temas claro, escuro e automático, com preferência persistida entre visitas.
+- Avatares de robôs gerados localmente com DiceBear, estáveis por usuário e usados também na lista de pessoas.
+- Confirmação antes de arquivar contas e categorias.
+- Edição do nome do espaço pelo proprietário nas preferências, mantendo a configuração de idioma.
+
+### Changed
+
+- Confirmações nativas do navegador substituídas por diálogos shadcn-vue, com o nome do recurso em destaque.
+- Campo de pagamento ou recebimento do lançamento usa um switch com explicação do estado selecionado.
+- Novas contas e categorias recebem uma cor aleatória ao abrir o formulário, preservando as cores dos registros em edição.
+- Próximos lançamentos no resumo exibem a data no formato dia/mês no lugar do avatar.
+- Cards de saldo ficam apenas na página de lançamentos, abaixo do seletor de mês e separados da pesquisa e dos filtros da lista.
+- Botão de busca usa um ícone com nome acessível, e formulários receberam ajustes para telas pequenas.
+- Dependências Composer e npm atualizadas, incluindo Laravel 13.30.1, VueUse 14 e DiceBear 10.
+- TypeScript usa o pacote oficial de compatibilidade com a linha 6, necessário ao verificador Vue atual; tipos do Node acompanham a linha 24 usada no projeto.
+
+### Fixed
+
+- Feedback de sucesso e validação na edição do perfil.
+- Ação duplicada de repetir removida dos detalhes do lançamento, mantendo apenas Copiar.
+
 ## [1.0.4] - 2026-09-02
 
 ### Changed
@@ -64,7 +90,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/valtlfelipe/financeiro/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/valtlfelipe/financeiro/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/valtlfelipe/financeiro/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/valtlfelipe/financeiro/compare/v1.0.1...v1.0.2
