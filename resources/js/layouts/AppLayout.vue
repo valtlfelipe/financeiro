@@ -13,6 +13,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import UserAppearanceMenu from '@/components/UserAppearanceMenu.vue';
+import UserAvatar from '@/components/UserAvatar.vue';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,7 +25,6 @@ import {
 import { Toaster } from '@/components/ui/sonner';
 import { useAppearance } from '@/composables/useAppearance';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import { getInitials } from '@/composables/useInitials';
 import { useOnline } from '@/composables/useOnline';
 import { dashboard, logout } from '@/routes';
 import { index as settings } from '@/routes/accounts';
@@ -135,12 +135,7 @@ function isNavigationItemActive(
                                 class="hover:bg-muted flex min-h-11 items-center gap-2 rounded-full p-1 pr-2 transition-colors"
                                 :aria-label="t('common.navigation.userMenu')"
                             >
-                                <span
-                                    class="bg-primary/10 text-primary grid size-9 place-items-center rounded-full text-xs font-extrabold"
-                                    aria-hidden="true"
-                                >
-                                    {{ getInitials(page.props.auth.user.name) }}
-                                </span>
+                                <UserAvatar :user="page.props.auth.user" />
                                 <span
                                     class="hidden max-w-32 truncate text-sm font-semibold lg:block"
                                     >{{ page.props.auth.user.name }}</span

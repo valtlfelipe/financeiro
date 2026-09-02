@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { UserRound } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import InputError from '@/components/InputError.vue';
+import UserAvatar from '@/components/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,11 +31,10 @@ function submit(): void {
         <header
             class="border-border/70 flex items-center gap-4 border-b p-5 sm:p-6"
         >
-            <span
-                class="bg-primary/10 text-primary grid size-11 shrink-0 place-items-center rounded-2xl"
-            >
-                <UserRound class="size-5" aria-hidden="true" />
-            </span>
+            <UserAvatar
+                :user="page.props.auth.user"
+                class="size-12 rounded-2xl"
+            />
             <div>
                 <h2 class="text-xl font-extrabold">
                     {{ t('settings.profile.title') }}

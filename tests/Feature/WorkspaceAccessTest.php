@@ -3,6 +3,20 @@
 use App\MembershipRole;
 use App\Models\Invitation;
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
+
+test('the people list uses stable user identities for avatars', function () {
+    [$owner, $workspace] = ownerWithWorkspace();
+    $member = User::factory()->create(['name' => 'Pessoa de teste', 'current_workspace_id' => $workspace->id]);
+    $workspace->users()->attach($member, ['role' => MembershipRole::Member->value]);
+    ownerWithWorkspace();
+
+    $this->actingAs($owner)->get(route('invitations.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('settings/Members')
+            ->has('members', 2)
+            ->where('members', fn ($members) => collect($members)->pluck('id')->sort()->values()->all() === collect([$owner->id, $member->id])->sort()->values()->all()));
+});
 
 test('only the owner can create invitations', function () {
     [$owner, $workspace] = ownerWithWorkspace();

@@ -4,6 +4,7 @@ import { Check, Copy, MailPlus, Users } from '@lucide/vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import InputError from '@/components/InputError.vue';
+import UserAvatar from '@/components/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,10 +32,10 @@ async function copyLink(url: string): Promise<void> {
 </script>
 
 <template>
-    <Head :title="t('settings.members.title')" />
     <section
         class="border-border/80 bg-card overflow-hidden rounded-3xl border"
     >
+        <Head :title="t('settings.members.title')" />
         <header
             class="border-border/70 flex items-center gap-4 border-b p-5 sm:p-6"
         >
@@ -114,10 +115,7 @@ async function copyLink(url: string): Promise<void> {
                 :key="member.id"
                 class="flex items-center gap-4 px-5 py-4 sm:px-6"
             >
-                <span
-                    class="bg-foreground text-background grid size-10 place-items-center rounded-full text-sm font-extrabold"
-                    >{{ member.name.slice(0, 1).toUpperCase() }}</span
-                >
+                <UserAvatar :user="member" class="size-10" />
                 <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-bold">{{ member.name }}</p>
                     <p class="text-muted-foreground truncate text-xs">
