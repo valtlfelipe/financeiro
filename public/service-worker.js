@@ -1,5 +1,10 @@
-const CACHE_NAME = 'financeiro-shell-v1';
-const SHELL = ['/favicon.svg', '/manifest.webmanifest'];
+const CACHE_NAME = 'financeiro-shell-v2';
+const SHELL = [
+    '/icons/financeiro-64.png',
+    '/icons/financeiro-192.png',
+    '/icons/financeiro-512.png',
+    '/manifest.webmanifest',
+];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(

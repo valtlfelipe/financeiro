@@ -25,11 +25,7 @@ defineProps<{
                         :href="home()"
                         class="flex flex-col items-center gap-2 font-medium"
                     >
-                        <div
-                            class="bg-primary mb-1 flex size-12 items-center justify-center rounded-2xl text-white"
-                        >
-                            <AppLogoIcon class="size-8" />
-                        </div>
+                        <AppLogoIcon class="mb-1 size-12" />
                         <span class="text-sm font-extrabold tracking-tight">{{
                             t('common.appName')
                         }}</span>
