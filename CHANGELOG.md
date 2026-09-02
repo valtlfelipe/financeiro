@@ -4,6 +4,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-02
+
 ### Added
 
 - Fundação Laravel 13, Inertia 3 e Vue 3.
@@ -14,3 +16,7 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - PWA online-first e internacionalização `pt-BR`.
 - Docker Compose com FrankenPHP, PostgreSQL e scheduler.
 - Backup, restore, testes e CI.
+- Publicação da imagem Docker no GHCR e GitHub Releases a partir de tags `v*.*.*`.
+
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/valtlfelipe/financeiro/releases/tag/v1.0.0

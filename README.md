@@ -32,12 +32,14 @@ php -r "echo 'APP_KEY=base64:'.base64_encode(random_bytes(32)).PHP_EOL;"
 Copie o valor exibido para `APP_KEY` em `.env` e troque `DB_PASSWORD`. Depois:
 
 ```bash
-docker compose build
+docker compose pull
 docker compose run --rm app php artisan migrate --force
 docker compose up -d
 ```
 
-Abra `http://localhost:8080/setup`, crie o proprietário e o primeiro espaço financeiro. Para mudar a porta, ajuste `APP_PORT` e `APP_URL`.
+A imagem publicada fica em `ghcr.io/valtlfelipe/financeiro`. Para construir a partir do Dockerfile, use `docker compose build` no lugar do `pull`.
+
+Abra `http://localhost:8080/setup`, crie o proprietário e o primeiro espaço financeiro. Para mudar a porta, ajuste `APP_PORT` e `APP_URL`. Para fixar uma versão, use `FINANCEIRO_IMAGE=ghcr.io/valtlfelipe/financeiro:1.2.3`.
 
 O serviço `scheduler` mantém doze meses de recorrências futuras. O healthcheck HTTP fica em `/up`. Em um proxy reverso, configure `APP_URL` e informe os endereços confiáveis em `TRUSTED_PROXIES`, separados por vírgula.
 
@@ -87,6 +89,19 @@ Faça restore somente de arquivos confiáveis. Para validar sem risco, restaure 
 ## Idiomas
 
 Nenhuma string de interface nova deve ser escrita diretamente em componentes. Veja [docs/localization.md](docs/localization.md) para adicionar um idioma e executar a verificação de completude.
+
+## Publicar uma versão
+
+1. Mova as entradas de `[Unreleased]` em [CHANGELOG.md](CHANGELOG.md) para `## [x.y.z] - AAAA-MM-DD`.
+2. Faça o merge em `main` com o CI verde.
+3. Crie e envie a tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+O workflow `Release` constrói `linux/amd64` e `linux/arm64`, publica em `ghcr.io/valtlfelipe/financeiro` (`1.0.0`, `1.0`, `1` e `latest`) e abre o GitHub Release. Tags com sufixo (`v1.0.0-rc.1`) saem como pré-release. Um rebuild manual usa `workflow_dispatch`. Na primeira publicação, se o `pull` pedir login, torne o pacote público em GitHub → Packages.
 
 ## Segurança e contribuições
 

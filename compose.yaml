@@ -1,6 +1,7 @@
 name: financeiro
 
 x-app: &app
+  image: ${FINANCEIRO_IMAGE:-ghcr.io/valtlfelipe/financeiro:latest}
   build:
     context: .
   env_file:

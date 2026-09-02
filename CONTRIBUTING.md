@@ -11,4 +11,6 @@ Obrigado por melhorar o Financeiro.
 
 Mudanças de schema precisam de migrações explícitas e reversíveis. Não altere migrações publicadas depois de uma release. Commits e pull requests devem explicar impacto, risco e forma de validação.
 
+Para publicar, mova as entradas de `[Unreleased]` no `CHANGELOG.md` para `## [x.y.z] - AAAA-MM-DD`, faça o merge em `main` com o CI verde e envie uma tag `vX.Y.Z`. O workflow `Release` publica `ghcr.io/valtlfelipe/financeiro` e cria o GitHub Release.
+
 Ao contribuir, você concorda que sua contribuição será distribuída sob AGPL-3.0-only.
