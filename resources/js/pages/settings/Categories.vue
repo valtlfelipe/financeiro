@@ -154,6 +154,7 @@ function submit(): void {
                 <ConfirmationDialog
                     v-if="!category.isArchived"
                     :title="t('finance.categories.archiveTitle')"
+                    :resource-name="category.name"
                     :description="
                         t('finance.categories.archiveDescription', {
                             name: category.name,

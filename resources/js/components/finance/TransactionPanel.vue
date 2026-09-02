@@ -230,6 +230,7 @@ function remove(): void {
                     <ConfirmationDialog
                         v-model:open="deleteOpen"
                         :title="t('finance.transactions.detail.deleteTitle')"
+                        :resource-name="transaction.description"
                         :description="
                             t(
                                 deleteScope === 'future' && transaction.series

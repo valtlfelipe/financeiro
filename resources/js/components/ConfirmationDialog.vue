@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
     AlertDialog,
@@ -12,11 +13,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { confirmationText } from '@/lib/confirmation';
 
 const props = withDefaults(
     defineProps<{
         title: string;
         description: string;
+        resourceName?: string;
         confirmLabel: string;
         processing?: boolean;
         disabled?: boolean;
@@ -28,6 +31,9 @@ const props = withDefaults(
 const open = defineModel<boolean>('open', { default: false });
 const emit = defineEmits<{ confirm: [] }>();
 const { t } = useI18n();
+const descriptionText = computed(() =>
+    confirmationText(props.description, props.resourceName),
+);
 
 function setOpen(value: boolean): void {
     if (!props.processing) open.value = value;
@@ -54,7 +60,12 @@ function confirm(): void {
                 }}</AlertDialogTitle>
                 <AlertDialogDescription
                     class="text-muted-foreground text-sm leading-relaxed break-words"
-                    >{{ description }}</AlertDialogDescription
+                    >{{ descriptionText.before
+                    }}<strong
+                        v-if="descriptionText.name"
+                        class="text-foreground font-bold"
+                        >{{ descriptionText.name }}</strong
+                    >{{ descriptionText.after }}</AlertDialogDescription
                 >
             </AlertDialogHeader>
             <slot />

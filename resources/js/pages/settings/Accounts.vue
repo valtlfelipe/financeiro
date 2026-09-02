@@ -193,6 +193,7 @@ function submit(): void {
                 <ConfirmationDialog
                     v-if="!account.isArchived"
                     :title="t('finance.accounts.archiveTitle')"
+                    :resource-name="account.name"
                     :description="
                         t('finance.accounts.archiveDescription', {
                             name: account.name,
