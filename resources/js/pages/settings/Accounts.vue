@@ -3,12 +3,14 @@ import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { Archive, Plus, WalletCards } from '@lucide/vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputError from '@/components/InputError.vue';
 import MoneyInput from '@/components/finance/MoneyInput.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
+import { useOnline } from '@/composables/useOnline';
 import { formatMinorForInput, parseMoneyInputToMinor } from '@/lib/money-input';
 import { destroy, store } from '@/routes/accounts';
 import type { Account } from '@/types';
@@ -18,6 +20,13 @@ const page = usePage();
 const { t } = useI18n();
 const { formatMoney } = useFinanceFormat();
 const showForm = ref(false);
+const online = useOnline();
+const archiveForm = useForm({});
+
+function archive(account: Account): void {
+    if (archiveForm.processing || !online.value) return;
+    archiveForm.delete(destroy.url(account.id), { preserveScroll: true });
+}
 const amount = ref(formatMinorForInput(0, page.props.locale));
 const form = useForm({
     name: '',
@@ -164,14 +173,42 @@ function submit(): void {
                 <span class="font-data hidden text-sm sm:block">{{
                     formatMoney(account.initialBalanceMinor)
                 }}</span>
-                <Button
+                <ConfirmationDialog
                     v-if="!account.isArchived"
-                    variant="ghost"
-                    size="icon"
-                    :aria-label="t('finance.accounts.archive')"
-                    @click="$inertia.delete(destroy.url(account.id))"
-                    ><Archive class="size-4"
-                /></Button>
+                    :title="t('finance.accounts.archiveTitle')"
+                    :description="
+                        t('finance.accounts.archiveDescription', {
+                            name: account.name,
+                        })
+                    "
+                    :confirm-label="t('finance.accounts.archiveAction')"
+                    :processing="archiveForm.processing"
+                    :disabled="!online"
+                    :error="
+                        Object.values(archiveForm.errors).find(
+                            (message): message is string =>
+                                typeof message === 'string',
+                        )
+                    "
+                    @confirm="archive(account)"
+                >
+                    <template #trigger>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="size-11 shrink-0"
+                            :disabled="!online || archiveForm.processing"
+                            :aria-label="
+                                t('finance.accounts.archiveLabel', {
+                                    name: account.name,
+                                })
+                            "
+                            @click="archiveForm.clearErrors()"
+                        >
+                            <Archive class="size-4" aria-hidden="true" />
+                        </Button>
+                    </template>
+                </ConfirmationDialog>
                 <span
                     v-else
                     class="bg-muted text-muted-foreground rounded-full px-3 py-1 text-xs font-bold"

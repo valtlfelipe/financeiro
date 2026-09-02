@@ -113,6 +113,10 @@
             "balanceDate": "Data do saldo",
             "color": "Cor",
             "archive": "Arquivar",
+            "archiveTitle": "Arquivar conta?",
+            "archiveAction": "Arquivar conta",
+            "archiveLabel": "Arquivar {name}",
+            "archiveDescription": "“{name}” deixará de aparecer nas opções de novos lançamentos. Os lançamentos existentes e seu histórico serão mantidos.",
             "types": {
                 "checking": "Conta corrente",
                 "savings": "Poupança",
