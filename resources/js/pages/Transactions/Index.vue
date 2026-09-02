@@ -295,15 +295,11 @@ function updateTransaction(
                             <Label for="transaction_search" class="sr-only">{{
                                 t('common.search')
                             }}</Label>
-                            <Search
-                                class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
-                                aria-hidden="true"
-                            />
                             <Input
                                 id="transaction_search"
                                 v-model="filterState.search"
                                 type="search"
-                                class="bg-muted h-11 rounded-xl pl-10"
+                                class="bg-muted h-11 rounded-xl"
                                 :placeholder="
                                     t('finance.transactions.searchPlaceholder')
                                 "
@@ -312,9 +308,13 @@ function updateTransaction(
                         <Button
                             type="submit"
                             variant="secondary"
-                            class="min-h-11"
-                            >{{ t('common.search') }}</Button
+                            size="icon"
+                            class="size-11 shrink-0"
+                            :aria-label="t('common.search')"
+                            :title="t('common.search')"
                         >
+                            <Search class="size-4" aria-hidden="true" />
+                        </Button>
                     </div>
                     <Button
                         type="button"
