@@ -81,7 +81,9 @@
                 "repeat": "Repetir",
                 "markSettled": "Realizar",
                 "markPending": "Voltar para pendente",
-                "deleteConfirm": "Excluir este lançamento? Esta ação não poderá ser desfeita."
+                "deleteTitle": "Excluir lançamento?",
+                "deleteConfirm": "“{name}” será excluído. Esta ação não poderá ser desfeita.",
+                "deleteFutureConfirm": "“{name}” e os próximos lançamentos pendentes desta série serão excluídos. Os já realizados serão preservados. Esta ação não poderá ser desfeita."
             },
             "toast": {
                 "settled": "Lançamento realizado.",

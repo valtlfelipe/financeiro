@@ -6,5 +6,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | Dockerfile | .ai/rules/dockerfile.md |
 | compose.yaml, ** | .ai/rules/general.md |
+| resources/js/** | .ai/rules/js.md |
 | resources/js/lib/money-input.ts | .ai/rules/lib.md |
 | .github/workflows/** | .ai/rules/workflows.md |

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { Copy, Pencil, Repeat2, Trash2 } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import { Button } from '@/components/ui/button';
 import {
     Sheet,
@@ -41,25 +42,34 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const { formatDate, formatMoney } = useFinanceFormat();
 const deleteScope = ref<'single' | 'future'>('single');
+const deleteOpen = ref(false);
+const deleteForm = useForm({ scope: 'single' as 'single' | 'future' });
 const networkOnline = useOnline();
 
 watch(
     () => props.transaction?.id,
     () => {
         deleteScope.value = 'single';
+        deleteOpen.value = false;
+        deleteForm.clearErrors();
     },
 );
 
 function remove(): void {
     if (
         !props.transaction ||
-        !window.confirm(t('finance.transactions.detail.deleteConfirm'))
+        deleteForm.processing ||
+        !networkOnline.value ||
+        props.online === false
     )
         return;
-    router.delete(destroy.url(props.transaction.id), {
-        data: { scope: deleteScope.value },
+    deleteForm.scope = deleteScope.value;
+    deleteForm.delete(destroy.url(props.transaction.id), {
         preserveScroll: true,
-        onSuccess: () => emit('update:open', false),
+        onSuccess: () => {
+            deleteOpen.value = false;
+            emit('update:open', false);
+        },
     });
 }
 </script>
@@ -217,16 +227,37 @@ function remove(): void {
                             t('finance.transactions.detail.repeat')
                         }}
                     </Button>
-                    <Button
-                        variant="outline"
-                        class="text-destructive h-auto flex-col gap-1 py-3"
+                    <ConfirmationDialog
+                        v-model:open="deleteOpen"
+                        :title="t('finance.transactions.detail.deleteTitle')"
+                        :description="
+                            t(
+                                deleteScope === 'future' && transaction.series
+                                    ? 'finance.transactions.detail.deleteFutureConfirm'
+                                    : 'finance.transactions.detail.deleteConfirm',
+                                { name: transaction.description },
+                            )
+                        "
+                        :confirm-label="t('common.delete')"
+                        :processing="deleteForm.processing"
                         :disabled="online === false || !networkOnline"
-                        @click="remove"
+                        :error="Object.values(deleteForm.errors)[0]"
+                        destructive
+                        @confirm="remove"
                     >
-                        <Trash2 class="size-4" aria-hidden="true" />{{
-                            t('common.delete')
-                        }}
-                    </Button>
+                        <template #trigger>
+                            <Button
+                                variant="outline"
+                                class="text-destructive h-auto flex-col gap-1 py-3"
+                                :disabled="online === false || !networkOnline"
+                                @click="deleteForm.clearErrors()"
+                            >
+                                <Trash2 class="size-4" aria-hidden="true" />{{
+                                    t('common.delete')
+                                }}
+                            </Button>
+                        </template>
+                    </ConfirmationDialog>
                 </div>
 
                 <div v-if="transaction.series" class="grid gap-2">
