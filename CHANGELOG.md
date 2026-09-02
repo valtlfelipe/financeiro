@@ -4,6 +4,15 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-09-02
+
+### Fixed
+
+- Campos de valor removem caracteres inválidos durante a digitação e colagem, preservando a formatação monetária.
+- Novos lançamentos exigem a seleção explícita de uma categoria, com placeholder e sem seleção automática.
+- Transferências ficam desabilitadas quando há menos de duas contas; a explicação aparece ao clicar, passar o mouse ou navegar pelo teclado.
+- Campos de uma linha usam altura padrão de 44 px nos formulários de lançamentos e cadastros.
+
 ## [1.0.2] - 2026-09-02
 
 ### Fixed
@@ -46,7 +55,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/valtlfelipe/financeiro/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/valtlfelipe/financeiro/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/valtlfelipe/financeiro/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/valtlfelipe/financeiro/releases/tag/v1.0.0
