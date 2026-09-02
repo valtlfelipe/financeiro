@@ -39,9 +39,8 @@ function updateTransaction(item: Transaction): void {
 </script>
 
 <template>
-    <Head :title="t('common.navigation.overview')" />
-
     <section class="grid gap-7">
+        <Head :title="t('common.navigation.overview')" />
         <header
             class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"
         >

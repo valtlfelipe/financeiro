@@ -29,7 +29,8 @@ test('profile updates only the authenticated users name and email', function () 
         'id' => $other->id,
         'password' => 'unrequested-password',
         'current_workspace_id' => null,
-    ])->assertSessionHasNoErrors()->assertRedirect(route('profile.edit'));
+    ])->assertSessionHasNoErrors()->assertRedirect(route('profile.edit'))
+        ->assertInertiaFlash('toast.message', 'Perfil atualizado.');
 
     $this->assertDatabaseHas('users', [
         'id' => $user->id,

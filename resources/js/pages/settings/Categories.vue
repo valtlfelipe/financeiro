@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { Archive, Plus, Tags } from '@lucide/vue';
+import { Archive, Plus, Tags, X } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
@@ -44,18 +44,18 @@ function submit(): void {
 </script>
 
 <template>
-    <Head :title="t('finance.categories.title')" />
     <section
         class="border-border/80 overflow-hidden rounded-3xl border bg-white"
     >
+        <Head :title="t('finance.categories.title')" />
         <header
-            class="border-border/70 flex items-center gap-4 border-b p-5 sm:p-6"
+            class="border-border/70 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 border-b p-5 sm:flex sm:p-6"
         >
             <span
-                class="bg-primary/10 text-primary grid size-11 place-items-center rounded-2xl"
+                class="bg-primary/10 text-primary grid size-11 shrink-0 place-items-center rounded-2xl"
                 ><Tags class="size-5"
             /></span>
-            <div class="mr-auto">
+            <div class="mr-auto min-w-0">
                 <h2 class="text-xl font-extrabold">
                     {{ t('finance.categories.title') }}
                 </h2>
@@ -63,14 +63,24 @@ function submit(): void {
                     {{ t('finance.categories.description') }}
                 </p>
             </div>
-            <Button class="gap-2" @click="showForm = !showForm"
-                ><Plus class="size-4" />{{
-                    t('finance.categories.new')
+            <Button
+                class="col-span-2 min-h-11 gap-2"
+                :variant="showForm ? 'outline' : 'default'"
+                :aria-expanded="showForm"
+                aria-controls="category_form"
+                @click="showForm = !showForm"
+                ><X v-if="showForm" class="size-4" aria-hidden="true" /><Plus
+                    v-else
+                    class="size-4"
+                    aria-hidden="true"
+                />{{
+                    showForm ? t('common.cancel') : t('finance.categories.new')
                 }}</Button
             >
         </header>
         <form
             v-if="showForm"
+            id="category_form"
             class="border-border bg-muted/50 grid gap-4 border-b p-5 sm:grid-cols-2 sm:p-6"
             @submit.prevent="submit"
         >

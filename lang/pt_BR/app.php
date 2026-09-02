@@ -41,6 +41,9 @@ return [
     'workspace' => [
         'updated' => 'Nome do espaço atualizado.',
     ],
+    'profile' => [
+        'updated' => 'Perfil atualizado.',
+    ],
     'recurring' => [
         'generated' => '{0} Nenhum lançamento criado.|{1} :count lançamento criado.|[2,*] :count lançamentos criados.',
     ],

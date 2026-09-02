@@ -433,7 +433,9 @@ function submit(): void {
                 for="transaction_settled"
                 class="flex min-h-16 flex-1 cursor-pointer flex-col items-start justify-center gap-1 py-3"
             >
-                <span>{{ t('finance.transactions.form.settled') }}</span>
+                <span id="settled_label">{{
+                    t('finance.transactions.form.settled')
+                }}</span>
                 <span
                     id="settled_hint"
                     class="text-muted-foreground text-xs leading-relaxed font-normal"
@@ -449,6 +451,7 @@ function submit(): void {
             <Switch
                 id="transaction_settled"
                 v-model="form.settled"
+                aria-labelledby="settled_label"
                 aria-describedby="settled_hint"
                 :disabled="
                     form.processing || online === false || !networkOnline
