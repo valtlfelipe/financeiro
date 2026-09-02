@@ -1,18 +1,14 @@
 <script setup lang="ts">
 import { useForm, usePage } from '@inertiajs/vue3';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import InputError from '@/components/InputError.vue';
+import MoneyInput from '@/components/finance/MoneyInput.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import {
-    formatMinorForInput,
-    formatMoneyInputOnBlur,
-    formatMoneyInputWithCaret,
-    parseMoneyInputToMinor,
-} from '@/lib/money-input';
+import { formatMinorForInput, parseMoneyInputToMinor } from '@/lib/money-input';
 import { store, update } from '@/routes/transactions';
 import { useOnline } from '@/composables/useOnline';
 import type { Account, Category, Transaction } from '@/types';
@@ -35,7 +31,7 @@ const { t } = useI18n();
 const page = usePage();
 const networkOnline = useOnline();
 
-const amount = ref('');
+const amount = ref(formatMinorForInput(0, page.props.locale));
 const form = useForm({
     type: 'expense',
     amount_minor: 0,
@@ -71,7 +67,7 @@ const availableCategories = computed(() =>
 function hydrate(transaction?: Transaction | null): void {
     if (!transaction) {
         form.reset();
-        amount.value = '';
+        amount.value = formatMinorForInput(0, page.props.locale);
         form.account_id = String(props.accounts[0]?.id ?? '');
         form.category_id = String(availableCategories.value[0]?.id ?? '');
         form.due_on =
@@ -135,26 +131,6 @@ watch(
 
 function amountMinor(): number {
     return parseMoneyInputToMinor(amount.value, page.props.locale);
-}
-
-async function handleAmountInput(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const formatted = formatMoneyInputWithCaret(
-        input.value,
-        input.selectionStart ?? input.value.length,
-        page.props.locale,
-    );
-
-    amount.value = formatted.value;
-    await nextTick();
-
-    if (input.ownerDocument.activeElement === input) {
-        input.setSelectionRange(formatted.caret, formatted.caret);
-    }
-}
-
-function handleAmountBlur(): void {
-    amount.value = formatMoneyInputOnBlur(amount.value, page.props.locale);
 }
 
 function submit(): void {
@@ -248,17 +224,14 @@ function submit(): void {
                     class="text-muted-foreground absolute inset-y-0 left-3 flex items-center text-sm font-bold"
                     >{{ t('finance.transactions.form.currencySymbol') }}</span
                 >
-                <Input
+                <MoneyInput
                     id="amount"
-                    :model-value="amount"
-                    inputmode="decimal"
+                    v-model="amount"
                     required
                     class="font-data h-12 pl-10 text-lg font-medium"
                     :placeholder="
                         t('finance.transactions.form.amountPlaceholder')
                     "
-                    @blur="handleAmountBlur"
-                    @input="handleAmountInput"
                 />
             </div>
             <InputError :message="form.errors.amount_minor" />

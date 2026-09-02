@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { Archive, Plus, WalletCards } from '@lucide/vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import InputError from '@/components/InputError.vue';
+import MoneyInput from '@/components/finance/MoneyInput.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
+import { formatMinorForInput, parseMoneyInputToMinor } from '@/lib/money-input';
 import { destroy, store } from '@/routes/accounts';
 import type { Account } from '@/types';
 
 defineProps<{ accounts: Account[] }>();
+const page = usePage();
 const { t } = useI18n();
 const { formatMoney } = useFinanceFormat();
 const showForm = ref(false);
-const amount = ref('0,00');
+const amount = ref(formatMinorForInput(0, page.props.locale));
 const form = useForm({
     name: '',
     type: 'checking',
@@ -26,14 +29,15 @@ const form = useForm({
 });
 
 function submit(): void {
-    form.initial_balance_minor = Math.round(
-        Number(amount.value.replace(/\./g, '').replace(',', '.')) * 100,
+    form.initial_balance_minor = parseMoneyInputToMinor(
+        amount.value,
+        page.props.locale,
     );
     form.post(store.url(), {
         preserveScroll: true,
         onSuccess: () => {
             form.reset();
-            amount.value = '0,00';
+            amount.value = formatMinorForInput(0, page.props.locale);
             showForm.value = false;
         },
     });
@@ -102,10 +106,9 @@ function submit(): void {
                 <Label for="initial_balance">{{
                     t('finance.accounts.initialBalance')
                 }}</Label
-                ><Input
+                ><MoneyInput
                     id="initial_balance"
                     v-model="amount"
-                    inputmode="decimal"
                     class="font-data"
                 /><InputError :message="form.errors.initial_balance_minor" />
             </div>
