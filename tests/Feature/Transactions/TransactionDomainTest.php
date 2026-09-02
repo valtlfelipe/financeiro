@@ -23,6 +23,44 @@ beforeEach(function () {
     $this->incomeCategory = Category::factory()->create(['workspace_id' => $this->workspace->id, 'type' => CategoryType::Income]);
 });
 
+test('copying transaction data creates a separate entry without changing the original', function () {
+    $original = Transaction::factory()->create([
+        'workspace_id' => $this->workspace->id,
+        'account_id' => $this->account->id,
+        'category_id' => $this->expenseCategory->id,
+        'description' => 'Aluguel original',
+        'type' => TransactionType::Expense,
+        'amount_minor' => 85000,
+        'due_on' => '2026-09-10',
+    ]);
+
+    $this->actingAs($this->user)->post(route('transactions.store'), [
+        'description' => 'Aluguel copiado',
+        'type' => $original->type->value,
+        'amount_minor' => $original->amount_minor,
+        'account_id' => $original->account_id,
+        'category_id' => $original->category_id,
+        'due_on' => '2026-10-10',
+        'settled' => false,
+        'series_kind' => null,
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 2);
+    $this->assertDatabaseHas('transactions', [
+        'id' => $original->id,
+        'description' => 'Aluguel original',
+        'amount_minor' => 85000,
+    ]);
+    $this->assertDatabaseHas('transactions', [
+        'description' => 'Aluguel copiado',
+        'amount_minor' => 85000,
+        'settled_at' => null,
+        'transaction_series_id' => null,
+    ]);
+    expect($original->fresh()->due_on->format('Y-m-d'))->toBe('2026-09-10');
+    expect(Transaction::query()->where('description', 'Aluguel copiado')->sole()->due_on->format('Y-m-d'))->toBe('2026-10-10');
+});
+
 test('money and monthly totals remain integer cents and transfers are excluded', function () {
     Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->incomeCategory->id, 'type' => TransactionType::Income, 'amount_minor' => 10001, 'due_on' => '2026-09-03', 'settled_at' => now()]);
     Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->expenseCategory->id, 'type' => TransactionType::Expense, 'amount_minor' => 3334, 'due_on' => '2026-09-04']);

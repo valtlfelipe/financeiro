@@ -82,7 +82,6 @@
                 "category": "Categoria",
                 "date": "Data",
                 "notes": "Observação",
-                "repeat": "Repetir",
                 "markSettled": "Realizar",
                 "markPending": "Voltar para pendente",
                 "deleteTitle": "Excluir lançamento?",

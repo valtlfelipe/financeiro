@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { Copy, Pencil, Repeat2, Trash2 } from '@lucide/vue';
+import { Copy, Pencil, Trash2 } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
@@ -199,7 +199,7 @@ function remove(): void {
                     }}
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div class="grid grid-cols-3 gap-2">
                     <Button
                         variant="secondary"
                         class="h-auto flex-col gap-1 py-3"
@@ -216,15 +216,6 @@ function remove(): void {
                     >
                         <Copy class="size-4" aria-hidden="true" />{{
                             t('common.copy')
-                        }}
-                    </Button>
-                    <Button
-                        variant="secondary"
-                        class="h-auto flex-col gap-1 py-3"
-                        @click="emit('update:mode', 'copy')"
-                    >
-                        <Repeat2 class="size-4" aria-hidden="true" />{{
-                            t('finance.transactions.detail.repeat')
                         }}
                     </Button>
                     <ConfirmationDialog
