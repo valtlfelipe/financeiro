@@ -1,0 +1,43 @@
+<?php
+
+return [
+    'accepted' => 'O campo :attribute deve ser aceito.',
+    'after_or_equal' => 'O campo :attribute deve ser uma data igual ou posterior a :date.',
+    'boolean' => 'O campo :attribute deve ser verdadeiro ou falso.',
+    'confirmed' => 'A confirmação de :attribute não confere.',
+    'date' => 'O campo :attribute deve ser uma data válida.',
+    'email' => 'O campo :attribute deve ser um endereço de e-mail válido.',
+    'exists' => 'O valor selecionado para :attribute é inválido.',
+    'in' => 'O valor selecionado para :attribute é inválido.',
+    'integer' => 'O campo :attribute deve ser um número inteiro.',
+    'max' => [
+        'numeric' => 'O campo :attribute não pode ser maior que :max.',
+        'string' => 'O campo :attribute não pode ter mais de :max caracteres.',
+    ],
+    'min' => [
+        'numeric' => 'O campo :attribute deve ser pelo menos :min.',
+        'string' => 'O campo :attribute deve ter pelo menos :min caracteres.',
+    ],
+    'nullable' => 'O campo :attribute pode ficar vazio.',
+    'required' => 'O campo :attribute é obrigatório.',
+    'required_if' => 'O campo :attribute é obrigatório.',
+    'required_unless' => 'O campo :attribute é obrigatório, a menos que :other seja :value.',
+    'different' => 'O campo :attribute deve ser diferente de :other.',
+    'regex' => 'O formato do campo :attribute é inválido.',
+    'same' => 'Os campos :attribute e :other devem ser iguais.',
+    'string' => 'O campo :attribute deve ser um texto.',
+    'unique' => 'Este :attribute já está em uso.',
+    'attributes' => [
+        'name' => 'nome',
+        'workspace_name' => 'nome do espaço',
+        'email' => 'e-mail',
+        'password' => 'senha',
+        'description' => 'descrição',
+        'amount_minor' => 'valor',
+        'account_id' => 'conta',
+        'destination_account_id' => 'conta de destino',
+        'category_id' => 'categoria',
+        'due_on' => 'data',
+        'locale' => 'idioma',
+    ],
+];

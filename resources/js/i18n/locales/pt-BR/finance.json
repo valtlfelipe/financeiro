@@ -1,0 +1,133 @@
+{
+    "finance": {
+        "overview": {
+            "greeting": "Olá, {name}",
+            "title": "Seu mês em uma página",
+            "plannedIncome": "Receitas previstas",
+            "plannedExpense": "Despesas previstas",
+            "realizedBalance": "Saldo realizado",
+            "forecastBalance": "Saldo previsto",
+            "pendingTitle": "Próximos lançamentos",
+            "pendingDescription": "O que ainda precisa do seu joinha neste mês.",
+            "viewAll": "Ver todos os lançamentos",
+            "accountsTitle": "Saldos das contas"
+        },
+        "transactions": {
+            "title": "Lançamentos",
+            "subtitle": "Um mês inteiro, com cada pendência no lugar.",
+            "new": "Novo lançamento",
+            "previousMonth": "Mês anterior",
+            "nextMonth": "Próximo mês",
+            "searchPlaceholder": "Buscar descrição…",
+            "emptyTitle": "Seu mês começa aqui",
+            "emptyDescription": "Adicione uma receita, despesa ou transferência para acompanhar o saldo previsto.",
+            "status": {
+                "pending": "Pendente",
+                "settled": "Realizado",
+                "markExpenseSettled": "Marcar como pago",
+                "markIncomeSettled": "Marcar como recebido",
+                "markPending": "Marcar como pendente"
+            },
+            "type": {
+                "income": "Receita",
+                "expense": "Despesa",
+                "transfer": "Transferência"
+            },
+            "series": {
+                "single": "Uma vez",
+                "recurring": "Recorrente",
+                "installment": "Parcelado",
+                "frequency": "Frequência",
+                "weekly": "Semanal",
+                "monthly": "Mensal",
+                "yearly": "Anual",
+                "endsOn": "Termina em",
+                "installments": "Número de parcelas",
+                "installmentLabel": "{current}/{total}",
+                "installmentProgress": "Parcela {current} de {total}",
+                "changeScope": "Aplicar alteração",
+                "deleteScope": "Ao excluir",
+                "onlyThis": "Somente este lançamento",
+                "thisAndFuture": "Este e os próximos"
+            },
+            "form": {
+                "titleNew": "Novo lançamento",
+                "titleEdit": "Editar lançamento",
+                "description": "Descrição",
+                "descriptionPlaceholder": "Ex.: Aluguel",
+                "amount": "Valor",
+                "currencySymbol": "R$",
+                "amountPlaceholder": "0,00",
+                "account": "Conta",
+                "destinationAccount": "Conta de destino",
+                "transferRequiresTwoAccounts": "Cadastre pelo menos duas contas para criar uma transferência.",
+                "category": "Categoria",
+                "date": "Data prevista",
+                "notes": "Observação",
+                "notesPlaceholder": "Inclua algum detalhe útil",
+                "schedule": "Repetição",
+                "settled": "Já foi pago ou recebido",
+                "submitCreate": "Adicionar lançamento",
+                "submitUpdate": "Salvar lançamento",
+                "helper": "Preencha os dados sem sair do seu mês."
+            },
+            "detail": {
+                "account": "Conta",
+                "destinationAccount": "Destino",
+                "category": "Categoria",
+                "date": "Data",
+                "notes": "Observação",
+                "repeat": "Repetir",
+                "markSettled": "Realizar",
+                "markPending": "Voltar para pendente",
+                "deleteConfirm": "Excluir este lançamento? Esta ação não poderá ser desfeita."
+            },
+            "toast": {
+                "settled": "Lançamento realizado.",
+                "pending": "Lançamento voltou para pendente."
+            },
+            "filters": {
+                "type": "Tipo",
+                "status": "Status",
+                "account": "Conta",
+                "category": "Categoria",
+                "allTypes": "Todos os tipos",
+                "allStatuses": "Todos os status",
+                "allAccounts": "Todas as contas",
+                "allCategories": "Todas as categorias",
+                "apply": "Aplicar filtros"
+            }
+        },
+        "accounts": {
+            "title": "Contas",
+            "description": "Onde o dinheiro entra, sai e fica guardado.",
+            "new": "Nova conta",
+            "name": "Nome da conta",
+            "type": "Tipo",
+            "initialBalance": "Saldo inicial",
+            "balanceDate": "Data do saldo",
+            "color": "Cor",
+            "archive": "Arquivar",
+            "types": {
+                "checking": "Conta corrente",
+                "savings": "Poupança",
+                "cash": "Dinheiro",
+                "other": "Outra"
+            }
+        },
+        "categories": {
+            "title": "Categorias",
+            "description": "Dê contexto aos lançamentos sem complicar a rotina.",
+            "new": "Nova categoria",
+            "name": "Nome da categoria",
+            "type": "Disponível para",
+            "color": "Cor",
+            "archive": "Arquivar",
+            "types": {
+                "income": "Receitas",
+                "expense": "Despesas",
+                "both": "Receitas e despesas"
+            }
+        }
+    }
+}

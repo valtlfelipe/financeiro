@@ -1,0 +1,18 @@
+{
+    "name": "Financeiro",
+    "short_name": "Financeiro",
+    "description": "Controle financeiro pessoal, open source e self-hosted.",
+    "start_url": "/dashboard",
+    "display": "standalone",
+    "background_color": "#F3F5F2",
+    "theme_color": "#148A62",
+    "lang": "pt-BR",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

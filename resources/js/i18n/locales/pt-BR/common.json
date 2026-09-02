@@ -1,0 +1,32 @@
+{
+    "common": {
+        "appName": "Financeiro",
+        "save": "Salvar",
+        "saving": "Salvando…",
+        "cancel": "Cancelar",
+        "close": "Fechar",
+        "delete": "Excluir",
+        "edit": "Editar",
+        "copy": "Copiar",
+        "undo": "Desfazer",
+        "search": "Buscar",
+        "filters": "Filtros",
+        "all": "Todos",
+        "back": "Voltar",
+        "continue": "Continuar",
+        "optional": "Opcional",
+        "loading": "Carregando…",
+        "select": "Selecione",
+        "archived": "Arquivado",
+        "offline": "Você está sem conexão. As alterações ficam indisponíveis até a internet voltar.",
+        "empty": "Nada por aqui ainda.",
+        "error": "Não foi possível concluir. Tente novamente.",
+        "navigation": {
+            "primary": "Navegação principal",
+            "overview": "Resumo",
+            "transactions": "Lançamentos",
+            "settings": "Ajustes",
+            "logout": "Sair"
+        }
+    }
+}

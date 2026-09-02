@@ -1,0 +1,30 @@
+{
+    "settings": {
+        "title": "Ajustes",
+        "description": "Contas, categorias, pessoas e preferências da instalação.",
+        "navigationLabel": "Seções de ajustes",
+        "sections": {
+            "accounts": "Contas",
+            "categories": "Categorias",
+            "members": "Pessoas",
+            "preferences": "Preferências"
+        },
+        "language": {
+            "title": "Idioma",
+            "description": "Cada pessoa escolhe o idioma da própria interface.",
+            "label": "Idioma da interface"
+        },
+        "members": {
+            "title": "Pessoas",
+            "description": "Convide quem compartilha este espaço financeiro.",
+            "invite": "Criar convite",
+            "email": "E-mail",
+            "roleOwner": "Proprietário",
+            "roleMember": "Membro",
+            "inviteLink": "Link do convite",
+            "copyLink": "Copiar link",
+            "copied": "Link copiado",
+            "pending": "Convites pendentes"
+        }
+    }
+}

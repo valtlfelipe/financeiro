@@ -1,0 +1,268 @@
+<script setup lang="ts">
+import { router } from '@inertiajs/vue3';
+import { Copy, Pencil, Repeat2, Trash2 } from '@lucide/vue';
+import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { Button } from '@/components/ui/button';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { useFinanceFormat } from '@/composables/useFinanceFormat';
+import { useOnline } from '@/composables/useOnline';
+import { destroy } from '@/routes/transactions';
+import type { Account, Category, Transaction } from '@/types';
+import SettlementButton from './SettlementButton.vue';
+import TransactionForm from './TransactionForm.vue';
+
+type PanelMode = 'create' | 'detail' | 'edit' | 'copy';
+const props = withDefaults(
+    defineProps<{
+        open: boolean;
+        mode: PanelMode;
+        transaction?: Transaction | null;
+        accounts: Account[];
+        categories: Category[];
+        defaultDueOn?: string;
+        online?: boolean;
+    }>(),
+    {
+        online: true,
+    },
+);
+const emit = defineEmits<{
+    'update:open': [open: boolean];
+    'update:mode': [mode: PanelMode];
+    transactionUpdate: [transaction: Transaction];
+}>();
+const { t } = useI18n();
+const { formatDate, formatMoney } = useFinanceFormat();
+const deleteScope = ref<'single' | 'future'>('single');
+const networkOnline = useOnline();
+
+watch(
+    () => props.transaction?.id,
+    () => {
+        deleteScope.value = 'single';
+    },
+);
+
+function remove(): void {
+    if (
+        !props.transaction ||
+        !window.confirm(t('finance.transactions.detail.deleteConfirm'))
+    )
+        return;
+    router.delete(destroy.url(props.transaction.id), {
+        data: { scope: deleteScope.value },
+        preserveScroll: true,
+        onSuccess: () => emit('update:open', false),
+    });
+}
+</script>
+
+<template>
+    <Sheet :open="open" @update:open="emit('update:open', $event)">
+        <SheetContent class="w-full overflow-y-auto bg-white p-0 sm:max-w-xl">
+            <div class="border-border border-b px-5 py-5 sm:px-7">
+                <SheetHeader class="pr-8 text-left">
+                    <SheetTitle class="text-xl font-extrabold tracking-tight">
+                        {{
+                            mode === 'create' || mode === 'copy'
+                                ? t('finance.transactions.form.titleNew')
+                                : mode === 'edit'
+                                  ? t('finance.transactions.form.titleEdit')
+                                  : transaction?.description
+                        }}
+                    </SheetTitle>
+                    <SheetDescription>
+                        {{
+                            mode === 'detail' && transaction
+                                ? t(
+                                      `finance.transactions.type.${transaction.type}`,
+                                  )
+                                : t('finance.transactions.form.helper')
+                        }}
+                    </SheetDescription>
+                </SheetHeader>
+            </div>
+
+            <div
+                v-if="mode === 'detail' && transaction"
+                class="grid gap-6 p-5 sm:p-7"
+            >
+                <div
+                    class="rounded-3xl p-6"
+                    :class="
+                        transaction.settledAt ? 'bg-primary/10' : 'bg-muted'
+                    "
+                >
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <span
+                                class="text-muted-foreground text-xs font-bold tracking-wider uppercase"
+                                >{{
+                                    t(
+                                        `finance.transactions.status.${transaction.settledAt ? 'settled' : 'pending'}`,
+                                    )
+                                }}</span
+                            >
+                            <p
+                                class="font-data mt-2 text-3xl font-medium"
+                                :class="
+                                    transaction.type === 'expense'
+                                        ? 'text-expense'
+                                        : transaction.type === 'income'
+                                          ? 'text-income'
+                                          : 'text-forecast'
+                                "
+                            >
+                                {{
+                                    transaction.type === 'expense'
+                                        ? '−'
+                                        : transaction.type === 'income'
+                                          ? '+'
+                                          : ''
+                                }}{{ formatMoney(transaction.amountMinor) }}
+                            </p>
+                        </div>
+                        <SettlementButton
+                            :transaction="transaction"
+                            :online="online"
+                            @update="emit('transactionUpdate', $event)"
+                        />
+                    </div>
+                </div>
+
+                <dl class="grid gap-1">
+                    <div
+                        v-for="item in [
+                            [
+                                t('finance.transactions.detail.account'),
+                                transaction.account.name,
+                            ],
+                            [
+                                t(
+                                    'finance.transactions.detail.destinationAccount',
+                                ),
+                                transaction.destinationAccount?.name,
+                            ],
+                            [
+                                t('finance.transactions.detail.category'),
+                                transaction.category?.name,
+                            ],
+                            [
+                                t('finance.transactions.detail.date'),
+                                formatDate(transaction.dueOn, {
+                                    dateStyle: 'long',
+                                }),
+                            ],
+                            [
+                                t('finance.transactions.detail.notes'),
+                                transaction.notes,
+                            ],
+                        ].filter((item) => item[1])"
+                        :key="String(item[0])"
+                        class="border-border/70 grid grid-cols-[8rem_1fr] gap-3 border-b py-3 last:border-0"
+                    >
+                        <dt
+                            class="text-muted-foreground text-xs font-bold tracking-wider uppercase"
+                        >
+                            {{ item[0] }}
+                        </dt>
+                        <dd class="text-sm font-semibold">{{ item[1] }}</dd>
+                    </div>
+                </dl>
+
+                <div
+                    v-if="transaction.installmentNumber"
+                    class="border-border rounded-2xl border p-4 text-sm"
+                >
+                    {{
+                        t('finance.transactions.series.installmentProgress', {
+                            current: transaction.installmentNumber,
+                            total: transaction.installmentTotal,
+                        })
+                    }}
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <Button
+                        variant="secondary"
+                        class="h-auto flex-col gap-1 py-3"
+                        @click="emit('update:mode', 'edit')"
+                    >
+                        <Pencil class="size-4" aria-hidden="true" />{{
+                            t('common.edit')
+                        }}
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        class="h-auto flex-col gap-1 py-3"
+                        @click="emit('update:mode', 'copy')"
+                    >
+                        <Copy class="size-4" aria-hidden="true" />{{
+                            t('common.copy')
+                        }}
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        class="h-auto flex-col gap-1 py-3"
+                        @click="emit('update:mode', 'copy')"
+                    >
+                        <Repeat2 class="size-4" aria-hidden="true" />{{
+                            t('finance.transactions.detail.repeat')
+                        }}
+                    </Button>
+                    <Button
+                        variant="outline"
+                        class="text-destructive h-auto flex-col gap-1 py-3"
+                        :disabled="online === false || !networkOnline"
+                        @click="remove"
+                    >
+                        <Trash2 class="size-4" aria-hidden="true" />{{
+                            t('common.delete')
+                        }}
+                    </Button>
+                </div>
+
+                <div v-if="transaction.series" class="grid gap-2">
+                    <label
+                        for="delete_scope"
+                        class="text-muted-foreground text-xs font-bold tracking-wider uppercase"
+                        >{{
+                            t('finance.transactions.series.deleteScope')
+                        }}</label
+                    >
+                    <select
+                        id="delete_scope"
+                        v-model="deleteScope"
+                        class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                    >
+                        <option value="single">
+                            {{ t('finance.transactions.series.onlyThis') }}
+                        </option>
+                        <option value="future">
+                            {{ t('finance.transactions.series.thisAndFuture') }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div v-else class="p-5 sm:p-7">
+                <TransactionForm
+                    :transaction="transaction"
+                    :force-create="mode === 'copy'"
+                    :accounts="accounts"
+                    :categories="categories"
+                    :default-due-on="defaultDueOn"
+                    :online="online"
+                    @saved="emit('update:open', false)"
+                />
+            </div>
+        </SheetContent>
+    </Sheet>
+</template>

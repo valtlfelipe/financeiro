@@ -1,3 +1,6 @@
+@import '@fontsource-variable/manrope';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
 @import 'tailwindcss';
 
 @import 'tw-animate-css';
@@ -9,13 +12,14 @@
 
 @theme inline {
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
+        'Manrope Variable', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
+    --font-data: 'IBM Plex Mono', ui-monospace, monospace;
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -50,6 +54,10 @@
     --color-chart-3: var(--chart-3);
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
+    --color-income: var(--income);
+    --color-expense: var(--expense);
+    --color-forecast: var(--forecast);
+    --color-pending: var(--pending);
 
     --color-sidebar: var(--sidebar-background);
     --color-sidebar-foreground: var(--sidebar-foreground);
@@ -83,83 +91,87 @@
     body,
     html {
         --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+            'Manrope Variable', ui-sans-serif, system-ui, sans-serif,
             'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
             'Noto Color Emoji';
     }
 }
 
 :root {
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
-    --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(0 0% 92.1%);
-    --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0 0% 96.1%);
-    --muted-foreground: hsl(0 0% 45.1%);
-    --accent: hsl(0 0% 96.1%);
-    --accent-foreground: hsl(0 0% 9%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 92.8%);
-    --input: hsl(0 0% 89.8%);
-    --ring: hsl(0 0% 3.9%);
-    --chart-1: hsl(12 76% 61%);
-    --chart-2: hsl(173 58% 39%);
-    --chart-3: hsl(197 37% 24%);
-    --chart-4: hsl(43 74% 66%);
-    --chart-5: hsl(27 87% 67%);
-    --radius: 0.5rem;
-    --sidebar-background: hsl(0 0% 98%);
-    --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(0 0% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: hsl(0 0% 94%);
-    --sidebar-accent-foreground: hsl(0 0% 30%);
-    --sidebar-border: hsl(0 0% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(0 0% 98%);
+    color-scheme: light;
+    --background: #f3f5f2;
+    --foreground: #202522;
+    --card: #ffffff;
+    --card-foreground: #202522;
+    --popover: #ffffff;
+    --popover-foreground: #202522;
+    --primary: #148a62;
+    --primary-foreground: #ffffff;
+    --secondary: #e8eee9;
+    --secondary-foreground: #202522;
+    --muted: #edf0ed;
+    --muted-foreground: #68706b;
+    --accent: #e4f2eb;
+    --accent-foreground: #0d6d4d;
+    --destructive: #c84d57;
+    --destructive-foreground: #ffffff;
+    --border: #dde2dd;
+    --input: #d3d9d4;
+    --ring: #148a62;
+    --income: #148a62;
+    --expense: #c84d57;
+    --forecast: #3f67c7;
+    --pending: #858c87;
+    --chart-1: #148a62;
+    --chart-2: #3f67c7;
+    --chart-3: #c84d57;
+    --chart-4: #d69b36;
+    --chart-5: #7b61a8;
+    --radius: 0.75rem;
+    --sidebar-background: #f8faf7;
+    --sidebar-foreground: #39413c;
+    --sidebar-primary: #148a62;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e4f2eb;
+    --sidebar-accent-foreground: #0d6d4d;
+    --sidebar-border: #dde2dd;
+    --sidebar-ring: #148a62;
+    --sidebar: #f8faf7;
 }
 
 .dark {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 9%);
-    --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(0 0% 16.08%);
-    --muted-foreground: hsl(0 0% 63.9%);
-    --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
-    --destructive: hsl(0 84% 60%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
-    --chart-1: hsl(220 70% 50%);
-    --chart-2: hsl(160 60% 45%);
-    --chart-3: hsl(30 80% 55%);
-    --chart-4: hsl(280 65% 60%);
-    --chart-5: hsl(340 75% 55%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(240 5.9% 10%);
+    --background: #17201b;
+    --foreground: #edf3ef;
+    --card: #202b24;
+    --card-foreground: #edf3ef;
+    --popover: #202b24;
+    --popover-foreground: #edf3ef;
+    --primary: #5ac69a;
+    --primary-foreground: #102019;
+    --secondary: #2b382f;
+    --secondary-foreground: #edf3ef;
+    --muted: #29342d;
+    --muted-foreground: #aab6ae;
+    --accent: #284637;
+    --accent-foreground: #b9f0d7;
+    --destructive: #ec7881;
+    --destructive-foreground: #201012;
+    --border: #35423a;
+    --input: #425048;
+    --ring: #5ac69a;
+    --income: #5ac69a;
+    --expense: #ec7881;
+    --forecast: #86a7f4;
+    --pending: #aab6ae;
+    --sidebar-background: #1c261f;
+    --sidebar-foreground: #dfe8e2;
+    --sidebar-primary: #5ac69a;
+    --sidebar-primary-foreground: #102019;
+    --sidebar-accent: #284637;
+    --sidebar-accent-foreground: #b9f0d7;
+    --sidebar-border: #35423a;
+    --sidebar-ring: #5ac69a;
+    --sidebar: #1c261f;
 }
 
 @layer base {
@@ -167,6 +179,25 @@
         @apply border-border outline-ring/50;
     }
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground selection:bg-primary/20;
+        min-width: 320px;
+        font-feature-settings:
+            'ss01' 1,
+            'cv05' 1;
+    }
+
+    button,
+    a,
+    input,
+    select,
+    textarea {
+        @apply focus-visible:outline-ring focus-visible:outline-2 focus-visible:outline-offset-2;
+    }
+}
+
+@layer utilities {
+    .font-data {
+        font-family: var(--font-data);
+        font-variant-numeric: tabular-nums;
     }
 }

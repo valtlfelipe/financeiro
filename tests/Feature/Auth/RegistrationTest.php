@@ -1,39 +1,35 @@
 <?php
 
-namespace Tests\Feature\Auth;
+use App\Models\User;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Fortify\Features;
-use Tests\TestCase;
+test('public registration routes are disabled', function () {
+    $this->get('/register')->assertNotFound();
+    $this->post('/register', [
+        'name' => 'Intruso',
+        'email' => 'intruso@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertNotFound();
+});
 
-class RegistrationTest extends TestCase
-{
-    use RefreshDatabase;
+test('the first visit creates the only public owner account', function () {
+    $this->get('/')->assertRedirect(route('setup.create'));
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $this->post(route('setup.store'), [
+        'name' => 'Felipe',
+        'workspace_name' => 'Casa',
+        'email' => 'felipe@example.com',
+        'password' => 'senha-segura-123',
+        'password_confirmation' => 'senha-segura-123',
+    ])->assertRedirect(route('dashboard'));
 
-        $this->skipUnlessFortifyHas(Features::registration());
-    }
+    $user = User::query()->sole();
+    expect($user->currentWorkspace?->name)->toBe('Casa')
+        ->and($user->locale)->toBe('pt-BR')
+        ->and($user->workspaces()->first()?->pivot->role)->toBe('owner')
+        ->and($user->currentWorkspace?->accounts)->toHaveCount(1)
+        ->and($user->currentWorkspace?->categories)->toHaveCount(2);
 
-    public function test_registration_screen_can_be_rendered()
-    {
-        $response = $this->get(route('register'));
-
-        $response->assertOk();
-    }
-
-    public function test_new_users_can_register()
-    {
-        $response = $this->post(route('register.store'), [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
-
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
-    }
-}
+    auth()->logout();
+    $this->get(route('setup.create'))->assertRedirect(route('login'));
+});

@@ -1,5 +1,9 @@
 <?php
 
+use App\MembershipRole;
+use App\Models\Membership;
+use App\Models\User;
+use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +51,18 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/** @return array{0: User, 1: Workspace} */
+function ownerWithWorkspace(): array
+{
+    $workspace = Workspace::factory()->create();
+    $user = User::factory()->create(['current_workspace_id' => $workspace->id]);
+    Membership::factory()->create([
+        'workspace_id' => $workspace->id,
+        'user_id' => $user->id,
+        'role' => MembershipRole::Owner,
+    ]);
+
+    return [$user, $workspace];
 }

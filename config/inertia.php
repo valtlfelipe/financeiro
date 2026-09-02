@@ -16,7 +16,10 @@ return [
     */
 
     'ssr' => [
-        'enabled' => true,
+        // SSR is opt-in. The local and Docker-first development flows do not
+        // run a separate SSR process, so the browser bundle is the source of
+        // truth unless an operator explicitly enables it.
+        'enabled' => env('INERTIA_SSR_ENABLED', false),
         'url' => 'http://127.0.0.1:13714',
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
 

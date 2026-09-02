@@ -1,15 +1,16 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/vue-starter-kit",
+    "name": "financeiro/financeiro",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Gerenciador financeiro pessoal open source e self-hosted.",
     "keywords": [
-        "laravel",
-        "framework"
+        "financeiro",
+        "self-hosted",
+        "laravel"
     ],
-    "license": "MIT",
+    "license": "AGPL-3.0-only",
     "require": {
-        "php": "^8.3",
+        "php": "^8.5",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
@@ -54,7 +55,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "@php artisan dev"
+            "./node_modules/.bin/concurrently --kill-others-on-fail \"php artisan serve\" \"npm run dev\" \"php artisan schedule:work\""
         ],
         "lint": [
             "pint --parallel"
@@ -69,7 +70,7 @@
             "@test"
         ],
         "types:check": [
-            "phpstan analyse"
+            "phpstan analyse --memory-limit=1G"
         ],
         "test": [
             "@php artisan config:clear --ansi",

@@ -1,0 +1,183 @@
+<script setup lang="ts">
+import { Head, useForm } from '@inertiajs/vue3';
+import { Archive, Plus, WalletCards } from '@lucide/vue';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useFinanceFormat } from '@/composables/useFinanceFormat';
+import { destroy, store } from '@/routes/accounts';
+import type { Account } from '@/types';
+
+defineProps<{ accounts: Account[] }>();
+const { t } = useI18n();
+const { formatMoney } = useFinanceFormat();
+const showForm = ref(false);
+const amount = ref('0,00');
+const form = useForm({
+    name: '',
+    type: 'checking',
+    initial_balance_minor: 0,
+    balance_date: new Date().toISOString().slice(0, 10),
+    color: '#148A62',
+    icon: 'wallet-cards',
+});
+
+function submit(): void {
+    form.initial_balance_minor = Math.round(
+        Number(amount.value.replace(/\./g, '').replace(',', '.')) * 100,
+    );
+    form.post(store.url(), {
+        preserveScroll: true,
+        onSuccess: () => {
+            form.reset();
+            amount.value = '0,00';
+            showForm.value = false;
+        },
+    });
+}
+</script>
+
+<template>
+    <Head :title="t('finance.accounts.title')" />
+    <section
+        class="border-border/80 overflow-hidden rounded-3xl border bg-white"
+    >
+        <header
+            class="border-border/70 flex items-center gap-4 border-b p-5 sm:p-6"
+        >
+            <span
+                class="bg-primary/10 text-primary grid size-11 place-items-center rounded-2xl"
+                ><WalletCards class="size-5"
+            /></span>
+            <div class="mr-auto">
+                <h2 class="text-xl font-extrabold">
+                    {{ t('finance.accounts.title') }}
+                </h2>
+                <p class="text-muted-foreground mt-1 text-sm">
+                    {{ t('finance.accounts.description') }}
+                </p>
+            </div>
+            <Button class="gap-2" @click="showForm = !showForm"
+                ><Plus class="size-4" />{{ t('finance.accounts.new') }}</Button
+            >
+        </header>
+
+        <form
+            v-if="showForm"
+            class="border-border bg-muted/50 grid gap-4 border-b p-5 sm:grid-cols-2 sm:p-6"
+            @submit.prevent="submit"
+        >
+            <div class="grid gap-2">
+                <Label for="account_name">{{
+                    t('finance.accounts.name')
+                }}</Label
+                ><Input
+                    id="account_name"
+                    v-model="form.name"
+                    required
+                /><InputError :message="form.errors.name" />
+            </div>
+            <div class="grid gap-2">
+                <Label for="account_type">{{
+                    t('finance.accounts.type')
+                }}</Label
+                ><select
+                    id="account_type"
+                    v-model="form.type"
+                    class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                >
+                    <option
+                        v-for="type in ['checking', 'savings', 'cash', 'other']"
+                        :key="type"
+                        :value="type"
+                    >
+                        {{ t(`finance.accounts.types.${type}`) }}
+                    </option>
+                </select>
+            </div>
+            <div class="grid gap-2">
+                <Label for="initial_balance">{{
+                    t('finance.accounts.initialBalance')
+                }}</Label
+                ><Input
+                    id="initial_balance"
+                    v-model="amount"
+                    inputmode="decimal"
+                    class="font-data"
+                /><InputError :message="form.errors.initial_balance_minor" />
+            </div>
+            <div class="grid gap-2">
+                <Label for="balance_date">{{
+                    t('finance.accounts.balanceDate')
+                }}</Label
+                ><Input
+                    id="balance_date"
+                    v-model="form.balance_date"
+                    type="date"
+                    required
+                />
+            </div>
+            <div class="grid gap-2">
+                <Label for="account_color">{{
+                    t('finance.accounts.color')
+                }}</Label
+                ><Input
+                    id="account_color"
+                    v-model="form.color"
+                    type="color"
+                    class="h-11 p-1"
+                />
+            </div>
+            <div class="flex items-end">
+                <Button
+                    type="submit"
+                    class="w-full"
+                    :disabled="form.processing"
+                    >{{ t('common.save') }}</Button
+                >
+            </div>
+        </form>
+
+        <div v-if="accounts.length" class="divide-border/70 divide-y">
+            <article
+                v-for="account in accounts"
+                :key="account.id"
+                class="flex items-center gap-4 px-5 py-4 sm:px-6"
+            >
+                <span
+                    class="grid size-10 place-items-center rounded-2xl text-white"
+                    :style="{ backgroundColor: account.color }"
+                    ><WalletCards class="size-4"
+                /></span>
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-bold">{{ account.name }}</p>
+                    <p class="text-muted-foreground mt-1 text-xs">
+                        {{ t(`finance.accounts.types.${account.type}`) }}
+                    </p>
+                </div>
+                <span class="font-data hidden text-sm sm:block">{{
+                    formatMoney(account.initialBalanceMinor)
+                }}</span>
+                <Button
+                    v-if="!account.isArchived"
+                    variant="ghost"
+                    size="icon"
+                    :aria-label="t('finance.accounts.archive')"
+                    @click="$inertia.delete(destroy.url(account.id))"
+                    ><Archive class="size-4"
+                /></Button>
+                <span
+                    v-else
+                    class="bg-muted text-muted-foreground rounded-full px-3 py-1 text-xs font-bold"
+                    >{{ t('common.archived') }}</span
+                >
+            </article>
+        </div>
+        <p v-else class="text-muted-foreground p-10 text-center text-sm">
+            {{ t('common.empty') }}
+        </p>
+    </section>
+</template>

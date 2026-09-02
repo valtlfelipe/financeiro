@@ -1,71 +1,82 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import Heading from '@/components/Heading.vue';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { Link, usePage } from '@inertiajs/vue3';
+import { Languages, Tags, Users, WalletCards } from '@lucide/vue';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import { toUrl } from '@/lib/utils';
-import { edit as editAppearance } from '@/routes/appearance';
-import { edit as editProfile } from '@/routes/profile';
-import { edit as editSecurity } from '@/routes/security';
-import type { NavItem } from '@/types';
+import { index as accounts } from '@/routes/accounts';
+import { index as categories } from '@/routes/categories';
+import { index as members } from '@/routes/invitations';
+import { edit as preferences } from '@/routes/preferences';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: editProfile(),
-    },
-    {
-        title: 'Security',
-        href: editSecurity(),
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-    },
-];
-
-const { isCurrentOrParentUrl } = useCurrentUrl();
+const { t } = useI18n();
+const page = usePage();
+const { isCurrentUrl } = useCurrentUrl();
+const navigation = computed(() =>
+    [
+        {
+            label: t('settings.sections.accounts'),
+            href: accounts(),
+            icon: WalletCards,
+            visible: true,
+        },
+        {
+            label: t('settings.sections.categories'),
+            href: categories(),
+            icon: Tags,
+            visible: true,
+        },
+        {
+            label: t('settings.sections.members'),
+            href: members(),
+            icon: Users,
+            visible: page.props.workspace?.role === 'owner',
+        },
+        {
+            label: t('settings.sections.preferences'),
+            href: preferences(),
+            icon: Languages,
+            visible: true,
+        },
+    ].filter((item) => item.visible),
+);
 </script>
 
 <template>
-    <div class="px-4 py-6">
-        <Heading
-            title="Settings"
-            description="Manage your profile and account settings"
-        />
+    <section class="grid gap-6">
+        <header>
+            <h1 class="text-3xl font-extrabold tracking-tight">
+                {{ t('settings.title') }}
+            </h1>
+            <p class="text-muted-foreground mt-2 text-sm">
+                {{ t('settings.description') }}
+            </p>
+        </header>
 
-        <div class="flex flex-col lg:flex-row lg:space-x-12">
-            <aside class="w-full max-w-xl lg:w-48">
-                <nav
-                    class="flex flex-col space-y-1 space-x-0"
-                    aria-label="Settings"
+        <div class="grid gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
+            <nav
+                class="flex gap-2 overflow-x-auto pb-1 lg:flex-col"
+                :aria-label="t('settings.navigationLabel')"
+            >
+                <Link
+                    v-for="item in navigation"
+                    :key="item.label"
+                    :href="item.href"
+                    class="text-muted-foreground hover:text-foreground flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors hover:bg-white"
+                    :class="{
+                        'text-primary bg-white shadow-sm': isCurrentUrl(
+                            item.href,
+                        ),
+                    }"
                 >
-                    <Button
-                        v-for="item in sidebarNavItems"
-                        :key="toUrl(item.href)"
-                        variant="ghost"
-                        :class="[
-                            'w-full justify-start',
-                            { 'bg-muted': isCurrentOrParentUrl(item.href) },
-                        ]"
-                        as-child
-                    >
-                        <Link :href="item.href">
-                            <component :is="item.icon" class="h-4 w-4" />
-                            {{ item.title }}
-                        </Link>
-                    </Button>
-                </nav>
-            </aside>
-
-            <Separator class="my-6 lg:hidden" />
-
-            <div class="flex-1 md:max-w-2xl">
-                <section class="max-w-xl space-y-12">
-                    <slot />
-                </section>
-            </div>
+                    <component
+                        :is="item.icon"
+                        class="size-4"
+                        aria-hidden="true"
+                    />{{ item.label }}
+                </Link>
+            </nav>
+            <div class="min-w-0"><slot /></div>
         </div>
-    </div>
+    </section>
 </template>
