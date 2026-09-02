@@ -8,6 +8,9 @@ O app existe para responder duas perguntas, sem atrito: o que está previsto par
 [![Release](https://img.shields.io/github/v/release/valtlfelipe/financeiro)](https://github.com/valtlfelipe/financeiro/releases)
 [![Licença](https://img.shields.io/badge/licença-AGPL--3.0-blue.svg)](LICENSE)
 
+<img width="1210" height="630" alt="image" src="https://github.com/user-attachments/assets/6c16dd7c-b61b-4b63-b8f7-bb2ec0b79876" /></center>
+
+
 ## Sumário
 
 - [Para quem é](#para-quem-é)
