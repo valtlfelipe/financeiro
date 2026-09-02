@@ -3,19 +3,24 @@ import { ArrowRight, CalendarClock, Repeat2 } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
+import { formatDayMonth } from '@/lib/dates';
 import type { MonthlySummary, Transaction } from '@/types';
 import SettlementButton from './SettlementButton.vue';
 
 const props = withDefaults(
-    defineProps<{ transaction: Transaction; online?: boolean }>(),
-    { online: true },
+    defineProps<{
+        transaction: Transaction;
+        online?: boolean;
+        showDate?: boolean;
+    }>(),
+    { online: true, showDate: false },
 );
 const emit = defineEmits<{
     open: [transaction: Transaction];
     update: [transaction: Transaction, summary: MonthlySummary];
 }>();
 const { t } = useI18n();
-const { formatMoney } = useFinanceFormat();
+const { formatMoney, formatDate } = useFinanceFormat();
 const amountClass = computed(() =>
     props.transaction.type === 'expense'
         ? 'text-expense'
@@ -35,7 +40,15 @@ const amountClass = computed(() =>
         @keydown.enter="emit('open', transaction)"
         @keydown.space.prevent="emit('open', transaction)"
     >
+        <time
+            v-if="showDate"
+            :datetime="transaction.dueOn"
+            :aria-label="formatDate(transaction.dueOn, { dateStyle: 'long' })"
+            class="bg-muted text-foreground font-data grid h-11 w-14 shrink-0 place-items-center rounded-xl text-sm font-medium"
+            >{{ formatDayMonth(transaction.dueOn) }}</time
+        >
         <span
+            v-else
             class="grid size-10 place-items-center rounded-2xl text-white"
             :style="{
                 backgroundColor:

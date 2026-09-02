@@ -62,6 +62,7 @@ class DashboardTest extends TestCase
             ->component('Dashboard')
             ->has('recentTransactions', 1)
             ->where('recentTransactions.0.description', 'Receita pendente')
+            ->where('recentTransactions.0.dueOn', '2026-09-02')
             ->where('recentTransactions.0.account.name', $account->name)
             ->where('recentTransactions.0.category.name', $category->name));
     }

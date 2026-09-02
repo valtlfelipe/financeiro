@@ -99,6 +99,7 @@ function updateTransaction(item: Transaction, summary: MonthlySummary): void {
                         v-for="item in recent"
                         :key="item.id"
                         :transaction="item"
+                        show-date
                         @update="updateTransaction"
                     />
                 </div>
