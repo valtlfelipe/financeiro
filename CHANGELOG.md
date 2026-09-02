@@ -17,6 +17,7 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - Docker Compose com FrankenPHP, PostgreSQL e scheduler.
 - Backup, restore, testes e CI.
 - Publicação da imagem Docker no GHCR e GitHub Releases a partir de tags `v*.*.*`.
+- CI gera o build do Vite antes dos testes HTTP.
 
 [Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/valtlfelipe/financeiro/releases/tag/v1.0.0
