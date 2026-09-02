@@ -24,6 +24,7 @@ COPY public ./public
 COPY components.json tsconfig.json vite.config.ts ./
 COPY --from=vendor /app/resources/js/actions ./resources/js/actions
 COPY --from=vendor /app/resources/js/routes ./resources/js/routes
+COPY --from=vendor /app/resources/js/wayfinder ./resources/js/wayfinder
 ENV WAYFINDER_COMMAND=true
 RUN npm run build
 
