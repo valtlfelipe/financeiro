@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { Languages, Tags, Users, WalletCards } from '@lucide/vue';
+import { Languages, Tags, UserRound, Users, WalletCards } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
@@ -8,12 +8,19 @@ import { index as accounts } from '@/routes/accounts';
 import { index as categories } from '@/routes/categories';
 import { index as members } from '@/routes/invitations';
 import { edit as preferences } from '@/routes/preferences';
+import { edit as profile } from '@/routes/profile';
 
 const { t } = useI18n();
 const page = usePage();
 const { isCurrentUrl } = useCurrentUrl();
 const navigation = computed(() =>
     [
+        {
+            label: t('settings.sections.profile'),
+            href: profile(),
+            icon: UserRound,
+            visible: true,
+        },
         {
             label: t('settings.sections.accounts'),
             href: accounts(),

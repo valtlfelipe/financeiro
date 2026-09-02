@@ -2,19 +2,31 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     ChartNoAxesCombined,
+    ChevronDown,
     ListChecks,
     LogOut,
     Settings2,
+    UserRound,
     WifiOff,
 } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Toaster } from '@/components/ui/sonner';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { getInitials } from '@/composables/useInitials';
 import { useOnline } from '@/composables/useOnline';
 import { dashboard, logout } from '@/routes';
 import { index as settings } from '@/routes/accounts';
+import { edit as profile } from '@/routes/profile';
 import { index as transactions } from '@/routes/transactions';
 
 const { t } = useI18n();
@@ -112,24 +124,76 @@ function isNavigationItemActive(
                     </Link>
                 </nav>
 
-                <div class="ml-auto flex items-center gap-3">
-                    <span class="hidden text-right sm:block">
-                        <span class="block text-xs font-semibold">{{
-                            page.props.auth.user.name
-                        }}</span>
-                        <span class="text-muted-foreground block text-[11px]">{{
-                            page.props.auth.user.email
-                        }}</span>
-                    </span>
-                    <Link
-                        :href="logout()"
-                        method="post"
-                        as="button"
-                        class="bg-muted text-muted-foreground hover:text-foreground grid size-11 place-items-center rounded-full"
-                        :aria-label="t('common.navigation.logout')"
-                    >
-                        <LogOut class="size-4" aria-hidden="true" />
-                    </Link>
+                <div class="ml-auto shrink-0">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <button
+                                type="button"
+                                class="hover:bg-muted flex min-h-11 items-center gap-2 rounded-full p-1 pr-2 transition-colors"
+                                :aria-label="t('common.navigation.userMenu')"
+                            >
+                                <span
+                                    class="bg-primary/10 text-primary grid size-9 place-items-center rounded-full text-xs font-extrabold"
+                                    aria-hidden="true"
+                                >
+                                    {{ getInitials(page.props.auth.user.name) }}
+                                </span>
+                                <span
+                                    class="hidden max-w-32 truncate text-sm font-semibold lg:block"
+                                    >{{ page.props.auth.user.name }}</span
+                                >
+                                <ChevronDown
+                                    class="text-muted-foreground size-4"
+                                    aria-hidden="true"
+                                />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            align="end"
+                            class="w-64 max-w-[calc(100vw-2rem)] rounded-2xl p-2"
+                            :side-offset="8"
+                        >
+                            <DropdownMenuLabel class="px-3 py-2">
+                                <p class="truncate text-sm font-bold">
+                                    {{ page.props.auth.user.name }}
+                                </p>
+                                <p
+                                    class="text-muted-foreground mt-1 truncate text-xs font-normal"
+                                >
+                                    {{ page.props.auth.user.email }}
+                                </p>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                as-child
+                                class="min-h-11 rounded-xl px-3"
+                            >
+                                <Link :href="profile()">
+                                    <UserRound
+                                        class="size-4"
+                                        aria-hidden="true"
+                                    />{{ t('common.navigation.profile') }}
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                as-child
+                                class="min-h-11 rounded-xl px-3"
+                            >
+                                <Link
+                                    :href="logout()"
+                                    method="post"
+                                    as="button"
+                                    class="w-full"
+                                >
+                                    <LogOut
+                                        class="size-4"
+                                        aria-hidden="true"
+                                    />{{ t('common.navigation.logout') }}
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
         </header>

@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionSettlementController;
@@ -49,4 +50,6 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         ->middleware('throttle:10,1')->name('invitations.store');
     Route::get('settings/preferences', fn () => Inertia::render('settings/Preferences'))->name('preferences.edit');
     Route::patch('settings/locale', LocaleController::class)->name('locale.update');
+    Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
 });

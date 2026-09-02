@@ -26,6 +26,8 @@
             "overview": "Resumo",
             "transactions": "Lançamentos",
             "settings": "Ajustes",
+            "userMenu": "Menu do usuário",
+            "profile": "Editar perfil",
             "logout": "Sair"
         }
     }

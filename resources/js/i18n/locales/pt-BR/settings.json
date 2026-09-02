@@ -4,10 +4,18 @@
         "description": "Contas, categorias, pessoas e preferências da instalação.",
         "navigationLabel": "Seções de ajustes",
         "sections": {
+            "profile": "Meu perfil",
             "accounts": "Contas",
             "categories": "Categorias",
             "members": "Pessoas",
             "preferences": "Preferências"
+        },
+        "profile": {
+            "title": "Meu perfil",
+            "description": "Atualize seu nome e o e-mail usado para entrar.",
+            "name": "Nome",
+            "email": "E-mail",
+            "save": "Salvar perfil"
         },
         "language": {
             "title": "Idioma",
