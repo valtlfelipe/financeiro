@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { Languages, Tags, UserRound, Users, WalletCards } from '@lucide/vue';
+import { Settings2, Tags, UserRound, Users, WalletCards } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
@@ -42,7 +42,7 @@ const navigation = computed(() =>
         {
             label: t('settings.sections.preferences'),
             href: preferences(),
-            icon: Languages,
+            icon: Settings2,
             visible: true,
         },
     ].filter((item) => item.visible),

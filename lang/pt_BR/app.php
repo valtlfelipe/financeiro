@@ -38,6 +38,9 @@ return [
     'locale' => [
         'updated' => 'Idioma atualizado.',
     ],
+    'workspace' => [
+        'updated' => 'Nome do espaço atualizado.',
+    ],
     'recurring' => [
         'generated' => '{0} Nenhum lançamento criado.|{1} :count lançamento criado.|[2,*] :count lançamentos criados.',
     ],

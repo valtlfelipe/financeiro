@@ -1,61 +1,161 @@
 <script setup lang="ts">
-import { Form, Head, usePage } from '@inertiajs/vue3';
-import { Languages } from '@lucide/vue';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Settings2 } from '@lucide/vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { update } from '@/routes/locale';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { useOnline } from '@/composables/useOnline';
+import { update as updateLocale } from '@/routes/locale';
+import { update as updatePreferences } from '@/routes/preferences';
 
 const { t } = useI18n();
 const page = usePage();
+const online = useOnline();
+const isOwner = computed(() => page.props.workspace?.role === 'owner');
+const workspaceForm = useForm({
+    workspace_name: page.props.workspace?.name ?? '',
+});
+const languageForm = useForm({ locale: page.props.locale });
+
+function saveWorkspace(): void {
+    if (!isOwner.value || !online.value || workspaceForm.processing) return;
+    workspaceForm.patch(updatePreferences.url(), { preserveScroll: true });
+}
+
+function saveLanguage(): void {
+    if (!online.value || languageForm.processing) return;
+    languageForm.patch(updateLocale.url(), { preserveScroll: true });
+}
 </script>
 
 <template>
-    <Head :title="t('settings.language.title')" />
     <section
-        class="border-border/80 overflow-hidden rounded-3xl border bg-white"
+        class="border-border/80 bg-card overflow-hidden rounded-3xl border"
     >
+        <Head :title="t('settings.preferences.title')" />
         <header
             class="border-border/70 flex items-center gap-4 border-b p-5 sm:p-6"
         >
             <span
                 class="bg-primary/10 text-primary grid size-11 place-items-center rounded-2xl"
-                ><Languages class="size-5"
+                ><Settings2 class="size-5" aria-hidden="true"
             /></span>
             <div>
                 <h2 class="text-xl font-extrabold">
-                    {{ t('settings.language.title') }}
+                    {{ t('settings.preferences.title') }}
                 </h2>
                 <p class="text-muted-foreground mt-1 text-sm">
-                    {{ t('settings.language.description') }}
+                    {{ t('settings.preferences.description') }}
                 </p>
             </div>
         </header>
-        <Form
-            v-bind="update.form()"
-            v-slot="{ processing }"
-            class="grid gap-5 p-5 sm:p-6"
+        <form
+            class="border-border/70 grid gap-5 border-b p-5 sm:p-6"
+            @submit.prevent="saveWorkspace"
         >
+            <div>
+                <h3 class="text-sm font-bold">
+                    {{ t('settings.preferences.workspace') }}
+                </h3>
+                <p
+                    id="workspace_hint"
+                    class="text-muted-foreground mt-1 text-sm"
+                >
+                    {{ t('settings.preferences.workspaceHint') }}
+                </p>
+            </div>
+            <div class="grid max-w-md gap-2">
+                <Label for="workspace_name">{{
+                    t('settings.preferences.workspaceName')
+                }}</Label>
+                <Input
+                    id="workspace_name"
+                    v-model="workspaceForm.workspace_name"
+                    required
+                    maxlength="120"
+                    :readonly="!isOwner"
+                    :aria-invalid="!!workspaceForm.errors.workspace_name"
+                    aria-describedby="workspace_hint workspace_error"
+                />
+                <InputError
+                    id="workspace_error"
+                    :message="workspaceForm.errors.workspace_name"
+                />
+                <p v-if="!isOwner" class="text-muted-foreground text-xs">
+                    {{ t('settings.preferences.ownerOnly') }}
+                </p>
+            </div>
+            <Button
+                v-if="isOwner"
+                type="submit"
+                class="min-h-11 w-fit"
+                :disabled="workspaceForm.processing || !online"
+            >
+                {{
+                    workspaceForm.processing
+                        ? t('common.saving')
+                        : t('settings.preferences.saveWorkspace')
+                }}
+            </Button>
+        </form>
+        <form class="grid gap-5 p-5 sm:p-6" @submit.prevent="saveLanguage">
+            <div>
+                <h3 class="text-sm font-bold">
+                    {{ t('settings.language.title') }}
+                </h3>
+                <p
+                    id="language_hint"
+                    class="text-muted-foreground mt-1 text-sm"
+                >
+                    {{ t('settings.language.description') }}
+                </p>
+            </div>
             <div class="grid max-w-md gap-2">
                 <Label for="locale">{{ t('settings.language.label') }}</Label>
-                <select
-                    id="locale"
-                    name="locale"
-                    :value="page.props.locale"
-                    class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                <Select
+                    v-model="languageForm.locale"
+                    :disabled="languageForm.processing || !online"
                 >
-                    <option
-                        v-for="locale in page.props.supportedLocales"
-                        :key="locale.code"
-                        :value="locale.code"
-                    >
-                        {{ locale.name }}
-                    </option>
-                </select>
+                    <SelectTrigger
+                        id="locale"
+                        class="w-full"
+                        aria-describedby="language_hint locale_error"
+                        ><SelectValue
+                    /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem
+                            v-for="locale in page.props.supportedLocales"
+                            :key="locale.code"
+                            :value="locale.code"
+                            >{{ locale.name }}</SelectItem
+                        >
+                    </SelectContent>
+                </Select>
+                <InputError
+                    id="locale_error"
+                    :message="languageForm.errors.locale"
+                />
             </div>
-            <Button type="submit" class="w-fit" :disabled="processing">{{
-                t('common.save')
-            }}</Button>
-        </Form>
+            <Button
+                type="submit"
+                class="min-h-11 w-fit"
+                :disabled="languageForm.processing || !online"
+                >{{
+                    languageForm.processing
+                        ? t('common.saving')
+                        : t('settings.preferences.saveLanguage')
+                }}</Button
+            >
+        </form>
     </section>
 </template>
