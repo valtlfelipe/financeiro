@@ -1,23 +1,34 @@
 name: financeiro
 
+# Stack self-hosted para Portainer, Dockhand ou `docker compose`.
+# Não clona o repositório e não precisa de arquivo .env dentro do container.
+# Obrigatórias: APP_KEY e DB_PASSWORD.
+
 x-app: &app
   image: ${FINANCEIRO_IMAGE:-ghcr.io/valtlfelipe/financeiro:latest}
-  build:
-    context: .
-  env_file:
-    - .env
   environment:
+    APP_NAME: ${APP_NAME:-Financeiro}
     APP_ENV: production
-    APP_DEBUG: "false"
+    APP_KEY: ${APP_KEY:?Defina APP_KEY}
+    APP_DEBUG: ${APP_DEBUG:-false}
+    APP_URL: ${APP_URL:-http://localhost:8080}
+    APP_LOCALE: ${APP_LOCALE:-pt_BR}
+    APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-pt_BR}
     DB_CONNECTION: pgsql
     DB_HOST: db
     DB_PORT: 5432
     DB_DATABASE: ${DB_DATABASE:-financeiro}
     DB_USERNAME: ${DB_USERNAME:-financeiro}
-    DB_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env}
+    DB_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD}
     SESSION_DRIVER: database
     CACHE_STORE: database
     QUEUE_CONNECTION: database
+    LOG_CHANNEL: ${LOG_CHANNEL:-stack}
+    LOG_LEVEL: ${LOG_LEVEL:-error}
+    MAIL_MAILER: ${MAIL_MAILER:-log}
+    MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-financeiro@localhost}
+    MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Financeiro}
+    TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
   depends_on:
     db:
       condition: service_healthy
@@ -28,16 +39,25 @@ services:
     <<: *app
     ports:
       - "${APP_PORT:-8080}:80"
+    volumes:
+      - app_storage:/app/storage
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://localhost/up"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 45s
 
   scheduler:
     <<: *app
     command: ["php", "artisan", "schedule:work"]
+    volumes:
+      - app_storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_healthy
     healthcheck:
       disable: true
 
@@ -46,7 +66,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_DATABASE:-financeiro}
       POSTGRES_USER: ${DB_USERNAME:-financeiro}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -58,3 +78,4 @@ services:
 
 volumes:
   postgres_data:
+  app_storage:

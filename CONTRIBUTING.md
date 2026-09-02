@@ -1,6 +1,6 @@
 # Contribuindo
 
-Obrigado por melhorar o Financeiro.
+Obrigado por melhorar o Financeiro. A instalação self-hosted para quem só quer rodar o app está no [README](README.md).
 
 1. Abra uma issue curta antes de mudanças grandes de domínio ou interface.
 2. Crie uma branch focada e preserve o isolamento por `workspace_id`.

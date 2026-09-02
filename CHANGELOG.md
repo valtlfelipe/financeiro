@@ -4,6 +4,15 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+### Changed
+
+- README reescrito em pt-BR com instalação self-hosted em Docker Compose.
+- Stack Docker passa a ser só imagem + variáveis de ambiente, sem arquivo `.env` no container.
+
+### Added
+
+- Migração automática na subida do container e volume persistente de `storage`.
+
 ## [1.0.0] - 2026-09-02
 
 ### Added

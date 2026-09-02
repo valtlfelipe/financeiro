@@ -1,0 +1,9 @@
+services:
+  app:
+    build:
+      context: .
+    image: ${FINANCEIRO_IMAGE:-ghcr.io/valtlfelipe/financeiro:latest}
+  scheduler:
+    build:
+      context: .
+    image: ${FINANCEIRO_IMAGE:-ghcr.io/valtlfelipe/financeiro:latest}

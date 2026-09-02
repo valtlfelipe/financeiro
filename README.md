@@ -1,51 +1,152 @@
 # Financeiro
 
-Gerenciador financeiro pessoal open source, simples e self-hosted. O foco do v1 é responder duas perguntas sem atrito: o que está previsto para o mês e o que já recebeu o joinha de pago ou recebido.
+Gerenciador financeiro pessoal **open source**, feito para rodar **no seu servidor**. Os lançamentos não vão para a nuvem de ninguém.
 
-## O que já está incluído
+O app existe para responder duas perguntas, sem atrito: o que está previsto para o mês, e o que já recebeu o joinha de pago ou recebido.
 
-- primeiro proprietário criado em `/setup`, sem cadastro público depois disso;
-- espaços compartilhados com papéis de proprietário e membro;
-- contas e categorias arquiváveis;
-- receitas, despesas e transferências atômicas;
-- lançamentos recorrentes semanais, mensais e anuais;
-- parcelamentos mensais de 2 a 120 vezes, sem perder centavos;
-- estado pendente/realizado com joinha, atualização otimista e desfazer;
-- resumo mensal previsto e realizado;
-- PWA online-first, responsiva e com dados financeiros sempre network-only;
-- português brasileiro e infraestrutura completa de internacionalização;
-- imagem Docker com FrankenPHP, PostgreSQL 17 e scheduler, sem Redis.
+[![CI](https://github.com/valtlfelipe/financeiro/actions/workflows/ci.yml/badge.svg)](https://github.com/valtlfelipe/financeiro/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/valtlfelipe/financeiro)](https://github.com/valtlfelipe/financeiro/releases)
+[![Licença](https://img.shields.io/badge/licença-AGPL--3.0-blue.svg)](LICENSE)
 
-## Stack
+## Sumário
 
-Laravel 13, PHP 8.5, Inertia 3, Vue 3, TypeScript, Tailwind CSS 4, PostgreSQL 17 e FrankenPHP/Caddy.
+- [Para quem é](#para-quem-é)
+- [O que você consegue fazer](#o-que-você-consegue-fazer)
+- [Instalar no seu servidor](#instalar-no-seu-servidor)
+- [Atualizar](#atualizar)
+- [Backup e restauração](#backup-e-restauração)
+- [Desenvolvimento](#desenvolvimento)
+- [Contribuir](#contribuir)
+- [Licença](#licença)
 
-## Instalação com Docker Compose
+## Para quem é
 
-Pré-requisitos: Docker Engine com o plugin Compose.
+Para quem quer acompanhar o mês em casa, no NAS ou num VPS, sem fintech e sem planilha compartilhada.
+
+O Financeiro **não** conecta no seu banco. Você registra as contas, as categorias e os lançamentos. O primeiro usuário nasce em `/setup`; depois disso não existe cadastro público.
+
+## O que você consegue fazer
+
+- criar o proprietário e o primeiro espaço financeiro
+- convidar outras pessoas, com papéis de proprietário ou membro
+- organizar contas e categorias, inclusive arquivadas
+- lançar receitas, despesas e transferências, com valores em centavos
+- repetir lançamentos por semana, mês ou ano
+- parcelar de 2 a 120 vezes, sem perder centavos
+- marcar pendente ou realizado com joinha, e desfazer se clicar errado
+- ver o resumo do mês previsto e realizado
+- instalar como PWA; os dados financeiros sempre vêm da rede, nunca de cache local
+
+Idioma da interface: português brasileiro. A stack é Laravel 13, PHP 8.5, Inertia 3, Vue 3, PostgreSQL 17 e FrankenPHP. Não usa Redis.
+
+## Instalar no seu servidor
+
+Não precisa clonar o repositório nem de PHP na máquina. O Laravel em produção lê **variáveis de ambiente do processo** (Portainer, Dockhand ou o Compose). Não use um `.env` dentro do container.
+
+**Obrigatórias:** `APP_KEY` e `DB_PASSWORD`. Gere uma vez e **não troque** a `APP_KEY` depois, senão sessões e dados criptografados quebram.
 
 ```bash
-cp .env.example .env
-php -r "echo 'APP_KEY=base64:'.base64_encode(random_bytes(32)).PHP_EOL;"
+echo "base64:$(openssl rand -base64 32)"
+openssl rand -base64 18
 ```
 
-Copie o valor exibido para `APP_KEY` em `.env` e troque `DB_PASSWORD`. Depois:
+A primeira linha é a `APP_KEY`. A segunda, a `DB_PASSWORD`. Evite `$` na senha: o Compose trata `$` como interpolação.
+
+### Portainer ou Dockhand
+
+1. Crie uma stack / compose.
+2. Cole o conteúdo de [`compose.yaml`](compose.yaml) (ou baixe [o arquivo raw](https://raw.githubusercontent.com/valtlfelipe/financeiro/main/compose.yaml)).
+3. Defina as variáveis da stack:
+
+| Variável | Exemplo |
+| --- | --- |
+| `APP_KEY` | `base64:...` gerada acima |
+| `DB_PASSWORD` | senha gerada acima |
+| `APP_URL` | `http://192.168.1.10:8080` ou `https://financeiro.exemplo.com` |
+| `APP_PORT` | `8080` (porta no host) |
+| `FINANCEIRO_IMAGE` | `ghcr.io/valtlfelipe/financeiro:latest` (opcional) |
+| `TRUSTED_PROXIES` | redes do proxy, se houver |
+
+4. Faça o deploy.
+5. Abra `/setup` na URL e crie o proprietário.
+
+O container aplica as migrações sozinho na subida. O `scheduler` espera o `app` ficar saudável.
+
+### Docker Compose na linha de comando
+
+Baixe só o compose e exporte as variáveis (não precisa de arquivo `.env`):
 
 ```bash
+curl -fsSL -o compose.yaml https://raw.githubusercontent.com/valtlfelipe/financeiro/main/compose.yaml
+
+export APP_KEY='base64:cole-aqui'
+export DB_PASSWORD='cole-aqui'
+export APP_URL='http://localhost:8080'
+
 docker compose pull
-docker compose run --rm app php artisan migrate --force
 docker compose up -d
 ```
 
-A imagem publicada fica em `ghcr.io/valtlfelipe/financeiro`. Para construir a partir do Dockerfile, use `docker compose build` no lugar do `pull`.
+Se quiser um arquivo local só para o Compose interpolar `${VAR}` no YAML, rode `./scripts/init-env.sh` num clone. Esse `.env` não entra no container.
 
-Abra `http://localhost:8080/setup`, crie o proprietário e o primeiro espaço financeiro. Para mudar a porta, ajuste `APP_PORT` e `APP_URL`. Para fixar uma versão, use `FINANCEIRO_IMAGE=ghcr.io/valtlfelipe/financeiro:1.2.3`.
+Abra [http://localhost:8080/setup](http://localhost:8080/setup). Healthcheck: `/up`. Para parar: `docker compose down`. Os volumes `postgres_data` e `app_storage` permanecem; `docker compose down -v` apaga os dados.
 
-O serviço `scheduler` mantém doze meses de recorrências futuras. O healthcheck HTTP fica em `/up`. Em um proxy reverso, configure `APP_URL` e informe os endereços confiáveis em `TRUSTED_PROXIES`, separados por vírgula.
+### Variáveis que importam
 
-## Desenvolvimento local
+| Variável | Função |
+| --- | --- |
+| `APP_KEY` | Chave da aplicação. Obrigatória e estável. |
+| `APP_URL` | URL pública, com esquema. |
+| `APP_PORT` | Porta publicada no host. Padrão `8080`. |
+| `DB_PASSWORD` | Senha do PostgreSQL. Obrigatória. |
+| `DB_DATABASE` / `DB_USERNAME` | Padrão `financeiro`. |
+| `FINANCEIRO_IMAGE` | Imagem. Padrão `ghcr.io/valtlfelipe/financeiro:latest`. Pin: `ghcr.io/valtlfelipe/financeiro:1.0.0`. |
+| `TRUSTED_PROXIES` | IPs ou redes do proxy, separados por vírgula. |
+| `LOG_LEVEL` | Padrão `error`. |
+| `MAIL_MAILER` | Padrão `log`. |
 
-Requer PHP 8.5, Composer 2 e Node.js 24. PostgreSQL e Redis podem ficar somente no Docker; o Redis é opcional no v1 e fica disponível para futuras filas/cache.
+### Atrás de um proxy reverso
+
+Coloque HTTPS na frente da porta `8080` e defina:
+
+```env
+APP_URL=https://financeiro.exemplo.com
+TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+```
+
+Ajuste `TRUSTED_PROXIES` para o endereço real do proxy, se ele não estiver nessas redes.
+
+## Atualizar
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+As migrações rodam de novo na subida, de forma idempotente. Faça backup antes de atualizar em produção.
+
+## Backup e restauração
+
+Num clone com Compose, o dump vai para `./backups`, fora do volume do PostgreSQL:
+
+```bash
+scripts/backup.sh
+scripts/backup.sh /caminho/externo/financeiro
+```
+
+No Portainer, use o console do container `db` com `pg_dump -Fc` (mesmo formato) e baixe o arquivo.
+
+O arquivo é um archive custom do `pg_dump`, próprio para `pg_restore`. A restauração apaga os objetos atuais do banco e por isso pede um sinal explícito:
+
+```bash
+scripts/restore.sh /caminho/financeiro-20260901T120000Z.dump --yes
+```
+
+Restaure só de arquivos confiáveis. Para validar sem risco, restaure numa instalação nova e vazia.
+
+## Desenvolvimento
+
+Para contribuir com código, o Laravel e o Vite rodam na máquina. O Compose sobe só a infraestrutura. Requer PHP 8.5, Composer 2 e Node.js 24. Redis é opcional nesta versão.
 
 ```bash
 cp .env.development.example .env
@@ -58,9 +159,9 @@ php artisan migrate
 composer dev
 ```
 
-Nesse modo, Laravel e Vite rodam diretamente na máquina (`http://localhost:8000`) e o Compose fornece apenas os serviços de infraestrutura. O PostgreSQL fica exposto em `127.0.0.1:5433` para evitar conflito com uma instalação local; altere `DEV_DB_PORT` se necessário. Para desligar os serviços, use `docker compose -f compose.dev.yaml down`.
+A app fica em `http://localhost:8000`. O PostgreSQL de desenvolvimento escuta em `127.0.0.1:5433` (`DEV_DB_PORT` se precisar). Para desligar: `docker compose -f compose.dev.yaml down`.
 
-Verificações completas:
+Verificações:
 
 ```bash
 vendor/bin/pint --test
@@ -69,44 +170,14 @@ php artisan test --compact
 npm run ci
 ```
 
-## Backup e restauração
+Novas strings da interface entram nos catálogos, nunca soltas no Vue ou no PHP. Veja [docs/localization.md](docs/localization.md).
 
-O backup padrão é criado em `./backups`, fora do volume PostgreSQL:
+## Contribuir
 
-```bash
-scripts/backup.sh
-scripts/backup.sh /caminho/externo/financeiro
-```
+Leia [CONTRIBUTING.md](CONTRIBUTING.md) antes de abrir um pull request e [SECURITY.md](SECURITY.md) para reportar vulnerabilidades.
 
-O resultado é um archive custom do `pg_dump`, próprio para `pg_restore`. A restauração limpa os objetos atuais do banco configurado e por isso exige um sinal explícito:
-
-```bash
-scripts/restore.sh /caminho/financeiro-20260901T120000Z.dump --yes
-```
-
-Faça restore somente de arquivos confiáveis. Para validar sem risco, restaure em uma instalação nova e vazia. O PostgreSQL documenta que archives podem executar instruções presentes no dump durante a restauração.
-
-## Idiomas
-
-Nenhuma string de interface nova deve ser escrita diretamente em componentes. Veja [docs/localization.md](docs/localization.md) para adicionar um idioma e executar a verificação de completude.
-
-## Publicar uma versão
-
-1. Mova as entradas de `[Unreleased]` em [CHANGELOG.md](CHANGELOG.md) para `## [x.y.z] - AAAA-MM-DD`.
-2. Faça o merge em `main` com o CI verde.
-3. Crie e envie a tag:
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-O workflow `Release` constrói `linux/amd64` e `linux/arm64`, publica em `ghcr.io/valtlfelipe/financeiro` (`1.0.0`, `1.0`, `1` e `latest`) e abre o GitHub Release. Tags com sufixo (`v1.0.0-rc.1`) saem como pré-release. Um rebuild manual usa `workflow_dispatch`. Na primeira publicação, se o `pull` pedir login, torne o pacote público em GitHub → Packages.
-
-## Segurança e contribuições
-
-Leia [SECURITY.md](SECURITY.md) para reportar vulnerabilidades e [CONTRIBUTING.md](CONTRIBUTING.md) antes de enviar mudanças.
+Bugs e ideias vão em [issues](https://github.com/valtlfelipe/financeiro/issues). Issues curtas ajudam antes de mudanças grandes de domínio ou de interface. Preservar o isolamento por `workspace_id` é regra.
 
 ## Licença
 
-Copyright (C) 2026 contributors. Distribuído sob a [GNU Affero General Public License v3.0](LICENSE). Modificações oferecidas por rede devem disponibilizar o código-fonte correspondente conforme a licença.
+Copyright (C) 2026 contributors. Distribuído sob a [GNU Affero General Public License v3.0](LICENSE). Se você modificar o Financeiro e oferecer a versão alterada em rede, precisa disponibilizar o código-fonte correspondente.
