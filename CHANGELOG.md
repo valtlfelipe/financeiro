@@ -4,6 +4,15 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-09-02
+
+### Changed
+
+- Ícone próprio do Financeiro aplicado ao cabeçalho, às telas de acesso, ao favicon e aos ícones de instalação no celular.
+- Cache dos ícones atualizado para substituir a identidade visual anterior.
+- Screenshot do README atualizado com o novo ícone e uma conta de demonstração com dados fictícios, com a imagem versionada no repositório.
+- Convenções de commits e branches em inglês documentadas nas regras do projeto.
+
 ## [1.0.3] - 2026-09-02
 
 ### Fixed
@@ -55,7 +64,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/valtlfelipe/financeiro/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/valtlfelipe/financeiro/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/valtlfelipe/financeiro/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/valtlfelipe/financeiro/compare/v1.0.0...v1.0.1
