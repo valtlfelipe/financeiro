@@ -12,6 +12,7 @@ import {
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import UserAppearanceMenu from '@/components/UserAppearanceMenu.vue';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,6 +22,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Toaster } from '@/components/ui/sonner';
+import { useAppearance } from '@/composables/useAppearance';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { getInitials } from '@/composables/useInitials';
 import { useOnline } from '@/composables/useOnline';
@@ -33,6 +35,7 @@ const { t } = useI18n();
 const page = usePage();
 const { currentUrl, isCurrentOrParentUrl } = useCurrentUrl();
 const online = useOnline();
+const { resolvedAppearance } = useAppearance();
 const workspaceName = computed(
     () => page.props.workspace?.name ?? t('common.appName'),
 );
@@ -71,14 +74,14 @@ function isNavigationItemActive(
         <div
             v-if="!online"
             role="status"
-            class="bg-foreground px-4 py-2 text-center text-sm text-white"
+            class="bg-foreground text-background px-4 py-2 text-center text-sm"
         >
             <WifiOff class="mr-2 inline size-4" aria-hidden="true" />
             {{ t('common.offline') }}
         </div>
 
         <header
-            class="border-border/80 sticky top-0 z-30 border-b bg-white/95 backdrop-blur"
+            class="border-border/80 bg-card/95 sticky top-0 z-30 border-b backdrop-blur"
         >
             <div
                 class="mx-auto flex h-16 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8"
@@ -176,6 +179,8 @@ function isNavigationItemActive(
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
+                            <UserAppearanceMenu />
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 as-child
                                 class="min-h-11 rounded-xl px-3"
@@ -205,7 +210,7 @@ function isNavigationItemActive(
         </main>
 
         <nav
-            class="border-border fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t bg-white px-2 pb-[env(safe-area-inset-bottom)] md:hidden"
+            class="border-border bg-card fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t px-2 pb-[env(safe-area-inset-bottom)] md:hidden"
             :aria-label="t('common.navigation.primary')"
         >
             <Link
@@ -220,6 +225,6 @@ function isNavigationItemActive(
             </Link>
         </nav>
 
-        <Toaster position="top-right" rich-colors />
+        <Toaster position="top-right" rich-colors :theme="resolvedAppearance" />
     </div>
 </template>

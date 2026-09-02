@@ -140,6 +140,7 @@
 }
 
 .dark {
+    color-scheme: dark;
     --background: #17201b;
     --foreground: #edf3ef;
     --card: #202b24;

@@ -60,7 +60,7 @@ function submit(): void {
 
 <template>
     <section
-        class="border-border/80 overflow-hidden rounded-3xl border bg-white"
+        class="border-border/80 bg-card overflow-hidden rounded-3xl border"
     >
         <Head :title="t('finance.accounts.title')" />
         <header
@@ -117,7 +117,7 @@ function submit(): void {
                 ><select
                     id="account_type"
                     v-model="form.type"
-                    class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
                 >
                     <option
                         v-for="type in ['checking', 'savings', 'cash', 'other']"

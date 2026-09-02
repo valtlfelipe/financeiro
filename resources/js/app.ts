@@ -1,5 +1,6 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import type { App as VueApp } from 'vue';
+import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -7,6 +8,8 @@ import { initializeFlashToast } from '@/lib/flashToast';
 import { formatPageTitle } from '@/lib/product';
 import { createAppI18n, type LocaleCode } from '@/i18n';
 import '@/pwa';
+
+initializeTheme();
 
 void createInertiaApp({
     title: formatPageTitle,

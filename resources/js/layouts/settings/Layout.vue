@@ -69,9 +69,9 @@ const navigation = computed(() =>
                     v-for="item in navigation"
                     :key="item.label"
                     :href="item.href"
-                    class="text-muted-foreground hover:text-foreground flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors hover:bg-white"
+                    class="text-muted-foreground hover:text-foreground hover:bg-card flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors"
                     :class="{
-                        'text-primary bg-white shadow-sm': isCurrentUrl(
+                        'text-primary bg-card shadow-sm': isCurrentUrl(
                             item.href,
                         ),
                     }"

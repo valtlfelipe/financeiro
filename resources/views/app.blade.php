@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-appearance="{{ $appearance ?? 'system' }}" @class(['dark' => ($appearance ?? 'system') === 'dark'])>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,12 +7,26 @@
         <meta name="description" content="{{ __('app.meta.description') }}">
         <link rel="manifest" href="/manifest.webmanifest">
 
-        {{-- The v1 visual language is intentionally light-first. Keep the root
-             background stable before the app bundle loads as well. --}}
+        <script>
+            (() => {
+                let appearance = document.documentElement.dataset.appearance;
+                try {
+                    const saved = localStorage.getItem('appearance');
+                    if (['light', 'dark', 'system'].includes(saved)) appearance = saved;
+                } catch {}
+                document.documentElement.classList.toggle('dark',
+                    appearance === 'dark' ||
+                    (appearance !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches));
+            })();
+        </script>
         <style>
             html {
                 background-color: #f3f5f2;
                 color-scheme: light;
+            }
+            html.dark {
+                background-color: #17201b;
+                color-scheme: dark;
             }
         </style>
 

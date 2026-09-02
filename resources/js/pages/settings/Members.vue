@@ -33,7 +33,7 @@ async function copyLink(url: string): Promise<void> {
 <template>
     <Head :title="t('settings.members.title')" />
     <section
-        class="border-border/80 overflow-hidden rounded-3xl border bg-white"
+        class="border-border/80 bg-card overflow-hidden rounded-3xl border"
     >
         <header
             class="border-border/70 flex items-center gap-4 border-b p-5 sm:p-6"
@@ -115,7 +115,7 @@ async function copyLink(url: string): Promise<void> {
                 class="flex items-center gap-4 px-5 py-4 sm:px-6"
             >
                 <span
-                    class="bg-foreground grid size-10 place-items-center rounded-full text-sm font-extrabold text-white"
+                    class="bg-foreground text-background grid size-10 place-items-center rounded-full text-sm font-extrabold"
                     >{{ member.name.slice(0, 1).toUpperCase() }}</span
                 >
                 <div class="min-w-0 flex-1">

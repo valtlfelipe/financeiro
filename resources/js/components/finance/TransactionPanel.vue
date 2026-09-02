@@ -76,7 +76,7 @@ function remove(): void {
 
 <template>
     <Sheet :open="open" @update:open="emit('update:open', $event)">
-        <SheetContent class="w-full overflow-y-auto bg-white p-0 sm:max-w-xl">
+        <SheetContent class="bg-card w-full overflow-y-auto p-0 sm:max-w-xl">
             <div class="border-border border-b px-5 py-5 sm:px-7">
                 <SheetHeader class="pr-8 text-left">
                     <SheetTitle class="text-xl font-extrabold tracking-tight">
@@ -272,7 +272,7 @@ function remove(): void {
                     <select
                         id="delete_scope"
                         v-model="deleteScope"
-                        class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                        class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
                     >
                         <option value="single">
                             {{ t('finance.transactions.series.onlyThis') }}

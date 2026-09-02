@@ -50,7 +50,7 @@ const items = computed(() => [
         <article
             v-for="item in items"
             :key="item.label"
-            class="border-border/80 rounded-2xl border bg-white p-4 sm:p-5"
+            class="border-border/80 bg-card rounded-2xl border p-4 sm:p-5"
         >
             <div class="flex items-center justify-between gap-3">
                 <p

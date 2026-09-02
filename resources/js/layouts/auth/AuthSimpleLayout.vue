@@ -17,7 +17,7 @@ defineProps<{
         class="bg-background flex min-h-svh flex-col items-center justify-center p-5 md:p-10"
     >
         <div
-            class="border-border/80 w-full max-w-md rounded-3xl border bg-white p-6 shadow-[0_24px_70px_-40px_rgba(32,37,34,0.45)] sm:p-9"
+            class="border-border/80 bg-card w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_-40px_rgba(32,37,34,0.45)] sm:p-9"
         >
             <div class="flex flex-col gap-7">
                 <div class="flex flex-col items-center gap-4">

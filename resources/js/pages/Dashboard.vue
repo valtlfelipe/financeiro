@@ -65,7 +65,7 @@ function updateTransaction(item: Transaction): void {
             </div>
             <Link
                 :href="transactions({ query: { month } })"
-                class="bg-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-white"
+                class="bg-primary text-primary-foreground inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold"
             >
                 {{ t('finance.overview.viewAll') }}<ArrowRight class="size-4" />
             </Link>
@@ -75,7 +75,7 @@ function updateTransaction(item: Transaction): void {
             class="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(17rem,0.65fr)]"
         >
             <section
-                class="border-border/80 overflow-hidden rounded-3xl border bg-white"
+                class="border-border/80 bg-card overflow-hidden rounded-3xl border"
             >
                 <header class="border-border/70 border-b px-5 py-5">
                     <h2 class="text-lg font-extrabold tracking-tight">
@@ -102,7 +102,9 @@ function updateTransaction(item: Transaction): void {
                 </div>
             </section>
 
-            <aside class="bg-foreground rounded-3xl p-6 text-white">
+            <aside
+                class="bg-foreground text-background dark:bg-card dark:text-card-foreground dark:border-border rounded-3xl border border-transparent p-6"
+            >
                 <div class="flex items-center gap-3">
                     <span
                         class="grid size-10 place-items-center rounded-2xl bg-white/10"

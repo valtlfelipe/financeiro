@@ -187,8 +187,8 @@ function submit(): void {
                 class="min-h-11 rounded-xl border px-2 text-xs font-bold transition-colors"
                 :class="
                     form.type === type
-                        ? 'border-primary bg-primary text-white'
-                        : 'border-border text-muted-foreground bg-white'
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border text-muted-foreground bg-card'
                 "
                 :aria-pressed="form.type === type"
                 @click="form.type = type"
@@ -208,8 +208,8 @@ function submit(): void {
                             class="min-h-11 rounded-xl border px-2 text-xs font-bold transition-colors aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
                             :class="
                                 form.type === 'transfer'
-                                    ? 'border-primary bg-primary text-white'
-                                    : 'border-border text-muted-foreground bg-white'
+                                    ? 'border-primary bg-primary text-primary-foreground'
+                                    : 'border-border text-muted-foreground bg-card'
                             "
                             :aria-disabled="!canTransfer"
                             :aria-pressed="form.type === 'transfer'"
@@ -282,7 +282,7 @@ function submit(): void {
                 <select
                     id="account_id"
                     v-model="form.account_id"
-                    class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
                     required
                 >
                     <option
@@ -302,7 +302,7 @@ function submit(): void {
                 <select
                     id="destination_account_id"
                     v-model="form.destination_account_id"
-                    class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
                     required
                 >
                     <option value="" disabled>{{ t('common.select') }}</option>
@@ -325,7 +325,7 @@ function submit(): void {
                 <select
                     id="category_id"
                     v-model="form.category_id"
-                    class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
                     :class="{
                         'text-muted-foreground': form.category_id === '',
                     }"
@@ -361,7 +361,7 @@ function submit(): void {
                 <select
                     id="series_kind"
                     v-model="form.series_kind"
-                    class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
                 >
                     <option value="">
                         {{ t('finance.transactions.series.single') }}
@@ -387,7 +387,7 @@ function submit(): void {
                 <select
                     id="frequency"
                     v-model="form.frequency"
-                    class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
                 >
                     <option value="weekly">
                         {{ t('finance.transactions.series.weekly') }}
@@ -468,7 +468,7 @@ function submit(): void {
             <select
                 id="scope"
                 v-model="form.scope"
-                class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
             >
                 <option value="single">
                     {{ t('finance.transactions.series.onlyThis') }}
@@ -490,7 +490,7 @@ function submit(): void {
                 id="notes"
                 v-model="form.notes"
                 rows="3"
-                class="border-input rounded-xl border bg-white px-3 py-2 text-sm"
+                class="border-input bg-card rounded-xl border px-3 py-2 text-sm"
                 :placeholder="t('finance.transactions.form.notesPlaceholder')"
             />
             <InputError :message="form.errors.notes" />

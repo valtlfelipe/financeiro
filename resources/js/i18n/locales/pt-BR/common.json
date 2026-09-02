@@ -22,6 +22,12 @@
         "offline": "Você está sem conexão. As alterações ficam indisponíveis até a internet voltar.",
         "empty": "Nada por aqui ainda.",
         "error": "Não foi possível concluir. Tente novamente.",
+        "appearance": {
+            "title": "Aparência",
+            "light": "Claro",
+            "dark": "Escuro",
+            "system": "Sistema"
+        },
         "navigation": {
             "primary": "Navegação principal",
             "overview": "Resumo",
