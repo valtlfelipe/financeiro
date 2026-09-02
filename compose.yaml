@@ -7,13 +7,10 @@ name: financeiro
 x-app: &app
   image: ${FINANCEIRO_IMAGE:-ghcr.io/valtlfelipe/financeiro:latest}
   environment:
-    APP_NAME: ${APP_NAME:-Financeiro}
     APP_ENV: production
     APP_KEY: ${APP_KEY:?Defina APP_KEY}
     APP_DEBUG: ${APP_DEBUG:-false}
     APP_URL: ${APP_URL:-http://localhost:8080}
-    APP_LOCALE: ${APP_LOCALE:-pt_BR}
-    APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-pt_BR}
     DB_CONNECTION: pgsql
     DB_HOST: db
     DB_PORT: 5432
@@ -27,7 +24,6 @@ x-app: &app
     LOG_LEVEL: ${LOG_LEVEL:-error}
     MAIL_MAILER: ${MAIL_MAILER:-log}
     MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-financeiro@localhost}
-    MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Financeiro}
     TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
   depends_on:
     db:

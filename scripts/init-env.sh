@@ -1,5 +1,6 @@
 #!/bin/sh
 set -eu
+umask 077
 
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$project_dir"
@@ -13,6 +14,7 @@ if [ ! -f .env ]; then
     cp .env.example .env
     echo "Criado .env a partir de .env.example."
 fi
+chmod 600 .env
 
 env_value() {
     awk -v name="$1" '
@@ -52,10 +54,9 @@ fi
 
 db_password=$(env_value DB_PASSWORD)
 if [ -z "$db_password" ] || [ "$db_password" = "troque-esta-senha" ]; then
-    generated=$(openssl rand -base64 18 | tr -d '\n/+=')
+    generated=$(openssl rand -hex 24)
     env_set DB_PASSWORD "$generated"
-    echo "DB_PASSWORD gerada: $generated"
-    echo "Guarde essa senha. Ela também está no arquivo .env."
+    echo "DB_PASSWORD gerada e salva no .env."
 fi
 
 echo "Ambiente pronto. O arquivo .env só interpola o Compose; o container lê as mesmas variáveis do processo."
