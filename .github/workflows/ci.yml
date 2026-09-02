@@ -25,6 +25,7 @@ jobs:
       - run: npm install --ignore-scripts
       - run: cp .env.example .env
       - run: php artisan key:generate
+      - run: php artisan wayfinder:generate --with-form --no-interaction
       - run: vendor/bin/pint --test
       - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
       - run: npm run ci
