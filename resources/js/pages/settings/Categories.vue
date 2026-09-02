@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { Archive, Plus, Tags } from '@lucide/vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputError from '@/components/InputError.vue';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useOnline } from '@/composables/useOnline';
+import { randomColor } from '@/lib/colors';
 import { destroy, store } from '@/routes/categories';
 import type { Category } from '@/types';
 
@@ -27,6 +28,9 @@ const form = useForm({
     type: 'expense',
     color: '#C84D57',
     icon: 'tag',
+});
+watch(showForm, (open) => {
+    if (open) form.color = randomColor(form.color);
 });
 function submit(): void {
     form.post(store.url(), {

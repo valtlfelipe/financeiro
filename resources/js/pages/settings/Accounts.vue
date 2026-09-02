@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { Archive, Plus, WalletCards } from '@lucide/vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputError from '@/components/InputError.vue';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
 import { useOnline } from '@/composables/useOnline';
+import { randomColor } from '@/lib/colors';
 import { formatMinorForInput, parseMoneyInputToMinor } from '@/lib/money-input';
 import { destroy, store } from '@/routes/accounts';
 import type { Account } from '@/types';
@@ -35,6 +36,10 @@ const form = useForm({
     balance_date: new Date().toISOString().slice(0, 10),
     color: '#148A62',
     icon: 'wallet-cards',
+});
+
+watch(showForm, (open) => {
+    if (open) form.color = randomColor(form.color);
 });
 
 function submit(): void {
