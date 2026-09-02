@@ -15,6 +15,8 @@
         "transactions": {
             "title": "Lançamentos",
             "subtitle": "Um mês inteiro, com cada pendência no lugar.",
+            "monthSummaryHint": "Totais do mês inteiro, independentemente dos filtros.",
+            "listTitle": "Lançamentos do mês",
             "new": "Novo lançamento",
             "previousMonth": "Mês anterior",
             "nextMonth": "Próximo mês",
@@ -92,6 +94,10 @@
                 "pending": "Lançamento voltou para pendente."
             },
             "filters": {
+                "scopeHint": "Busca e filtros se aplicam apenas à lista abaixo.",
+                "clear": "Limpar filtros",
+                "emptyTitle": "Nenhum lançamento encontrado",
+                "emptyDescription": "Tente outra busca ou limpe os filtros para ver os lançamentos deste mês.",
                 "type": "Tipo",
                 "status": "Status",
                 "account": "Conta",

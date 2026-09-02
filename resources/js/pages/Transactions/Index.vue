@@ -8,6 +8,14 @@ import TransactionPanel from '@/components/finance/TransactionPanel.vue';
 import TransactionRow from '@/components/finance/TransactionRow.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
 import { index } from '@/routes/transactions';
 import type { Account, Category, MonthlySummary, Transaction } from '@/types';
@@ -35,6 +43,64 @@ const filterState = reactive({
     type: props.filters.type ?? '',
     status: props.filters.status ?? '',
 });
+const hasFilters = computed(() => Object.values(props.filters).some(Boolean));
+const activeFilterCount = computed(
+    () =>
+        Object.entries(props.filters).filter(
+            ([key, value]) => key !== 'search' && value,
+        ).length,
+);
+const filterOptions = computed(() => [
+    {
+        key: 'type' as const,
+        label: t('finance.transactions.filters.type'),
+        all: t('finance.transactions.filters.allTypes'),
+        options: ['income', 'expense', 'transfer'].map((value) => ({
+            value,
+            label: t(`finance.transactions.type.${value}`),
+        })),
+    },
+    {
+        key: 'status' as const,
+        label: t('finance.transactions.filters.status'),
+        all: t('finance.transactions.filters.allStatuses'),
+        options: ['pending', 'settled'].map((value) => ({
+            value,
+            label: t(`finance.transactions.status.${value}`),
+        })),
+    },
+    {
+        key: 'account_id' as const,
+        label: t('finance.transactions.filters.account'),
+        all: t('finance.transactions.filters.allAccounts'),
+        options: props.accounts.map((account) => ({
+            value: String(account.id),
+            label: account.name,
+        })),
+    },
+    {
+        key: 'category_id' as const,
+        label: t('finance.transactions.filters.category'),
+        all: t('finance.transactions.filters.allCategories'),
+        options: props.categories.map((category) => ({
+            value: String(category.id),
+            label: category.name,
+        })),
+    },
+]);
+
+watch(
+    () => props.filters,
+    (filters) => {
+        Object.assign(filterState, {
+            search: filters.search ?? '',
+            account_id: filters.account_id ?? '',
+            category_id: filters.category_id ?? '',
+            type: filters.type ?? '',
+            status: filters.status ?? '',
+        });
+    },
+);
 const selected = computed(
     () => items.value.find((item) => item.id === selectedId.value) ?? null,
 );
@@ -85,6 +151,17 @@ function applyFilters(): void {
     );
 }
 
+function clearFilters(): void {
+    Object.assign(filterState, {
+        search: '',
+        account_id: '',
+        category_id: '',
+        type: '',
+        status: '',
+    });
+    applyFilters();
+}
+
 function openCreate(): void {
     selectedId.value = null;
     panelMode.value = 'create';
@@ -110,9 +187,8 @@ function updateTransaction(
 </script>
 
 <template>
-    <Head :title="t('finance.transactions.title')" />
-
-    <section class="grid gap-6">
+    <section class="grid gap-7">
+        <Head :title="t('finance.transactions.title')" />
         <header class="flex flex-wrap items-center gap-3">
             <div class="mr-auto">
                 <h1 class="text-3xl font-extrabold tracking-tight">
@@ -122,165 +198,182 @@ function updateTransaction(
                     {{ t('finance.transactions.subtitle') }}
                 </p>
             </div>
-            <Button size="lg" class="gap-2" @click="openCreate"
-                ><Plus class="size-4" />{{
+            <Button size="lg" class="min-h-11 gap-2" @click="openCreate">
+                <Plus class="size-4" aria-hidden="true" />{{
                     t('finance.transactions.new')
-                }}</Button
-            >
+                }}
+            </Button>
         </header>
 
-        <SummaryGrid :summary="summaryState" />
-
-        <section
-            class="border-border/80 overflow-hidden rounded-3xl border bg-white"
-        >
-            <header class="border-border/70 grid gap-4 border-b p-4 sm:p-5">
+        <section aria-labelledby="month_heading" class="grid gap-4">
+            <header
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+            >
                 <div
-                    class="grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 sm:mx-auto sm:w-96"
+                    class="border-border/80 bg-card grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-1 rounded-2xl border p-1 sm:w-80"
                 >
-                    <Link
-                        :href="
-                            index({
-                                query: {
-                                    month: shiftedMonth(-1),
-                                    ...filterState,
-                                },
-                            })
-                        "
-                        class="hover:bg-muted grid size-11 place-items-center rounded-xl"
-                        :aria-label="t('finance.transactions.previousMonth')"
-                        ><ChevronLeft class="size-5"
-                    /></Link>
-                    <h2 class="text-center text-base font-extrabold capitalize">
+                    <Button variant="ghost" class="size-11 rounded-xl" as-child>
+                        <Link
+                            :href="
+                                index({
+                                    query: {
+                                        ...props.filters,
+                                        month: shiftedMonth(-1),
+                                    },
+                                })
+                            "
+                            :aria-label="
+                                t('finance.transactions.previousMonth')
+                            "
+                        >
+                            <ChevronLeft class="size-5" aria-hidden="true" />
+                        </Link>
+                    </Button>
+                    <h2
+                        id="month_heading"
+                        class="text-center text-base font-extrabold capitalize"
+                        aria-live="polite"
+                    >
                         {{ formatMonth(month) }}
                     </h2>
-                    <Link
-                        :href="
-                            index({
-                                query: {
-                                    month: shiftedMonth(1),
-                                    ...filterState,
-                                },
-                            })
-                        "
-                        class="hover:bg-muted grid size-11 place-items-center rounded-xl"
-                        :aria-label="t('finance.transactions.nextMonth')"
-                        ><ChevronRight class="size-5"
-                    /></Link>
+                    <Button variant="ghost" class="size-11 rounded-xl" as-child>
+                        <Link
+                            :href="
+                                index({
+                                    query: {
+                                        ...props.filters,
+                                        month: shiftedMonth(1),
+                                    },
+                                })
+                            "
+                            :aria-label="t('finance.transactions.nextMonth')"
+                        >
+                            <ChevronRight class="size-5" aria-hidden="true" />
+                        </Link>
+                    </Button>
                 </div>
+                <p class="text-muted-foreground text-sm">
+                    {{ t('finance.transactions.monthSummaryHint') }}
+                </p>
+            </header>
+            <SummaryGrid :summary="summaryState" />
+        </section>
 
+        <section
+            class="border-border/80 bg-card overflow-hidden rounded-3xl border"
+            aria-labelledby="transaction_list_heading"
+        >
+            <header class="border-border/70 grid gap-4 border-b p-4 sm:p-5">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2
+                            id="transaction_list_heading"
+                            class="text-lg font-extrabold"
+                        >
+                            {{ t('finance.transactions.listTitle') }}
+                        </h2>
+                        <p class="text-muted-foreground mt-1 text-sm">
+                            {{ t('finance.transactions.filters.scopeHint') }}
+                        </p>
+                    </div>
+                    <Button
+                        v-if="hasFilters"
+                        variant="ghost"
+                        class="min-h-11"
+                        @click="clearFilters"
+                        >{{ t('finance.transactions.filters.clear') }}</Button
+                    >
+                </div>
                 <form
                     class="grid gap-3 sm:grid-cols-[1fr_auto]"
+                    role="search"
+                    :aria-label="t('finance.transactions.listTitle')"
                     @submit.prevent="applyFilters"
                 >
-                    <button type="submit" class="sr-only">
-                        {{ t('common.search') }}
-                    </button>
-                    <div class="relative">
-                        <Search
-                            class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
-                            aria-hidden="true"
-                        />
-                        <Input
-                            v-model="filterState.search"
-                            class="bg-muted h-11 rounded-xl pl-10"
-                            :placeholder="
-                                t('finance.transactions.searchPlaceholder')
-                            "
-                            @keydown.enter.prevent="applyFilters"
-                        />
+                    <div class="flex gap-2">
+                        <div class="relative min-w-0 flex-1">
+                            <Label for="transaction_search" class="sr-only">{{
+                                t('common.search')
+                            }}</Label>
+                            <Search
+                                class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+                                aria-hidden="true"
+                            />
+                            <Input
+                                id="transaction_search"
+                                v-model="filterState.search"
+                                type="search"
+                                class="bg-muted h-11 rounded-xl pl-10"
+                                :placeholder="
+                                    t('finance.transactions.searchPlaceholder')
+                                "
+                            />
+                        </div>
+                        <Button
+                            type="submit"
+                            variant="secondary"
+                            class="min-h-11"
+                            >{{ t('common.search') }}</Button
+                        >
                     </div>
                     <Button
                         type="button"
                         variant="outline"
                         class="h-11 gap-2"
+                        :aria-expanded="filtersOpen"
+                        aria-controls="transaction_filters"
                         @click="filtersOpen = !filtersOpen"
-                        ><Filter class="size-4" />{{
-                            t('common.filters')
-                        }}</Button
                     >
+                        <Filter class="size-4" aria-hidden="true" />{{
+                            t('common.filters')
+                        }}
+                        <span
+                            v-if="activeFilterCount"
+                            class="bg-primary/10 text-primary grid size-5 place-items-center rounded-full text-xs"
+                            >{{ activeFilterCount }}</span
+                        >
+                    </Button>
                     <div
                         v-if="filtersOpen"
-                        class="grid gap-2 sm:col-span-2 sm:grid-cols-4"
+                        id="transaction_filters"
+                        class="border-border/70 grid gap-4 border-t pt-4 sm:col-span-2 sm:grid-cols-2 lg:grid-cols-4"
                     >
-                        <select
-                            v-model="filterState.type"
-                            class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
+                        <div
+                            v-for="filter in filterOptions"
+                            :key="filter.key"
+                            class="grid min-w-0 gap-2"
                         >
-                            <option value="">
-                                {{ t('finance.transactions.filters.allTypes') }}
-                            </option>
-                            <option
-                                v-for="type in [
-                                    'income',
-                                    'expense',
-                                    'transfer',
-                                ]"
-                                :key="type"
-                                :value="type"
+                            <Label :for="`filter_${filter.key}`">{{
+                                filter.label
+                            }}</Label>
+                            <Select
+                                :model-value="filterState[filter.key] || 'all'"
+                                @update:model-value="
+                                    filterState[filter.key] =
+                                        $event === 'all' ? '' : String($event)
+                                "
                             >
-                                {{ t(`finance.transactions.type.${type}`) }}
-                            </option>
-                        </select>
-                        <select
-                            v-model="filterState.status"
-                            class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
-                        >
-                            <option value="">
-                                {{
-                                    t(
-                                        'finance.transactions.filters.allStatuses',
-                                    )
-                                }}
-                            </option>
-                            <option value="pending">
-                                {{ t('finance.transactions.status.pending') }}
-                            </option>
-                            <option value="settled">
-                                {{ t('finance.transactions.status.settled') }}
-                            </option>
-                        </select>
-                        <select
-                            v-model="filterState.account_id"
-                            class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
-                        >
-                            <option value="">
-                                {{
-                                    t(
-                                        'finance.transactions.filters.allAccounts',
-                                    )
-                                }}
-                            </option>
-                            <option
-                                v-for="account in accounts"
-                                :key="account.id"
-                                :value="String(account.id)"
-                            >
-                                {{ account.name }}
-                            </option>
-                        </select>
-                        <select
-                            v-model="filterState.category_id"
-                            class="border-input h-11 rounded-xl border bg-white px-3 text-sm"
-                        >
-                            <option value="">
-                                {{
-                                    t(
-                                        'finance.transactions.filters.allCategories',
-                                    )
-                                }}
-                            </option>
-                            <option
-                                v-for="category in categories"
-                                :key="category.id"
-                                :value="String(category.id)"
-                            >
-                                {{ category.name }}
-                            </option>
-                        </select>
+                                <SelectTrigger
+                                    :id="`filter_${filter.key}`"
+                                    class="w-full min-w-0"
+                                    ><SelectValue
+                                /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{{
+                                        filter.all
+                                    }}</SelectItem>
+                                    <SelectItem
+                                        v-for="option in filter.options"
+                                        :key="option.value"
+                                        :value="option.value"
+                                        >{{ option.label }}</SelectItem
+                                    >
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <Button
                             type="submit"
-                            class="sm:col-span-4 sm:justify-self-end"
+                            class="min-h-11 sm:col-span-2 sm:justify-self-end lg:col-span-4"
                             >{{
                                 t('finance.transactions.filters.apply')
                             }}</Button
@@ -311,33 +404,58 @@ function updateTransaction(
                     />
                 </section>
             </div>
-            <div v-else class="grid place-items-center px-6 py-20 text-center">
+            <div v-else class="grid place-items-center px-6 py-16 text-center">
                 <div class="max-w-sm">
                     <span
                         class="bg-primary/10 text-primary mx-auto grid size-14 place-items-center rounded-2xl"
-                        ><Plus class="size-6"
-                    /></span>
-                    <h2 class="mt-5 text-xl font-extrabold">
-                        {{ t('finance.transactions.emptyTitle') }}
-                    </h2>
+                    >
+                        <Search
+                            v-if="hasFilters"
+                            class="size-6"
+                            aria-hidden="true"
+                        />
+                        <Plus v-else class="size-6" aria-hidden="true" />
+                    </span>
+                    <h3 class="mt-5 text-xl font-extrabold">
+                        {{
+                            t(
+                                hasFilters
+                                    ? 'finance.transactions.filters.emptyTitle'
+                                    : 'finance.transactions.emptyTitle',
+                            )
+                        }}
+                    </h3>
                     <p class="text-muted-foreground mt-2 text-sm leading-6">
-                        {{ t('finance.transactions.emptyDescription') }}
+                        {{
+                            t(
+                                hasFilters
+                                    ? 'finance.transactions.filters.emptyDescription'
+                                    : 'finance.transactions.emptyDescription',
+                            )
+                        }}
                     </p>
-                    <Button class="mt-5" @click="openCreate">{{
+                    <Button
+                        v-if="hasFilters"
+                        variant="outline"
+                        class="mt-5 min-h-11"
+                        @click="clearFilters"
+                        >{{ t('finance.transactions.filters.clear') }}</Button
+                    >
+                    <Button v-else class="mt-5 min-h-11" @click="openCreate">{{
                         t('finance.transactions.new')
                     }}</Button>
                 </div>
             </div>
         </section>
-    </section>
 
-    <TransactionPanel
-        v-model:open="panelOpen"
-        v-model:mode="panelMode"
-        :transaction="selected"
-        :accounts="accounts"
-        :categories="categories"
-        :default-due-on="defaultDueOn"
-        @transaction-update="updateTransaction"
-    />
+        <TransactionPanel
+            v-model:open="panelOpen"
+            v-model:mode="panelMode"
+            :transaction="selected"
+            :accounts="accounts"
+            :categories="categories"
+            :default-due-on="defaultDueOn"
+            @transaction-update="updateTransaction"
+        />
+    </section>
 </template>
