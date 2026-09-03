@@ -16,3 +16,6 @@ When creating a branch, use a short English description in lowercase kebab-case 
 
 ## Keep Vue type checking compatible during dependency upgrades
 The TypeScript dependency uses Microsoft's @typescript/typescript6 compatibility alias because vue-tsc embeds the legacy compiler API; TypeScript 7 cannot currently replace it. Before changing the alias, verify support in the installed vue-tsc and run npm run types:check without disabling checks or adding forced overrides. Keep @types/node aligned with the Node major used in Docker and CI, not npm's latest major.
+
+## Reuse the dedicated local QA account
+For local Financeiro UI and end-to-end checks, reuse the existing dedicated test account qa-financeiro@example.test (Teste UX Revisado) and its fictional QA workspace. The user has authorized using this account autonomously: first reuse an authenticated session or retrieve its previously established test credentials from authorized task context instead of routinely asking the user to sign in or provide them again. Never use personal/production accounts, reset real users' credentials, or record passwords/tokens in committed rules. Follow applicable tool security requirements and state any mandatory handoff explicitly.
