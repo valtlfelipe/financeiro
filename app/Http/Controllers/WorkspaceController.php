@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Actions\CreateWorkspace;
+use App\Actions\DeleteWorkspace;
 use App\CurrentWorkspace;
+use App\Http\Requests\DeleteWorkspaceRequest;
 use App\Http\Requests\StoreWorkspaceRequest;
 use App\Http\Requests\SwitchWorkspaceRequest;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +36,23 @@ class WorkspaceController extends Controller
         $currentWorkspace->select($request, $workspace);
         Inertia::clearHistory();
         Inertia::flash('toast', ['type' => 'success', 'message' => __('app.workspace.switched')]);
+
+        return to_route('dashboard');
+    }
+
+    public function destroy(
+        DeleteWorkspaceRequest $request,
+        DeleteWorkspace $deleteWorkspace,
+        CurrentWorkspace $currentWorkspace,
+    ): RedirectResponse {
+        $nextWorkspace = $deleteWorkspace->handle(
+            $request->user(),
+            $request->user()->currentWorkspaceOrFail(),
+        );
+        $currentWorkspace->select($request, $nextWorkspace);
+
+        Inertia::clearHistory();
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('app.workspace.deleted')]);
 
         return to_route('dashboard');
     }

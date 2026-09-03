@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { Settings2 } from '@lucide/vue';
-import { computed } from 'vue';
+import { Settings2, Trash2 } from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,15 +18,26 @@ import {
 import { useOnline } from '@/composables/useOnline';
 import { update as updateLocale } from '@/routes/locale';
 import { update as updatePreferences } from '@/routes/preferences';
+import { destroy as destroyWorkspace } from '@/routes/workspaces';
 
 const { t } = useI18n();
 const page = usePage();
 const online = useOnline();
 const isOwner = computed(() => page.props.workspace?.role === 'owner');
+const canDeleteWorkspace = computed(
+    () => isOwner.value && page.props.workspaces.length > 1,
+);
+const deleteOpen = ref(false);
 const workspaceForm = useForm({
     workspace_name: page.props.workspace?.name ?? '',
 });
 const languageForm = useForm({ locale: page.props.locale });
+const deleteForm = useForm({ confirmation: '' });
+
+watch(deleteOpen, (open) => {
+    if (!open) deleteForm.reset();
+    deleteForm.clearErrors();
+});
 
 function saveWorkspace(): void {
     if (!isOwner.value || !online.value || workspaceForm.processing) return;
@@ -35,6 +47,23 @@ function saveWorkspace(): void {
 function saveLanguage(): void {
     if (!online.value || languageForm.processing) return;
     languageForm.patch(updateLocale.url(), { preserveScroll: true });
+}
+
+function deleteWorkspace(): void {
+    if (
+        !canDeleteWorkspace.value ||
+        !online.value ||
+        deleteForm.processing ||
+        deleteForm.confirmation !== page.props.workspace?.name
+    ) {
+        return;
+    }
+
+    deleteForm.delete(destroyWorkspace.url(), {
+        preserveScroll: false,
+        preserveState: false,
+        replace: true,
+    });
 }
 </script>
 
@@ -108,7 +137,10 @@ function saveLanguage(): void {
                 }}
             </Button>
         </form>
-        <form class="grid gap-5 p-5 sm:p-6" @submit.prevent="saveLanguage">
+        <form
+            class="border-border/70 grid gap-5 border-b p-5 sm:p-6"
+            @submit.prevent="saveLanguage"
+        >
             <div>
                 <h3 class="text-sm font-bold">
                     {{ t('settings.language.title') }}
@@ -157,5 +189,100 @@ function saveLanguage(): void {
                 }}</Button
             >
         </form>
+
+        <section
+            v-if="isOwner"
+            class="bg-destructive/5 grid gap-5 p-5 sm:p-6"
+            aria-labelledby="delete_workspace_title"
+        >
+            <div>
+                <h3
+                    id="delete_workspace_title"
+                    class="text-destructive text-sm font-bold"
+                >
+                    {{ t('settings.preferences.deleteWorkspace.title') }}
+                </h3>
+                <p class="text-muted-foreground mt-1 max-w-2xl text-sm">
+                    {{
+                        t('settings.preferences.deleteWorkspace.description', {
+                            name: page.props.workspace?.name,
+                        })
+                    }}
+                </p>
+            </div>
+
+            <div>
+                <ConfirmationDialog
+                    v-model:open="deleteOpen"
+                    :title="
+                        t('settings.preferences.deleteWorkspace.confirmTitle')
+                    "
+                    :description="
+                        t(
+                            'settings.preferences.deleteWorkspace.confirmDescription',
+                            { name: page.props.workspace?.name },
+                        )
+                    "
+                    :resource-name="page.props.workspace?.name"
+                    :confirm-label="
+                        t('settings.preferences.deleteWorkspace.action')
+                    "
+                    :processing="deleteForm.processing"
+                    :disabled="
+                        !online ||
+                        !canDeleteWorkspace ||
+                        deleteForm.confirmation !== page.props.workspace?.name
+                    "
+                    :error="deleteForm.errors.confirmation"
+                    destructive
+                    @confirm="deleteWorkspace"
+                >
+                    <template #trigger>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            class="min-h-11 gap-2"
+                            :disabled="
+                                !online ||
+                                !canDeleteWorkspace ||
+                                deleteForm.processing
+                            "
+                        >
+                            <Trash2 class="size-4" aria-hidden="true" />
+                            {{
+                                t('settings.preferences.deleteWorkspace.action')
+                            }}
+                        </Button>
+                    </template>
+
+                    <div class="grid gap-2">
+                        <Label for="workspace_confirmation">
+                            {{
+                                t(
+                                    'settings.preferences.deleteWorkspace.confirmLabel',
+                                    { name: page.props.workspace?.name },
+                                )
+                            }}
+                        </Label>
+                        <Input
+                            id="workspace_confirmation"
+                            v-model="deleteForm.confirmation"
+                            autocomplete="off"
+                            :placeholder="page.props.workspace?.name"
+                            :disabled="deleteForm.processing"
+                            :aria-invalid="!!deleteForm.errors.confirmation"
+                        />
+                    </div>
+                </ConfirmationDialog>
+                <p
+                    v-if="!canDeleteWorkspace"
+                    class="text-muted-foreground mt-2 text-xs"
+                >
+                    {{
+                        t('settings.preferences.deleteWorkspace.lastWorkspace')
+                    }}
+                </p>
+            </div>
+        </section>
     </section>
 </template>

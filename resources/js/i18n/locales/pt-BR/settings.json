@@ -40,7 +40,16 @@
             "workspaceHint": "Este nome aparece para todas as pessoas do espaço.",
             "ownerOnly": "Apenas o proprietário pode renomear o espaço.",
             "saveWorkspace": "Salvar nome do espaço",
-            "saveLanguage": "Salvar idioma"
+            "saveLanguage": "Salvar idioma",
+            "deleteWorkspace": {
+                "title": "Apagar espaço",
+                "description": "Apague “{name}” e todos os dados financeiros, categorias, contas, convites e acessos vinculados a ele.",
+                "action": "Apagar espaço",
+                "confirmTitle": "Apagar este espaço definitivamente?",
+                "confirmDescription": "Esta ação apaga “{name}” e todo o seu conteúdo. Não será possível recuperar os dados.",
+                "confirmLabel": "Digite {name} para confirmar",
+                "lastWorkspace": "Crie ou participe de outro espaço antes de apagar este. O último espaço da sua conta precisa ser mantido."
+            }
         },
         "members": {
             "title": "Pessoas",

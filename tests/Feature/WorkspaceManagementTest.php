@@ -67,6 +67,66 @@ test('workspace creation validates the name', function (array $payload) {
     'too long' => [['workspace_name' => str_repeat('a', 121)]],
 ]);
 
+test('an owner can permanently delete the current workspace and continue in another one', function () {
+    [$owner, $workspace] = ownerWithWorkspace();
+    $nextWorkspace = Workspace::factory()->create(['name' => 'Próximo espaço']);
+    $nextWorkspace->addOwner($owner);
+    $account = Account::factory()->for($workspace)->create();
+    $transaction = Transaction::factory()->for($workspace)->for($account)->create();
+
+    $this->actingAs($owner)
+        ->withSession([CurrentWorkspace::SESSION_KEY => $workspace->id])
+        ->delete(route('workspaces.destroy'), ['confirmation' => $workspace->name])
+        ->assertRedirect(route('dashboard'))
+        ->assertSessionHas(CurrentWorkspace::SESSION_KEY, $nextWorkspace->id);
+
+    $this->assertModelMissing($workspace);
+    $this->assertModelMissing($account);
+    $this->assertModelMissing($transaction);
+    expect($owner->refresh()->current_workspace_id)->toBe($nextWorkspace->id);
+});
+
+test('the last workspace cannot be deleted', function () {
+    [$owner, $workspace] = ownerWithWorkspace();
+
+    $this->actingAs($owner)
+        ->delete(route('workspaces.destroy'), ['confirmation' => $workspace->name])
+        ->assertSessionHasErrors('confirmation');
+
+    $this->assertModelExists($workspace);
+    expect($owner->refresh()->current_workspace_id)->toBe($workspace->id);
+});
+
+test('workspace deletion requires its exact name', function () {
+    [$owner, $workspace] = ownerWithWorkspace();
+    $otherWorkspace = Workspace::factory()->create();
+    $otherWorkspace->addOwner($owner);
+
+    $this->actingAs($owner)
+        ->delete(route('workspaces.destroy'), ['confirmation' => 'nome diferente'])
+        ->assertSessionHasErrors('confirmation');
+
+    $this->assertModelExists($workspace);
+});
+
+test('members cannot delete a workspace', function () {
+    [, $workspace] = ownerWithWorkspace();
+    $member = User::factory()->create(['current_workspace_id' => $workspace->id]);
+    Membership::factory()->create([
+        'workspace_id' => $workspace->id,
+        'user_id' => $member->id,
+        'role' => MembershipRole::Member,
+    ]);
+    $otherWorkspace = Workspace::factory()->create();
+    $otherWorkspace->addOwner($member);
+
+    $this->actingAs($member)
+        ->delete(route('workspaces.destroy'), ['confirmation' => $workspace->name])
+        ->assertForbidden();
+
+    $this->assertModelExists($workspace);
+});
+
 test('a user can switch to any workspace they belong to', function (MembershipRole $role) {
     [$user, $currentWorkspace] = ownerWithWorkspace();
     $targetWorkspace = Workspace::factory()->create(['name' => 'Destino']);

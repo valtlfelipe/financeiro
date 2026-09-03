@@ -34,6 +34,7 @@ Route::post('invitations/{token}', [InvitationController::class, 'accept'])
 Route::middleware(['auth', 'workspace', 'workspace.context'])->group(function () {
     Route::post('workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
     Route::patch('workspaces/current', [WorkspaceController::class, 'update'])->name('workspaces.switch');
+    Route::delete('workspaces/current', [WorkspaceController::class, 'destroy'])->name('workspaces.destroy');
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
