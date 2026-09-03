@@ -13,6 +13,7 @@ class PreferenceController extends Controller
     {
         $request->user()->currentWorkspaceOrFail()->update([
             'name' => $request->validated('workspace_name'),
+            'icon' => $request->validated('icon'),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('app.workspace.updated')]);

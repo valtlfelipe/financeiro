@@ -31,11 +31,22 @@
             "createTitle": "Novo espaço",
             "createDescription": "Comece com uma conta principal e categorias básicas.",
             "name": "Nome do espaço",
+            "icon": "Ícone do espaço",
             "namePlaceholder": "Ex.: Trabalho",
             "creating": "Criando…",
             "discardTitle": "Descartar alterações?",
             "discardDescription": "As alterações não salvas serão perdidas ao trocar para {workspace}.",
-            "discardAction": "Descartar e trocar"
+            "discardAction": "Descartar e trocar",
+            "icons": {
+                "house": "Casa",
+                "building-2": "Empresa",
+                "briefcase-business": "Trabalho",
+                "users-round": "Família",
+                "heart-handshake": "Compartilhado",
+                "piggy-bank": "Economias",
+                "plane": "Viagem",
+                "graduation-cap": "Estudos"
+            }
         },
         "appearance": {
             "title": "Aparência",

@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
+import WorkspaceIconPicker from '@/components/WorkspaceIconPicker.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/setup';
+import type { WorkspaceIconName } from '@/lib/workspace-icons';
 
 const { t } = useI18n();
+const workspaceIcon = ref<WorkspaceIconName>('house');
 </script>
 
 <template>
@@ -52,6 +56,17 @@ const { t } = useI18n();
                 :placeholder="t('auth.setup.workspacePlaceholder')"
             />
             <InputError :message="errors.workspace_name" />
+        </div>
+        <div class="grid gap-2">
+            <Label id="setup_workspace_icon_label">{{
+                t('common.workspace.icon')
+            }}</Label>
+            <WorkspaceIconPicker
+                v-model="workspaceIcon"
+                label-id="setup_workspace_icon_label"
+                :disabled="processing"
+            />
+            <InputError :message="errors.icon" />
         </div>
         <div class="grid gap-2">
             <Label for="email">{{ t('auth.fields.email') }}</Label>

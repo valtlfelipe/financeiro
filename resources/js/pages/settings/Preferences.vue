@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputError from '@/components/InputError.vue';
+import WorkspaceIconPicker from '@/components/WorkspaceIconPicker.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +20,7 @@ import { useOnline } from '@/composables/useOnline';
 import { update as updateLocale } from '@/routes/locale';
 import { update as updatePreferences } from '@/routes/preferences';
 import { destroy as destroyWorkspace } from '@/routes/workspaces';
+import type { WorkspaceIconName } from '@/lib/workspace-icons';
 
 const { t } = useI18n();
 const page = usePage();
@@ -30,6 +32,7 @@ const canDeleteWorkspace = computed(
 const deleteOpen = ref(false);
 const workspaceForm = useForm({
     workspace_name: page.props.workspace?.name ?? '',
+    icon: (page.props.workspace?.icon ?? 'house') as WorkspaceIconName,
 });
 const languageForm = useForm({ locale: page.props.locale });
 const deleteForm = useForm({ confirmation: '' });
@@ -123,6 +126,17 @@ function deleteWorkspace(): void {
                 <p v-if="!isOwner" class="text-muted-foreground text-xs">
                     {{ t('settings.preferences.ownerOnly') }}
                 </p>
+            </div>
+            <div class="grid max-w-md gap-2">
+                <Label id="workspace_icon_label">{{
+                    t('settings.preferences.workspaceIcon')
+                }}</Label>
+                <WorkspaceIconPicker
+                    v-model="workspaceForm.icon"
+                    label-id="workspace_icon_label"
+                    :disabled="!isOwner || workspaceForm.processing || !online"
+                />
+                <InputError :message="workspaceForm.errors.icon" />
             </div>
             <Button
                 v-if="isOwner"

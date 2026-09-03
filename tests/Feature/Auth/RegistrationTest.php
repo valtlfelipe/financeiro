@@ -18,6 +18,7 @@ test('the first visit creates the only public owner account', function () {
     $this->post(route('setup.store'), [
         'name' => 'Felipe',
         'workspace_name' => 'Casa',
+        'icon' => 'house',
         'email' => 'felipe@example.com',
         'password' => 'senha-segura-123',
         'password_confirmation' => 'senha-segura-123',

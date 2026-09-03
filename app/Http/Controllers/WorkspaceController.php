@@ -8,6 +8,7 @@ use App\CurrentWorkspace;
 use App\Http\Requests\DeleteWorkspaceRequest;
 use App\Http\Requests\StoreWorkspaceRequest;
 use App\Http\Requests\SwitchWorkspaceRequest;
+use App\WorkspaceIcon;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 
@@ -18,6 +19,7 @@ class WorkspaceController extends Controller
         $workspace = $createWorkspace->handle(
             $request->user(),
             $request->string('workspace_name')->toString(),
+            WorkspaceIcon::from($request->string('icon')->toString()),
         );
         $currentWorkspace->select($request, $workspace);
 

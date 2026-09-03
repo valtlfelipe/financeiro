@@ -63,7 +63,7 @@ class HandleInertiaRequests extends Middleware
         ];
     }
 
-    /** @return array{id: int, name: string, currency: string, timezone: string, role: string}|null */
+    /** @return array{id: int, name: string, icon: string, currency: string, timezone: string, role: string}|null */
     private function workspace(?User $user): ?array
     {
         $workspace = $user?->currentWorkspace;
@@ -77,13 +77,14 @@ class HandleInertiaRequests extends Middleware
         return [
             'id' => $workspace->id,
             'name' => $workspace->name,
+            'icon' => $workspace->icon,
             'currency' => $workspace->currency_code,
             'timezone' => $workspace->timezone,
             'role' => $this->roleValue($role),
         ];
     }
 
-    /** @return list<array{id: int, name: string, role: string}> */
+    /** @return list<array{id: int, name: string, icon: string, role: string}> */
     private function workspaces(?User $user): array
     {
         if ($user === null) {
@@ -102,6 +103,7 @@ class HandleInertiaRequests extends Middleware
             $result[] = [
                 'id' => $workspace->id,
                 'name' => $workspace->name,
+                'icon' => $workspace->icon,
                 'role' => $this->roleValue($role),
             ];
         }

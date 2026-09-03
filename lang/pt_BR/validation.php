@@ -38,6 +38,7 @@ return [
     'attributes' => [
         'name' => 'nome',
         'workspace_name' => 'nome do espaço',
+        'icon' => 'ícone',
         'confirmation' => 'confirmação',
         'email' => 'e-mail',
         'password' => 'senha',

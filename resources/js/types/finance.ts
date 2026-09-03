@@ -1,12 +1,13 @@
 export type Workspace = {
     id: number;
     name: string;
+    icon: string;
     currency: string;
     timezone: string;
     role: 'owner' | 'member';
 };
 
-export type WorkspaceOption = Pick<Workspace, 'id' | 'name' | 'role'>;
+export type WorkspaceOption = Pick<Workspace, 'id' | 'name' | 'icon' | 'role'>;
 
 export type Account = {
     id: number;

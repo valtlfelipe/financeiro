@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useForm, usePage } from '@inertiajs/vue3';
-import { Building2, Check, ChevronsUpDown, Plus } from '@lucide/vue';
+import { Check, ChevronsUpDown, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputError from '@/components/InputError.vue';
+import WorkspaceIconPicker from '@/components/WorkspaceIconPicker.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -29,6 +30,7 @@ import {
     workspaceNavigationBusy,
     workspacePageDirty,
 } from '@/lib/workspaceContext';
+import { workspaceIcon, type WorkspaceIconName } from '@/lib/workspace-icons';
 import { store, switchMethod } from '@/routes/workspaces';
 import type { WorkspaceOption } from '@/types';
 
@@ -39,7 +41,10 @@ const createOpen = ref(false);
 const discardOpen = ref(false);
 const pendingWorkspace = ref<WorkspaceOption | null>(null);
 const currentWorkspace = computed(() => page.props.workspace);
-const createForm = useForm({ workspace_name: '' });
+const createForm = useForm({
+    workspace_name: '',
+    icon: 'house' as WorkspaceIconName,
+});
 const switchForm = useForm({ workspace_id: page.props.workspace?.id ?? 0 });
 
 function switchWorkspace(workspace: WorkspaceOption): void {
@@ -111,6 +116,15 @@ function createWorkspace(): void {
                 class="hover:bg-muted flex max-w-48 min-w-0 items-center gap-1.5 rounded-xl px-2 py-1 text-left transition-colors sm:max-w-64"
                 :aria-label="t('common.workspace.menu')"
             >
+                <span
+                    class="bg-primary/10 text-primary grid size-8 shrink-0 place-items-center rounded-lg"
+                >
+                    <component
+                        :is="workspaceIcon(currentWorkspace?.icon)"
+                        class="size-4"
+                        aria-hidden="true"
+                    />
+                </span>
                 <span class="min-w-0">
                     <span
                         class="block truncate text-sm font-extrabold tracking-tight"
@@ -144,7 +158,15 @@ function createWorkspace(): void {
                 :disabled="workspaceNavigationBusy || !online"
                 @select="switchWorkspace(workspace)"
             >
-                <Building2 class="size-4 shrink-0" aria-hidden="true" />
+                <span
+                    class="bg-muted text-muted-foreground grid size-8 shrink-0 place-items-center rounded-lg"
+                >
+                    <component
+                        :is="workspaceIcon(workspace.icon)"
+                        class="size-4"
+                        aria-hidden="true"
+                    />
+                </span>
                 <span class="min-w-0 flex-1">
                     <span class="block truncate font-semibold">{{
                         workspace.name
@@ -199,6 +221,17 @@ function createWorkspace(): void {
                         autofocus
                     />
                     <InputError :message="createForm.errors.workspace_name" />
+                </div>
+                <div class="grid gap-2">
+                    <Label id="new_workspace_icon_label">{{
+                        t('common.workspace.icon')
+                    }}</Label>
+                    <WorkspaceIconPicker
+                        v-model="createForm.icon"
+                        label-id="new_workspace_icon_label"
+                        :disabled="createForm.processing"
+                    />
+                    <InputError :message="createForm.errors.icon" />
                 </div>
                 <DialogFooter>
                     <Button

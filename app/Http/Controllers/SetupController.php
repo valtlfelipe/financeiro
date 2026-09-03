@@ -6,6 +6,7 @@ use App\Actions\CreateWorkspace;
 use App\CurrentWorkspace;
 use App\Http\Requests\SetupRequest;
 use App\Models\User;
+use App\WorkspaceIcon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +34,11 @@ class SetupController extends Controller
                 'locale' => config('locales.default'),
             ]);
 
-            $workspace = $createWorkspace->handle($user, $request->string('workspace_name')->toString());
+            $workspace = $createWorkspace->handle(
+                $user,
+                $request->string('workspace_name')->toString(),
+                WorkspaceIcon::from($request->string('icon')->toString()),
+            );
 
             $user->update(['current_workspace_id' => $workspace->id]);
 

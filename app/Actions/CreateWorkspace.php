@@ -6,15 +6,17 @@ use App\AccountType;
 use App\CategoryType;
 use App\Models\User;
 use App\Models\Workspace;
+use App\WorkspaceIcon;
 use Illuminate\Support\Facades\DB;
 
 class CreateWorkspace
 {
-    public function handle(User $owner, string $name): Workspace
+    public function handle(User $owner, string $name, WorkspaceIcon $icon): Workspace
     {
-        return DB::transaction(function () use ($owner, $name): Workspace {
+        return DB::transaction(function () use ($owner, $name, $icon): Workspace {
             $workspace = Workspace::query()->create([
                 'name' => $name,
+                'icon' => $icon,
                 'currency_code' => 'BRL',
                 'timezone' => 'America/Sao_Paulo',
             ]);

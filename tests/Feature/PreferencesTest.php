@@ -2,6 +2,7 @@
 
 use App\MembershipRole;
 use App\Models\User;
+use App\WorkspaceIcon;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('owners can rename their current workspace without changing other settings', function () {
@@ -10,19 +11,37 @@ test('owners can rename their current workspace without changing other settings'
 
     $this->actingAs($user)->patch(route('preferences.update'), [
         'workspace_name' => 'Casa e família',
+        'icon' => WorkspaceIcon::Family->value,
         'workspace_id' => $otherWorkspace->id,
         'currency_code' => 'USD',
         'locale' => 'xx',
     ])->assertSessionHasNoErrors()->assertRedirect(route('preferences.edit'));
 
-    $this->assertDatabaseHas('workspaces', ['id' => $workspace->id, 'name' => 'Casa e família', 'currency_code' => $workspace->currency_code]);
+    $this->assertDatabaseHas('workspaces', [
+        'id' => $workspace->id,
+        'name' => 'Casa e família',
+        'icon' => WorkspaceIcon::Family->value,
+        'currency_code' => $workspace->currency_code,
+    ]);
     $this->assertDatabaseHas('workspaces', ['id' => $otherWorkspace->id, 'name' => $otherWorkspace->name]);
     $this->assertDatabaseHas('users', ['id' => $user->id, 'locale' => $user->locale]);
     $this->actingAs($user->fresh())->get(route('preferences.edit'))->assertInertia(fn (Assert $page) => $page
         ->component('settings/Preferences')
         ->where('workspace.name', 'Casa e família')
+        ->where('workspace.icon', WorkspaceIcon::Family->value)
         ->where('locale', $user->locale)
         ->has('supportedLocales'));
+});
+
+test('workspace preferences reject icons outside the curated set', function () {
+    [$user, $workspace] = ownerWithWorkspace();
+
+    $this->actingAs($user)->patch(route('preferences.update'), [
+        'workspace_name' => $workspace->name,
+        'icon' => 'custom-svg',
+    ])->assertSessionHasErrors('icon');
+
+    expect($workspace->refresh()->icon)->toBe('house');
 });
 
 test('members may change language but may not rename the shared workspace', function () {

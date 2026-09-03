@@ -19,6 +19,7 @@ class WorkspaceFactory extends Factory
     {
         return [
             'name' => fake()->words(2, true),
+            'icon' => 'house',
             'currency_code' => 'BRL',
             'timezone' => 'America/Sao_Paulo',
         ];

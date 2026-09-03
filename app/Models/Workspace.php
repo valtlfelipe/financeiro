@@ -14,6 +14,7 @@ use Illuminate\Support\Collection;
 /**
  * @property int $id
  * @property string $name
+ * @property string $icon
  * @property string $currency_code
  * @property string $timezone
  * @property Carbon|null $created_at
@@ -30,7 +31,7 @@ class Workspace extends Model
     /** @use HasFactory<WorkspaceFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'currency_code', 'timezone'];
+    protected $fillable = ['name', 'icon', 'currency_code', 'timezone'];
 
     /** @return BelongsToMany<User, $this> */
     public function users(): BelongsToMany

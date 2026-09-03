@@ -3,8 +3,10 @@
 namespace App\Http\Requests;
 
 use App\MembershipRole;
+use App\WorkspaceIcon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreWorkspaceRequest extends FormRequest
 {
@@ -27,6 +29,7 @@ class StoreWorkspaceRequest extends FormRequest
     {
         return [
             'workspace_name' => ['required', 'string', 'max:120'],
+            'icon' => ['required', Rule::enum(WorkspaceIcon::class)],
         ];
     }
 }

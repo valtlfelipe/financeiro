@@ -7,6 +7,7 @@ use App\Models\Membership;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Workspace;
+use App\WorkspaceIcon;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('an owner can create and select a workspace with the default financial structure', function () {
@@ -20,12 +21,16 @@ test('an owner can create and select a workspace with the default financial stru
 
     $response = $this->actingAs($owner)
         ->withSession([CurrentWorkspace::SESSION_KEY => $sharedWorkspace->id])
-        ->post(route('workspaces.store'), ['workspace_name' => 'Empresa']);
+        ->post(route('workspaces.store'), [
+            'workspace_name' => 'Empresa',
+            'icon' => WorkspaceIcon::Briefcase->value,
+        ]);
 
     $response->assertRedirect(route('dashboard'));
 
     $workspace = Workspace::query()->where('name', 'Empresa')->firstOrFail();
-    expect($workspace->currency_code)->toBe('BRL')
+    expect($workspace->icon)->toBe(WorkspaceIcon::Briefcase->value)
+        ->and($workspace->currency_code)->toBe('BRL')
         ->and($workspace->timezone)->toBe('America/Sao_Paulo')
         ->and($workspace->accounts)->toHaveCount(1)
         ->and($workspace->accounts->sole()->initial_balance_minor)->toBe(0)
@@ -66,6 +71,17 @@ test('workspace creation validates the name', function (array $payload) {
     'missing' => [[]],
     'too long' => [['workspace_name' => str_repeat('a', 121)]],
 ]);
+
+test('workspace creation rejects icons outside the curated set', function () {
+    [$owner] = ownerWithWorkspace();
+
+    $this->actingAs($owner)->post(route('workspaces.store'), [
+        'workspace_name' => 'Empresa',
+        'icon' => 'uploaded-logo',
+    ])->assertSessionHasErrors('icon');
+
+    $this->assertDatabaseMissing('workspaces', ['name' => 'Empresa']);
+});
 
 test('an owner can permanently delete the current workspace and continue in another one', function () {
     [$owner, $workspace] = ownerWithWorkspace();
@@ -173,8 +189,10 @@ test('the session selection wins over the saved preference and drives shared pro
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('workspace.id', $sessionWorkspace->id)
+            ->where('workspace.icon', $sessionWorkspace->icon)
             ->where('workspace.role', MembershipRole::Member->value)
             ->has('workspaces', 2)
+            ->where('workspaces.0.icon', fn (string $icon): bool => in_array($icon, array_column(WorkspaceIcon::cases(), 'value'), true))
             ->where('canCreateWorkspace', true));
 
     expect($user->refresh()->current_workspace_id)->toBe($savedWorkspace->id);

@@ -47,7 +47,7 @@ return [
     'workspace' => [
         'created' => 'Espaço criado.',
         'switched' => 'Espaço alterado.',
-        'updated' => 'Nome do espaço atualizado.',
+        'updated' => 'Preferências do espaço atualizadas.',
         'deleted' => 'Espaço apagado.',
         'cannot_delete_last' => 'O último espaço da sua conta não pode ser apagado.',
         'confirmation_mismatch' => 'Digite exatamente o nome do espaço para confirmar.',

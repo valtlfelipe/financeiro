@@ -37,6 +37,7 @@
             "description": "Seu espaço compartilhado e a interface do seu jeito.",
             "workspace": "Espaço compartilhado",
             "workspaceName": "Nome do espaço",
+            "workspaceIcon": "Ícone do espaço",
             "workspaceHint": "Este nome aparece para todas as pessoas do espaço.",
             "ownerOnly": "Apenas o proprietário pode renomear o espaço.",
             "saveWorkspace": "Salvar nome do espaço",
