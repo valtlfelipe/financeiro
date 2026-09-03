@@ -4,6 +4,12 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-09-03
+
+### Fixed
+
+- Cache da versão não atualizando corretamente após uma atualização.
+
 ## [1.4.0] - 2026-09-03
 
 ### Added
@@ -134,7 +140,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/valtlfelipe/financeiro/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/valtlfelipe/financeiro/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/valtlfelipe/financeiro/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/valtlfelipe/financeiro/compare/v1.1.0...v1.2.0
