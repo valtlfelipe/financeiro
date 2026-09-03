@@ -69,7 +69,7 @@ class DashboardTest extends TestCase
             ->where('recentTransactions.0.category.name', $category->name));
     }
 
-    public function test_account_balance_counts_only_settled_movements_after_the_balance_date(): void
+    public function test_account_balance_counts_settled_movements_from_the_opening_balance_date(): void
     {
         [$user, $workspace] = ownerWithWorkspace();
         $account = Account::factory()->for($workspace)->create([
@@ -133,7 +133,7 @@ class DashboardTest extends TestCase
         $this->actingAs($user)->get(route('dashboard', ['month' => '2026-09']))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('accounts.0.id', $account->id)
-                ->where('accounts.0.balanceMinor', 119000));
+                ->where('accounts.0.balanceMinor', 124000));
     }
 
     public function test_account_balance_keeps_exact_negative_cent_values(): void

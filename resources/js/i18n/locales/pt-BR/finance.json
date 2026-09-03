@@ -5,8 +5,21 @@
             "title": "Seu mês em uma página",
             "plannedIncome": "Receitas previstas",
             "plannedExpense": "Despesas previstas",
-            "realizedBalance": "Saldo realizado",
-            "forecastBalance": "Saldo previsto",
+            "realizedBalance": {
+                "past": "Saldo final realizado",
+                "current": "Saldo atual",
+                "future": "Saldo realizado até hoje"
+            },
+            "realizedBalanceHint": {
+                "past": "Posição confirmada no encerramento do mês.",
+                "current": "Disponível agora, considerando o que já foi realizado.",
+                "future": "Posição atual antes dos lançamentos que ainda estão por vir."
+            },
+            "balanceFlowTitle": "Como o saldo previsto fecha",
+            "balanceFlowHint": "O fechamento de um mês vira o início do próximo.",
+            "openingBalance": "Saldo trazido do mês anterior",
+            "forecastMovement": "Movimentação prevista no mês",
+            "forecastBalance": "Saldo previsto no fim do mês",
             "pendingTitle": "Próximos lançamentos",
             "pendingDescription": "O que ainda precisa do seu joinha neste mês.",
             "viewAll": "Ver todos os lançamentos",
@@ -15,7 +28,7 @@
         "transactions": {
             "title": "Lançamentos",
             "subtitle": "Um mês inteiro, com cada pendência no lugar.",
-            "monthSummaryHint": "Totais do mês inteiro, independentemente dos filtros.",
+            "monthSummaryHint": "Saldos acumulados; receitas e despesas consideram o mês inteiro.",
             "listTitle": "Lançamentos do mês",
             "new": "Novo lançamento",
             "previousMonth": "Mês anterior",
@@ -131,7 +144,7 @@
             "type": "Tipo",
             "initialBalance": "Saldo inicial",
             "balanceDate": "Data do saldo",
-            "balanceDateHint": "Informe o saldo disponível ao fim desta data. Apenas lançamentos realizados com data posterior alteram esse valor.",
+            "balanceDateHint": "Informe o saldo disponível no início desta data. Lançamentos realizados no mesmo dia já alteram esse valor.",
             "color": "Cor",
             "archive": "Arquivar",
             "archiveTitle": "Arquivar conta?",

@@ -53,6 +53,9 @@ export type Transaction = {
 export type MonthlySummary = {
     planned_income_minor: number;
     planned_expense_minor: number;
+    opening_balance_minor: number;
+    forecast_change_minor: number;
     realized_balance_minor: number;
     forecast_balance_minor: number;
+    period: 'past' | 'current' | 'future';
 };

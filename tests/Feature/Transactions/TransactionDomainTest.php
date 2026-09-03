@@ -17,8 +17,16 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     [$this->user, $this->workspace] = ownerWithWorkspace();
-    $this->account = Account::factory()->create(['workspace_id' => $this->workspace->id]);
-    $this->destination = Account::factory()->create(['workspace_id' => $this->workspace->id]);
+    $this->account = Account::factory()->create([
+        'workspace_id' => $this->workspace->id,
+        'initial_balance_minor' => 0,
+        'balance_date' => '2026-01-01',
+    ]);
+    $this->destination = Account::factory()->create([
+        'workspace_id' => $this->workspace->id,
+        'initial_balance_minor' => 0,
+        'balance_date' => '2026-01-01',
+    ]);
     $this->expenseCategory = Category::factory()->create(['workspace_id' => $this->workspace->id, 'type' => CategoryType::Expense]);
     $this->incomeCategory = Category::factory()->create(['workspace_id' => $this->workspace->id, 'type' => CategoryType::Income]);
 });
@@ -72,8 +80,65 @@ test('money and monthly totals remain integer cents and transfers are excluded',
     expect(app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01')))->toBe([
         'planned_income_minor' => 10001,
         'planned_expense_minor' => 3334,
+        'opening_balance_minor' => 0,
+        'forecast_change_minor' => 6667,
         'realized_balance_minor' => 10001,
         'forecast_balance_minor' => 6667,
+        'period' => 'current',
+    ]);
+});
+
+test('monthly balances carry actual and forecast positions into the following month exactly', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-03 12:00:00'));
+    $this->account->update(['balance_date' => '2026-09-01']);
+
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Income,
+        'amount_minor' => 100000000,
+        'due_on' => '2026-09-01',
+        'settled_at' => '2026-09-01 12:00:00',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Expense,
+        'amount_minor' => 224587,
+        'due_on' => '2026-09-02',
+        'settled_at' => '2026-09-02 12:00:00',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Expense,
+        'amount_minor' => 1913145,
+        'due_on' => '2026-09-30',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Income,
+        'amount_minor' => 2598200,
+        'due_on' => '2026-10-02',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Expense,
+        'amount_minor' => 350442,
+        'due_on' => '2026-10-03',
+    ]);
+
+    $september = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01'));
+    $october = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-10-01'));
+
+    expect($september)->toBe([
+        'planned_income_minor' => 100000000,
+        'planned_expense_minor' => 2137732,
+        'opening_balance_minor' => 0,
+        'forecast_change_minor' => 97862268,
+        'realized_balance_minor' => 99775413,
+        'forecast_balance_minor' => 97862268,
+        'period' => 'current',
+    ])->and($october)->toBe([
+        'planned_income_minor' => 2598200,
+        'planned_expense_minor' => 350442,
+        'opening_balance_minor' => 97862268,
+        'forecast_change_minor' => 2247758,
+        'realized_balance_minor' => 99775413,
+        'forecast_balance_minor' => 100110026,
+        'period' => 'future',
     ]);
 });
 

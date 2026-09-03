@@ -5,5 +5,5 @@ paths:
 
 # Transactions
 
-## Treat account balance date as end-of-day snapshot
-An account's initial balance is the settled balance at the end of balance_date. Account balance calculations include only settled transactions whose due_on date is strictly later; same-day movements are already represented by the snapshot. Keep all arithmetic in integer minor units, and treat transfers as an equal debit from the source and credit to the destination.
+## Carry opening balances through monthly cash positions
+Treat initial_balance_minor as the account balance at the start of balance_date, so settled movements on that date count. Actual balances follow settled_at; forecasts follow due_on. Monthly forecast closing balances must carry forward as the next month's opening balance, keep integer minor-unit arithmetic, and net transfers across the workspace.
