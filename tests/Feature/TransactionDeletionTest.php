@@ -38,6 +38,18 @@ test('future deletion preserves prior and already settled occurrences', function
     $this->assertNotSoftDeleted($transactions[3]);
 });
 
+test('deleting a series occurrence requires an explicit scope', function () {
+    [$user, $workspace] = ownerWithWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $series = TransactionSeries::factory()->for($workspace)->for($account)->create();
+    $transaction = Transaction::factory()->for($workspace)->for($account)->for($series, 'series')->create();
+
+    $this->actingAs($user)->delete(route('transactions.destroy', $transaction))
+        ->assertSessionHasErrors('scope');
+
+    $this->assertNotSoftDeleted($transaction);
+});
+
 test('another workspace cannot delete a transaction', function () {
     [$user] = ownerWithWorkspace();
     $transaction = Transaction::factory()->create();

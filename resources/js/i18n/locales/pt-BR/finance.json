@@ -47,10 +47,26 @@
                 "installments": "Número de parcelas",
                 "installmentLabel": "{current}/{total}",
                 "installmentProgress": "Parcela {current} de {total}",
-                "changeScope": "Aplicar alteração",
-                "deleteScope": "Ao excluir",
                 "onlyThis": "Somente este lançamento",
                 "thisAndFuture": "Este e os próximos"
+            },
+            "scope": {
+                "update": {
+                    "title": "Quais lançamentos devem mudar?",
+                    "description": "Este lançamento faz parte de uma série. Escolha o alcance antes de salvar.",
+                    "singleAction": "Salvar somente este",
+                    "singleHint": "Os demais lançamentos da série permanecem como estão.",
+                    "futureAction": "Salvar este e os próximos",
+                    "futureHint": "Os próximos lançamentos pendentes também receberão estas alterações."
+                },
+                "delete": {
+                    "title": "Quais lançamentos devem ser excluídos?",
+                    "description": "Este lançamento faz parte de uma série. Escolha o alcance da exclusão.",
+                    "singleAction": "Excluir somente este",
+                    "singleHint": "Os demais lançamentos da série serão preservados.",
+                    "futureAction": "Excluir este e os próximos",
+                    "futureHint": "Os próximos lançamentos pendentes serão excluídos. Os já realizados serão preservados."
+                }
             },
             "form": {
                 "titleNew": "Novo lançamento",
@@ -85,8 +101,7 @@
                 "markSettled": "Realizar",
                 "markPending": "Voltar para pendente",
                 "deleteTitle": "Excluir lançamento?",
-                "deleteConfirm": "“{name}” será excluído. Esta ação não poderá ser desfeita.",
-                "deleteFutureConfirm": "“{name}” e os próximos lançamentos pendentes desta série serão excluídos. Os próximos já realizados serão preservados. Esta ação não poderá ser desfeita."
+                "deleteConfirm": "“{name}” será excluído. Esta ação não poderá ser desfeita."
             },
             "toast": {
                 "settled": "Lançamento realizado.",

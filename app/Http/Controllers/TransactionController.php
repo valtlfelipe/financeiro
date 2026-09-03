@@ -74,6 +74,10 @@ class TransactionController extends Controller
     public function update(UpdateTransactionRequest $request, string $transaction): RedirectResponse
     {
         $item = $this->transaction($request, $transaction);
+        $request->validate([
+            'scope' => [$item->series === null ? 'sometimes' : 'required', 'in:single,future'],
+        ]);
+        $originalDueOn = $item->due_on->toDateString();
         $attributes = [
             ...Arr::only($request->validated(), [
                 'account_id', 'destination_account_id', 'category_id', 'type',
@@ -82,7 +86,7 @@ class TransactionController extends Controller
             'settled_at' => $request->boolean('settled') ? ($item->settled_at ?? now()) : null,
         ];
 
-        DB::transaction(function () use ($item, $attributes, $request): void {
+        DB::transaction(function () use ($item, $attributes, $request, $originalDueOn): void {
             $item->update($attributes);
 
             if ($request->string('scope')->toString() !== 'future' || $item->series === null) {
@@ -100,7 +104,7 @@ class TransactionController extends Controller
             ];
             $item->series->update($seriesAttributes);
             $item->series->transactions()
-                ->whereDate('due_on', '>', $item->due_on)
+                ->whereDate('due_on', '>', $originalDueOn)
                 ->whereNull('settled_at')
                 ->update(Arr::except($attributes, ['due_on', 'settled_at']));
         });
@@ -113,8 +117,10 @@ class TransactionController extends Controller
      */
     public function destroy(Request $request, string $transaction): RedirectResponse
     {
-        $request->validate(['scope' => ['sometimes', 'in:single,future']]);
         $item = $this->transaction($request, $transaction);
+        $request->validate([
+            'scope' => [$item->series === null ? 'sometimes' : 'required', 'in:single,future'],
+        ]);
 
         DB::transaction(function () use ($item, $request): void {
             $item->delete();

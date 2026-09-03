@@ -18,6 +18,7 @@ import { destroy } from '@/routes/transactions';
 import type { Account, Category, Transaction } from '@/types';
 import SettlementButton from './SettlementButton.vue';
 import TransactionForm from './TransactionForm.vue';
+import TransactionScopeDialog from './TransactionScopeDialog.vue';
 
 type PanelMode = 'create' | 'detail' | 'edit' | 'copy';
 const props = withDefaults(
@@ -41,7 +42,6 @@ const emit = defineEmits<{
 }>();
 const { t } = useI18n();
 const { formatDate, formatMoney } = useFinanceFormat();
-const deleteScope = ref<'single' | 'future'>('single');
 const deleteOpen = ref(false);
 const deleteForm = useForm({ scope: 'single' as 'single' | 'future' });
 const networkOnline = useOnline();
@@ -49,13 +49,12 @@ const networkOnline = useOnline();
 watch(
     () => props.transaction?.id,
     () => {
-        deleteScope.value = 'single';
         deleteOpen.value = false;
         deleteForm.clearErrors();
     },
 );
 
-function remove(): void {
+function remove(scope: 'single' | 'future' = 'single'): void {
     if (
         !props.transaction ||
         deleteForm.processing ||
@@ -63,7 +62,7 @@ function remove(): void {
         props.online === false
     )
         return;
-    deleteForm.scope = deleteScope.value;
+    deleteForm.scope = scope;
     deleteForm.delete(destroy.url(props.transaction.id), {
         preserveScroll: true,
         onSuccess: () => {
@@ -219,16 +218,14 @@ function remove(): void {
                         }}
                     </Button>
                     <ConfirmationDialog
+                        v-if="!transaction.series"
                         v-model:open="deleteOpen"
                         :title="t('finance.transactions.detail.deleteTitle')"
                         :resource-name="transaction.description"
                         :description="
-                            t(
-                                deleteScope === 'future' && transaction.series
-                                    ? 'finance.transactions.detail.deleteFutureConfirm'
-                                    : 'finance.transactions.detail.deleteConfirm',
-                                { name: transaction.description },
-                            )
+                            t('finance.transactions.detail.deleteConfirm', {
+                                name: transaction.description,
+                            })
                         "
                         :confirm-label="t('common.delete')"
                         :processing="deleteForm.processing"
@@ -250,29 +247,31 @@ function remove(): void {
                             </Button>
                         </template>
                     </ConfirmationDialog>
+                    <Button
+                        v-else
+                        variant="outline"
+                        class="text-destructive h-auto flex-col gap-1 py-3"
+                        :disabled="online === false || !networkOnline"
+                        @click="
+                            deleteForm.clearErrors();
+                            deleteOpen = true;
+                        "
+                    >
+                        <Trash2 class="size-4" aria-hidden="true" />{{
+                            t('common.delete')
+                        }}
+                    </Button>
                 </div>
 
-                <div v-if="transaction.series" class="grid gap-2">
-                    <label
-                        for="delete_scope"
-                        class="text-muted-foreground text-xs font-bold tracking-wider uppercase"
-                        >{{
-                            t('finance.transactions.series.deleteScope')
-                        }}</label
-                    >
-                    <select
-                        id="delete_scope"
-                        v-model="deleteScope"
-                        class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
-                    >
-                        <option value="single">
-                            {{ t('finance.transactions.series.onlyThis') }}
-                        </option>
-                        <option value="future">
-                            {{ t('finance.transactions.series.thisAndFuture') }}
-                        </option>
-                    </select>
-                </div>
+                <TransactionScopeDialog
+                    v-if="transaction.series"
+                    v-model:open="deleteOpen"
+                    action="delete"
+                    :processing="deleteForm.processing"
+                    :disabled="online === false || !networkOnline"
+                    :error="Object.values(deleteForm.errors)[0]"
+                    @select="remove"
+                />
             </div>
 
             <div v-else class="p-5 sm:p-7">

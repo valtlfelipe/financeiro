@@ -19,6 +19,7 @@ import { formatMinorForInput, parseMoneyInputToMinor } from '@/lib/money-input';
 import { store, update } from '@/routes/transactions';
 import { useOnline } from '@/composables/useOnline';
 import type { Account, Category, Transaction } from '@/types';
+import TransactionScopeDialog from './TransactionScopeDialog.vue';
 
 const props = withDefaults(
     defineProps<{
@@ -38,6 +39,7 @@ const { t } = useI18n();
 const page = usePage();
 const networkOnline = useOnline();
 const transferHintOpen = ref(false);
+const scopeOpen = ref(false);
 const canTransfer = computed(() => props.accounts.length >= 2);
 
 const amount = ref(formatMinorForInput(0, page.props.locale));
@@ -142,8 +144,19 @@ function amountMinor(): number {
     return parseMoneyInputToMinor(amount.value, page.props.locale);
 }
 
-function submit(): void {
+function requestSubmit(): void {
+    if (editing.value && props.transaction?.series) {
+        scopeOpen.value = true;
+
+        return;
+    }
+
+    submit('single');
+}
+
+function submit(scope: 'single' | 'future'): void {
     form.amount_minor = amountMinor();
+    form.scope = scope;
     form.transform((data) => ({
         ...data,
         destination_account_id:
@@ -166,7 +179,13 @@ function submit(): void {
             data.series_kind === 'installment' ? data.installments : null,
     }));
 
-    const options = { preserveScroll: true, onSuccess: () => emit('saved') };
+    const options = {
+        preserveScroll: true,
+        onSuccess: () => {
+            scopeOpen.value = false;
+            emit('saved');
+        },
+    };
     if (editing.value && props.transaction)
         form.patch(update.url(props.transaction.id), options);
     else form.post(store.url(), options);
@@ -174,7 +193,7 @@ function submit(): void {
 </script>
 
 <template>
-    <form class="grid gap-5" @submit.prevent="submit">
+    <form class="grid gap-5" @submit.prevent="requestSubmit">
         <div
             class="grid grid-cols-3 gap-2"
             role="group"
@@ -461,24 +480,6 @@ function submit(): void {
         </div>
         <InputError :message="form.errors.settled" />
 
-        <div v-if="editing && transaction?.series" class="grid gap-2">
-            <Label for="scope">{{
-                t('finance.transactions.series.changeScope')
-            }}</Label>
-            <select
-                id="scope"
-                v-model="form.scope"
-                class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
-            >
-                <option value="single">
-                    {{ t('finance.transactions.series.onlyThis') }}
-                </option>
-                <option value="future">
-                    {{ t('finance.transactions.series.thisAndFuture') }}
-                </option>
-            </select>
-        </div>
-
         <div class="grid gap-2">
             <Label for="notes"
                 >{{ t('finance.transactions.form.notes') }}
@@ -522,5 +523,15 @@ function submit(): void {
                     : t('finance.transactions.form.submitCreate')
             }}
         </Button>
+
+        <TransactionScopeDialog
+            v-if="editing && transaction?.series"
+            v-model:open="scopeOpen"
+            action="update"
+            :processing="form.processing"
+            :disabled="online === false || !networkOnline"
+            :error="form.errors.scope"
+            @select="submit"
+        />
     </form>
 </template>
