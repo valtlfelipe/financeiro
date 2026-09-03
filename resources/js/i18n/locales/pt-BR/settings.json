@@ -17,6 +17,15 @@
             "email": "E-mail",
             "save": "Salvar perfil"
         },
+        "password": {
+            "title": "Alterar senha",
+            "description": "Proteja seu acesso com uma senha longa e exclusiva.",
+            "current": "Senha atual",
+            "new": "Nova senha",
+            "confirm": "Confirmar nova senha",
+            "hint": "Combine letras maiúsculas, minúsculas, números e símbolos. Prefira pelo menos 12 caracteres.",
+            "save": "Alterar senha"
+        },
         "language": {
             "title": "Idioma",
             "description": "Cada pessoa escolhe o idioma da própria interface.",

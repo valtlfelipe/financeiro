@@ -9,6 +9,7 @@ test('members can view their own profile', function () {
     $this->actingAs($user)->get(route('profile.edit'))
         ->assertInertia(fn (Assert $page) => $page
             ->component('settings/Profile')
+            ->has('passwordRules')
             ->where('auth.user.name', $user->name)
             ->where('auth.user.email', $user->email));
 });

@@ -56,11 +56,11 @@ class SecurityController extends Controller
     public function update(PasswordUpdateRequest $request): RedirectResponse
     {
         $request->user()->update([
-            'password' => $request->password,
+            'password' => $request->validated('password'),
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Password updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('app.profile.password_updated')]);
 
-        return back();
+        return to_route('profile.edit');
     }
 }

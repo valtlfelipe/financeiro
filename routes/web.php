@@ -7,6 +7,7 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Settings\PreferenceController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionSettlementController;
@@ -54,4 +55,6 @@ Route::middleware(['auth', 'workspace'])->group(function () {
     Route::patch('settings/locale', LocaleController::class)->name('locale.update');
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('settings/password', [SecurityController::class, 'update'])
+        ->middleware('throttle:6,1')->name('user-password.update');
 });

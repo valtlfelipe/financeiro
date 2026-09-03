@@ -3,6 +3,7 @@ import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import InputError from '@/components/InputError.vue';
 import UserAvatar from '@/components/UserAvatar.vue';
+import UpdatePasswordForm from '@/components/UpdatePasswordForm.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +11,7 @@ import { useOnline } from '@/composables/useOnline';
 import { update } from '@/routes/profile';
 
 const { t } = useI18n();
+defineProps<{ passwordRules: string }>();
 const page = usePage();
 const online = useOnline();
 const form = useForm({
@@ -24,75 +26,81 @@ function submit(): void {
 </script>
 
 <template>
-    <section
-        class="border-border/80 bg-card overflow-hidden rounded-3xl border"
-    >
-        <Head :title="t('settings.profile.title')" />
-        <header
-            class="border-border/70 flex items-center gap-4 border-b p-5 sm:p-6"
+    <div class="grid gap-6">
+        <section
+            class="border-border/80 bg-card overflow-hidden rounded-3xl border"
         >
-            <UserAvatar
-                :user="page.props.auth.user"
-                class="size-12 rounded-2xl"
-            />
-            <div>
-                <h2 class="text-xl font-extrabold">
-                    {{ t('settings.profile.title') }}
-                </h2>
-                <p class="text-muted-foreground mt-1 text-sm">
-                    {{ t('settings.profile.description') }}
-                </p>
-            </div>
-        </header>
-        <form class="grid max-w-xl gap-5 p-5 sm:p-6" @submit.prevent="submit">
-            <div class="grid gap-2">
-                <Label for="profile_name">{{
-                    t('settings.profile.name')
-                }}</Label>
-                <Input
-                    id="profile_name"
-                    v-model="form.name"
-                    autocomplete="name"
-                    required
-                    maxlength="255"
-                    :aria-invalid="!!form.errors.name"
-                    aria-describedby="profile_name_error"
-                />
-                <InputError
-                    id="profile_name_error"
-                    :message="form.errors.name"
-                />
-            </div>
-            <div class="grid gap-2">
-                <Label for="profile_email">{{
-                    t('settings.profile.email')
-                }}</Label>
-                <Input
-                    id="profile_email"
-                    v-model="form.email"
-                    type="email"
-                    autocomplete="email"
-                    required
-                    maxlength="255"
-                    :aria-invalid="!!form.errors.email"
-                    aria-describedby="profile_email_error"
-                />
-                <InputError
-                    id="profile_email_error"
-                    :message="form.errors.email"
-                />
-            </div>
-            <Button
-                type="submit"
-                class="min-h-11 w-fit"
-                :disabled="form.processing || !online"
+            <Head :title="t('settings.profile.title')" />
+            <header
+                class="border-border/70 flex items-center gap-4 border-b p-5 sm:p-6"
             >
-                {{
-                    form.processing
-                        ? t('common.saving')
-                        : t('settings.profile.save')
-                }}
-            </Button>
-        </form>
-    </section>
+                <UserAvatar
+                    :user="page.props.auth.user"
+                    class="size-12 rounded-2xl"
+                />
+                <div>
+                    <h2 class="text-xl font-extrabold">
+                        {{ t('settings.profile.title') }}
+                    </h2>
+                    <p class="text-muted-foreground mt-1 text-sm">
+                        {{ t('settings.profile.description') }}
+                    </p>
+                </div>
+            </header>
+            <form
+                class="grid max-w-xl gap-5 p-5 sm:p-6"
+                @submit.prevent="submit"
+            >
+                <div class="grid gap-2">
+                    <Label for="profile_name">{{
+                        t('settings.profile.name')
+                    }}</Label>
+                    <Input
+                        id="profile_name"
+                        v-model="form.name"
+                        autocomplete="name"
+                        required
+                        maxlength="255"
+                        :aria-invalid="!!form.errors.name"
+                        aria-describedby="profile_name_error"
+                    />
+                    <InputError
+                        id="profile_name_error"
+                        :message="form.errors.name"
+                    />
+                </div>
+                <div class="grid gap-2">
+                    <Label for="profile_email">{{
+                        t('settings.profile.email')
+                    }}</Label>
+                    <Input
+                        id="profile_email"
+                        v-model="form.email"
+                        type="email"
+                        autocomplete="email"
+                        required
+                        maxlength="255"
+                        :aria-invalid="!!form.errors.email"
+                        aria-describedby="profile_email_error"
+                    />
+                    <InputError
+                        id="profile_email_error"
+                        :message="form.errors.email"
+                    />
+                </div>
+                <Button
+                    type="submit"
+                    class="min-h-11 w-fit"
+                    :disabled="form.processing || !online"
+                >
+                    {{
+                        form.processing
+                            ? t('common.saving')
+                            : t('settings.profile.save')
+                    }}
+                </Button>
+            </form>
+        </section>
+        <UpdatePasswordForm :password-rules="passwordRules" />
+    </div>
 </template>

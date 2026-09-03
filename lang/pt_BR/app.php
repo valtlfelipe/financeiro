@@ -43,6 +43,7 @@ return [
     ],
     'profile' => [
         'updated' => 'Perfil atualizado.',
+        'password_updated' => 'Senha alterada com sucesso.',
     ],
     'recurring' => [
         'generated' => '{0} Nenhum lançamento criado.|{1} :count lançamento criado.|[2,*] :count lançamentos criados.',
