@@ -19,7 +19,7 @@ class StoreTransactionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->current_workspace_id !== null;
+        return $this->user() !== null;
     }
 
     /**
@@ -37,7 +37,7 @@ class StoreTransactionRequest extends FormRequest
                 'required',
                 'integer',
                 Rule::exists('accounts', 'id')->where(fn ($query) => $query
-                    ->where('workspace_id', $this->user()?->current_workspace_id)
+                    ->where('workspace_id', $this->user()?->currentWorkspaceOrFail()->id)
                     ->where('is_archived', false)),
             ],
             'destination_account_id' => [
@@ -45,14 +45,14 @@ class StoreTransactionRequest extends FormRequest
                 'required_if:type,'.TransactionType::Transfer->value,
                 'different:account_id',
                 Rule::exists('accounts', 'id')->where(fn ($query) => $query
-                    ->where('workspace_id', $this->user()?->current_workspace_id)
+                    ->where('workspace_id', $this->user()?->currentWorkspaceOrFail()->id)
                     ->where('is_archived', false)),
             ],
             'category_id' => [
                 'nullable',
                 'required_unless:type,'.TransactionType::Transfer->value,
                 Rule::exists('categories', 'id')->where(fn ($query) => $query
-                    ->where('workspace_id', $this->user()?->current_workspace_id)
+                    ->where('workspace_id', $this->user()?->currentWorkspaceOrFail()->id)
                     ->where('is_archived', false)),
             ],
             'due_on' => ['required', 'date'],
@@ -89,7 +89,7 @@ class StoreTransactionRequest extends FormRequest
                 }
 
                 $category = Category::query()
-                    ->where('workspace_id', $this->user()?->current_workspace_id)
+                    ->where('workspace_id', $this->user()?->currentWorkspaceOrFail()->id)
                     ->find($this->integer('category_id'));
 
                 $expectedType = $this->string('type')->toString() === TransactionType::Income->value

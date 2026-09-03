@@ -1,24 +1,21 @@
 <?php
 
-namespace App\Http\Requests\Settings;
+namespace App\Http\Requests;
 
 use App\MembershipRole;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdatePreferencesRequest extends FormRequest
+class StoreWorkspaceRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        $user = $this->user();
-
-        return $user !== null && $user->currentWorkspaceOrFail()->memberships()
-            ->where('user_id', $user->id)
-            ->where('role', MembershipRole::Owner)
-            ->exists();
+        return $this->user()?->workspaces()
+            ->wherePivot('role', MembershipRole::Owner->value)
+            ->exists() ?? false;
     }
 
     /**

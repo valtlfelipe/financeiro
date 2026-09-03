@@ -69,6 +69,10 @@ class User extends Authenticatable implements PasskeyUser
 
     public function currentWorkspaceOrFail(): Workspace
     {
-        return $this->currentWorkspace()->firstOrFail();
+        $workspace = $this->getRelationValue('currentWorkspace');
+
+        return $workspace instanceof Workspace
+            ? $workspace
+            : $this->currentWorkspace()->firstOrFail();
     }
 }

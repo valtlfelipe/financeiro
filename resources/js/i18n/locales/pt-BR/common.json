@@ -22,6 +22,21 @@
         "offline": "Você está sem conexão. As alterações ficam indisponíveis até a internet voltar.",
         "empty": "Nada por aqui ainda.",
         "error": "Não foi possível concluir. Tente novamente.",
+        "workspace": {
+            "menu": "Selecionar espaço",
+            "current": "Espaço atual",
+            "owner": "Proprietário",
+            "member": "Membro",
+            "create": "Criar espaço",
+            "createTitle": "Novo espaço",
+            "createDescription": "Comece com uma conta principal e categorias básicas.",
+            "name": "Nome do espaço",
+            "namePlaceholder": "Ex.: Trabalho",
+            "creating": "Criando…",
+            "discardTitle": "Descartar alterações?",
+            "discardDescription": "As alterações não salvas serão perdidas ao trocar para {workspace}.",
+            "discardAction": "Descartar e trocar"
+        },
         "appearance": {
             "title": "Aparência",
             "light": "Claro",

@@ -6,6 +6,11 @@ import { toast } from 'vue-sonner';
 import { settlement } from '@/routes/transactions';
 import { useOnline } from '@/composables/useOnline';
 import type { MonthlySummary, Transaction } from '@/types';
+import {
+    beginWorkspaceRequest,
+    finishWorkspaceRequest,
+    workspaceHeaders,
+} from '@/lib/workspaceContext';
 
 const props = withDefaults(
     defineProps<{
@@ -44,6 +49,7 @@ async function persist(nextSettled: boolean, showUndo: boolean): Promise<void> {
     if (pending.value || props.online === false || !networkOnline.value) return;
 
     pending.value = true;
+    beginWorkspaceRequest();
     const previous = props.transaction;
     emit(
         'update',
@@ -63,6 +69,7 @@ async function persist(nextSettled: boolean, showUndo: boolean): Promise<void> {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-XSRF-TOKEN': csrfToken(),
+                ...workspaceHeaders(),
             },
             body: JSON.stringify({ settled: nextSettled }),
         });
@@ -93,6 +100,7 @@ async function persist(nextSettled: boolean, showUndo: boolean): Promise<void> {
         toast.error(t('common.error'));
     } finally {
         pending.value = false;
+        finishWorkspaceRequest();
     }
 }
 </script>

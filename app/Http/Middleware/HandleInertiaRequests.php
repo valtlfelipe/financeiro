@@ -2,9 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\MembershipRole;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use LogicException;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -37,11 +40,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $this->user($request);
-        $workspace = null;
         $locale = $this->defaultLocale();
 
         if ($user !== null) {
-            $workspace = $user->currentWorkspace;
             $locale = $user->locale;
         }
 
@@ -53,17 +54,72 @@ class HandleInertiaRequests extends Middleware
             ],
             'locale' => $locale,
             'supportedLocales' => $this->supportedLocales(),
-            'workspace' => $workspace ? [
-                'id' => $workspace->id,
-                'name' => $workspace->name,
-                'currency' => $workspace->currency_code,
-                'timezone' => $workspace->timezone,
-                'role' => $workspace->memberships()
-                    ->where('user_id', $user->id)
-                    ->value('role'),
-            ] : null,
+            'workspace' => fn (): ?array => $this->workspace($user),
+            'workspaces' => fn (): array => $this->workspaces($user),
+            'canCreateWorkspace' => fn (): bool => $user?->workspaces()
+                ->wherePivot('role', MembershipRole::Owner->value)
+                ->exists() ?? false,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /** @return array{id: int, name: string, currency: string, timezone: string, role: string}|null */
+    private function workspace(?User $user): ?array
+    {
+        $workspace = $user?->currentWorkspace;
+
+        if ($workspace === null) {
+            return null;
+        }
+
+        $role = $workspace->memberships()->where('user_id', $user->id)->value('role');
+
+        return [
+            'id' => $workspace->id,
+            'name' => $workspace->name,
+            'currency' => $workspace->currency_code,
+            'timezone' => $workspace->timezone,
+            'role' => $this->roleValue($role),
+        ];
+    }
+
+    /** @return list<array{id: int, name: string, role: string}> */
+    private function workspaces(?User $user): array
+    {
+        if ($user === null) {
+            return [];
+        }
+
+        $workspaces = $user->workspaces()
+            ->orderBy('workspaces.name')
+            ->orderBy('workspaces.id')
+            ->get();
+        $result = [];
+
+        foreach ($workspaces as $workspace) {
+            $pivot = $workspace->getRelationValue('pivot');
+            $role = $pivot instanceof Pivot ? $pivot->getAttribute('role') : null;
+            $result[] = [
+                'id' => $workspace->id,
+                'name' => $workspace->name,
+                'role' => $this->roleValue($role),
+            ];
+        }
+
+        return $result;
+    }
+
+    private function roleValue(mixed $role): string
+    {
+        if ($role instanceof MembershipRole) {
+            return $role->value;
+        }
+
+        if (is_string($role)) {
+            return $role;
+        }
+
+        throw new LogicException('The workspace membership role is missing.');
     }
 
     private function user(Request $request): ?User

@@ -2,12 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\AccountType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class StoreAccountRequest extends FormRequest
+class SwitchWorkspaceRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,13 +23,7 @@ class StoreAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:120'],
-            'type' => ['required', Rule::enum(AccountType::class)],
-            'initial_balance_minor' => ['required', 'integer'],
-            'balance_date' => ['required', 'date'],
-            'icon' => ['nullable', 'string', 'max:40'],
-            'color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'is_archived' => ['sometimes', 'boolean'],
+            'workspace_id' => ['required', 'integer'],
         ];
     }
 }

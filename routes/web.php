@@ -13,6 +13,7 @@ use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionSettlementController;
+use App\Http\Controllers\WorkspaceController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -30,7 +31,9 @@ Route::get('invitations/{token}', [InvitationController::class, 'show'])->name('
 Route::post('invitations/{token}', [InvitationController::class, 'accept'])
     ->middleware('throttle:5,1')->name('invitations.accept');
 
-Route::middleware(['auth', 'workspace'])->group(function () {
+Route::middleware(['auth', 'workspace', 'workspace.context'])->group(function () {
+    Route::post('workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
+    Route::patch('workspaces/current', [WorkspaceController::class, 'update'])->name('workspaces.switch');
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');

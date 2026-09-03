@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureWorkspaceContext;
 use App\Http\Middleware\EnsureWorkspaceSelected;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -31,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'workspace' => EnsureWorkspaceSelected::class,
+            'workspace.context' => EnsureWorkspaceContext::class,
         ]);
 
         $middleware->trustProxies(

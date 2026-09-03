@@ -14,7 +14,7 @@ class StoreCategoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->current_workspace_id !== null;
+        return $this->user() !== null;
     }
 
     /**
@@ -30,7 +30,7 @@ class StoreCategoryRequest extends FormRequest
                 'string',
                 'max:120',
                 Rule::unique('categories')->where(fn ($query) => $query
-                    ->where('workspace_id', $this->user()?->current_workspace_id)
+                    ->where('workspace_id', $this->user()?->currentWorkspaceOrFail()->id)
                     ->where('type', $this->string('type')))
                     ->ignore($this->route('category')),
             ],

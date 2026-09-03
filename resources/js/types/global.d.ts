@@ -1,5 +1,5 @@
 import type { Auth } from '@/types/auth';
-import type { Workspace } from '@/types/finance';
+import type { Workspace, WorkspaceOption } from '@/types/finance';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -21,6 +21,8 @@ declare module '@inertiajs/core' {
             locale: 'pt-BR';
             supportedLocales: Array<{ code: 'pt-BR'; name: string }>;
             workspace: Workspace | null;
+            workspaces: WorkspaceOption[];
+            canCreateWorkspace: boolean;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

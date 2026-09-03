@@ -2,12 +2,15 @@
 
 namespace App\Http\Middleware;
 
+use App\CurrentWorkspace;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureWorkspaceSelected
 {
+    public function __construct(private CurrentWorkspace $currentWorkspace) {}
+
     /**
      * Handle an incoming request.
      *
@@ -21,21 +24,7 @@ class EnsureWorkspaceSelected
             return redirect()->route('login');
         }
 
-        if ($user->current_workspace_id === null) {
-            $workspaceId = $user->workspaces()->value('workspaces.id');
-
-            abort_if($workspaceId === null, 403);
-
-            $user->update(['current_workspace_id' => $workspaceId]);
-        }
-
-        $belongsToWorkspace = $user->workspaces()
-            ->whereKey($user->current_workspace_id)
-            ->exists();
-
-        if (! $belongsToWorkspace) {
-            abort(403);
-        }
+        abort_if($this->currentWorkspace->resolve($request) === null, 403);
 
         return $next($request);
     }

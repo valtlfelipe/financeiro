@@ -6,6 +6,8 @@ export type Workspace = {
     role: 'owner' | 'member';
 };
 
+export type WorkspaceOption = Pick<Workspace, 'id' | 'name' | 'role'>;
+
 export type Account = {
     id: number;
     name: string;

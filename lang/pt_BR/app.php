@@ -45,7 +45,10 @@ return [
         'updated' => 'Idioma atualizado.',
     ],
     'workspace' => [
+        'created' => 'Espaço criado.',
+        'switched' => 'Espaço alterado.',
         'updated' => 'Nome do espaço atualizado.',
+        'context_changed' => 'O espaço desta sessão mudou. Atualize a página antes de salvar.',
     ],
     'profile' => [
         'updated' => 'Perfil atualizado.',

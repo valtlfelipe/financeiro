@@ -6,6 +6,10 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 import { formatPageTitle } from '@/lib/product';
+import {
+    initializeWorkspaceContext,
+    workspaceHeaders,
+} from '@/lib/workspaceContext';
 import { createAppI18n, type LocaleCode } from '@/i18n';
 import '@/pwa';
 
@@ -30,10 +34,19 @@ void createInertiaApp({
     progress: {
         color: '#148A62',
     },
+    defaults: {
+        visitOptions: (_href, options) => ({
+            headers: {
+                ...options.headers,
+                ...workspaceHeaders(),
+            },
+        }),
+    },
     withApp(app: VueApp, { page }) {
         const locale = (page.props.locale ?? 'pt-BR') as LocaleCode;
 
         app.use(createAppI18n(locale));
+        initializeWorkspaceContext(page);
     },
 });
 

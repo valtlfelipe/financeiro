@@ -16,13 +16,13 @@ class StoreInvitationRequest extends FormRequest
     {
         $user = $this->user();
 
-        if ($user?->current_workspace_id === null) {
+        if ($user === null) {
             return false;
         }
 
-        return $user->workspaces()
-            ->whereKey($user->current_workspace_id)
-            ->wherePivot('role', MembershipRole::Owner->value)
+        return $user->currentWorkspaceOrFail()->memberships()
+            ->where('user_id', $user->id)
+            ->where('role', MembershipRole::Owner)
             ->exists();
     }
 

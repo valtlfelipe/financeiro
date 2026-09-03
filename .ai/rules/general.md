@@ -19,3 +19,6 @@ The TypeScript dependency uses Microsoft's @typescript/typescript6 compatibility
 
 ## Reuse the dedicated local QA account
 For local Financeiro UI and end-to-end checks, reuse the existing dedicated test account qa-financeiro@example.test (Teste UX Revisado) and its fictional QA workspace. The user has authorized using this account autonomously: first reuse an authenticated session or retrieve its previously established test credentials from authorized task context instead of routinely asking the user to sign in or provide them again. Never use personal/production accounts, reset real users' credentials, or record passwords/tokens in committed rules. Follow applicable tool security requirements and state any mandatory handoff explicitly.
+
+## Work directly on local main
+For Financeiro, work directly on the local main branch without creating a worktree, as explicitly requested by Felipe. Preserve unrelated local changes. This does not authorize committing, pushing, or deploying.

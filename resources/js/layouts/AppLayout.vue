@@ -12,6 +12,7 @@ import {
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import WorkspaceSwitcher from '@/components/WorkspaceSwitcher.vue';
 import UserAppearanceMenu from '@/components/UserAppearanceMenu.vue';
 import UserAvatar from '@/components/UserAvatar.vue';
 import {
@@ -36,9 +37,6 @@ const page = usePage();
 const { currentUrl, isCurrentOrParentUrl } = useCurrentUrl();
 const online = useOnline();
 const { resolvedAppearance } = useAppearance();
-const workspaceName = computed(
-    () => page.props.workspace?.name ?? t('common.appName'),
-);
 const navigation = computed(() => [
     {
         label: t('common.navigation.overview'),
@@ -86,23 +84,16 @@ function isNavigationItemActive(
             <div
                 class="mx-auto flex h-16 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8"
             >
-                <Link
-                    :href="dashboard()"
-                    class="flex min-w-0 items-center gap-2.5"
-                    :aria-label="t('common.navigation.overview')"
-                >
-                    <AppLogoIcon class="size-9" />
-                    <span class="min-w-0">
-                        <span
-                            class="block truncate text-sm font-extrabold tracking-tight"
-                            >{{ t('common.appName') }}</span
-                        >
-                        <span
-                            class="text-muted-foreground block truncate text-[11px]"
-                            >{{ workspaceName }}</span
-                        >
-                    </span>
-                </Link>
+                <div class="flex min-w-0 items-center gap-1.5">
+                    <Link
+                        :href="dashboard()"
+                        class="shrink-0"
+                        :aria-label="t('common.navigation.overview')"
+                    >
+                        <AppLogoIcon class="size-9" />
+                    </Link>
+                    <WorkspaceSwitcher />
+                </div>
 
                 <nav
                     class="hidden h-full items-center gap-1 md:flex"

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\CurrentWorkspace;
 use App\Http\Requests\AcceptInvitationRequest;
 use App\Http\Requests\StoreInvitationRequest;
 use App\MembershipRole;
@@ -90,7 +91,7 @@ class InvitationController extends Controller
         return to_route('invitations.index');
     }
 
-    public function accept(AcceptInvitationRequest $request, string $token): RedirectResponse
+    public function accept(AcceptInvitationRequest $request, string $token, CurrentWorkspace $currentWorkspace): RedirectResponse
     {
         $invitation = $request->invitation();
         abort_if($invitation === null, 404);
@@ -123,6 +124,7 @@ class InvitationController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $currentWorkspace->select($request, $invitation->workspace);
 
         return redirect()->route('dashboard');
     }
@@ -139,9 +141,9 @@ class InvitationController extends Controller
 
     private function isOwner(Request $request): bool
     {
-        return $request->user()->workspaces()
-            ->whereKey($request->user()->current_workspace_id)
-            ->wherePivot('role', MembershipRole::Owner->value)
+        return $request->user()->currentWorkspaceOrFail()->memberships()
+            ->where('user_id', $request->user()->id)
+            ->where('role', MembershipRole::Owner)
             ->exists();
     }
 }
