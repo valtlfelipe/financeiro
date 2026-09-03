@@ -2,10 +2,12 @@
 import { Head, useHttp } from '@inertiajs/vue3';
 import {
     ArrowUpRight,
+    Bug,
     CircleCheck,
     CircleHelp,
     Code,
     Heart,
+    Lightbulb,
     LoaderCircle,
     RefreshCw,
 } from '@lucide/vue';
@@ -260,6 +262,38 @@ onUnmounted(() => {
                         }}<ArrowUpRight class="size-4" aria-hidden="true" />
                     </a>
                 </Button>
+            </div>
+            <div class="border-border/70 mt-6 border-t pt-6">
+                <h3 class="text-sm font-bold">
+                    {{ t('settings.about.feedbackTitle') }}
+                </h3>
+                <p class="text-muted-foreground mt-2 text-sm leading-relaxed">
+                    {{ t('settings.about.feedbackDescription') }}
+                </p>
+                <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                    <Button as-child variant="outline" class="min-h-11">
+                        <a
+                            :href="`${project.repository}/issues/new?template=bug_report.yml`"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <Bug class="size-4" aria-hidden="true" />{{
+                                t('settings.about.reportBug')
+                            }}<ArrowUpRight class="size-4" aria-hidden="true" />
+                        </a>
+                    </Button>
+                    <Button as-child variant="outline" class="min-h-11">
+                        <a
+                            :href="`${project.repository}/issues/new?template=feature_request.yml`"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <Lightbulb class="size-4" aria-hidden="true" />{{
+                                t('settings.about.requestFeature')
+                            }}<ArrowUpRight class="size-4" aria-hidden="true" />
+                        </a>
+                    </Button>
+                </div>
             </div>
         </footer>
     </section>

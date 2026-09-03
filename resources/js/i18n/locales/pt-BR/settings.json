@@ -80,7 +80,11 @@
             "supportTitle": "Ajude o Financeiro a continuar crescendo",
             "supportDescription": "Se o projeto faz parte do seu dia a dia, você pode apoiar o desenvolvimento pelo GitHub Sponsors.",
             "support": "Apoiar o projeto",
-            "repository": "Ver no GitHub"
+            "repository": "Ver no GitHub",
+            "feedbackTitle": "Tem um problema ou uma ideia?",
+            "feedbackDescription": "Abra um relato de bug ou uma sugestão de funcionalidade no GitHub para ajudar a melhorar o Financeiro.",
+            "reportBug": "Reportar um bug",
+            "requestFeature": "Sugerir funcionalidade"
         }
     }
 }
