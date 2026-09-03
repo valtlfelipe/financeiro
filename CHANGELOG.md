@@ -4,6 +4,20 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-03
+
+### Added
+
+- Tela Sobre como última opção dos Ajustes, com logo, descrição, autoria, licença e versão instalada.
+- Verificação automática de novas versões estáveis no GitHub, com estados de carregamento, atualização disponível e falha na consulta. Resultados são compartilhados entre usuários por uma hora, ou por um minuto em caso de falha.
+- Links para apoiar o projeto pelo GitHub Sponsors, acessar o repositório, reportar bugs e sugerir funcionalidades.
+- Configuração do botão de Sponsors e formulários de issues em português para bugs e sugestões de funcionalidades no GitHub.
+- Alteração de senha pelo perfil, com confirmação da senha atual e feedback de sucesso e validação.
+
+### Changed
+
+- Imagens Docker publicadas passam a incluir a versão da tag de release para exibição e comparação na tela Sobre.
+
 ## [1.1.0] - 2026-09-02
 
 ### Added
@@ -90,7 +104,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/valtlfelipe/financeiro/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/valtlfelipe/financeiro/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/valtlfelipe/financeiro/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/valtlfelipe/financeiro/compare/v1.0.2...v1.0.3
