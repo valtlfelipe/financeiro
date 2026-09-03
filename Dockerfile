@@ -41,7 +41,8 @@ COPY --from=frontend --chown=www-data:www-data /app/public/build /app/public/bui
 COPY docker/Caddyfile /etc/caddy/Caddyfile
 COPY docker/entrypoint.sh /usr/local/bin/financeiro-entrypoint
 
-RUN chmod +x /usr/local/bin/financeiro-entrypoint \
+RUN printf '%s\n' "${FINANCEIRO_VERSION}" > /app/VERSION \
+    && chmod +x /usr/local/bin/financeiro-entrypoint \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 

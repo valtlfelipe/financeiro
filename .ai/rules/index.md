@@ -4,6 +4,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| {Dockerfile,docker/entrypoint.sh,config/financeiro.php,app/InstalledVersion.php,app/Actions/CheckForUpdates.php} | .ai/rules/actions.md |
 | Dockerfile | .ai/rules/dockerfile.md |
 | compose.yaml, **, package.json | .ai/rules/general.md |
 | app/Http/** | .ai/rules/http.md |

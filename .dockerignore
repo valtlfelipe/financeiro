@@ -9,4 +9,5 @@ storage/framework/sessions/*
 storage/framework/views/*
 tests
 backups
+VERSION
 npm-debug.log

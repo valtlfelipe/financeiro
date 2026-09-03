@@ -13,6 +13,9 @@ if [ "$#" -gt 0 ]; then
     exec "$@"
 fi
 
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
 php artisan migrate --force --no-interaction
 php artisan config:cache
 php artisan route:cache

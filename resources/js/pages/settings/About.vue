@@ -54,18 +54,20 @@ const checkedAt = computed(() =>
         : null,
 );
 
-async function checkForUpdates(): Promise<void> {
+async function checkForUpdates(refresh = false): Promise<void> {
     if (request.processing) return;
     failed.value = false;
 
     try {
-        await request.get(updates.url());
+        await request.get(
+            updates.url(refresh ? { query: { refresh: true } } : undefined),
+        );
     } catch {
         if (mounted) failed.value = true;
     }
 }
 
-onMounted(checkForUpdates);
+onMounted(() => checkForUpdates());
 onUnmounted(() => {
     mounted = false;
     request.cancel();
@@ -193,7 +195,7 @@ onUnmounted(() => {
                     <Button
                         variant="outline"
                         class="min-h-11"
-                        @click="checkForUpdates"
+                        @click="checkForUpdates(true)"
                     >
                         <RefreshCw class="size-4" aria-hidden="true" />{{
                             t('settings.about.checkAgain')

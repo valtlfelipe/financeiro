@@ -115,7 +115,7 @@ test('connection failures give feedback and may be retried after one minute', fu
     Http::assertSentCount(2);
 });
 
-test('stable releases are shared across users for one hour and compared against the current installation', function () {
+test('stable releases are shared across users for one hour on the same installed version', function () {
     [$owner, $workspace] = ownerWithWorkspace();
     $member = User::factory()->create(['current_workspace_id' => $workspace->id]);
     $workspace->users()->attach($member, ['role' => MembershipRole::Member->value]);
@@ -124,12 +124,41 @@ test('stable releases are shared across users for one hour and compared against 
         ->push(['tag_name' => 'v1.2.0', 'draft' => false, 'prerelease' => false])
         ->push(['tag_name' => 'v1.3.0', 'draft' => false, 'prerelease' => false])]);
     $this->actingAs($owner)->getJson(route('about.updates'))->assertJsonPath('status', 'available');
-    config(['financeiro.version' => 'v1.2.0']);
-    $this->actingAs($member)->getJson(route('about.updates'))->assertJsonPath('status', 'current');
+    $this->actingAs($member)->getJson(route('about.updates'))->assertJsonPath('status', 'available');
     Http::assertSentCount(1);
 
     $this->travel(61)->minutes();
     $this->getJson(route('about.updates'))->assertJsonPath('status', 'available')->assertJsonPath('latestVersion', '1.3.0');
+
+    Http::assertSentCount(2);
+});
+
+test('a newly installed version does not reuse update results from the previous image', function () {
+    [$user] = ownerWithWorkspace();
+    Http::fake(['api.github.com/repos/valtlfelipe/financeiro/releases/latest' => Http::sequence()
+        ->push(['tag_name' => 'v1.2.0', 'draft' => false, 'prerelease' => false])
+        ->push(['tag_name' => 'v1.3.0', 'draft' => false, 'prerelease' => false])]);
+
+    $this->actingAs($user)->getJson(route('about.updates'))
+        ->assertJsonPath('latestVersion', '1.2.0');
+    config(['financeiro.version' => 'v1.2.0']);
+    $this->getJson(route('about.updates'))
+        ->assertJsonPath('status', 'available')
+        ->assertJsonPath('latestVersion', '1.3.0');
+
+    Http::assertSentCount(2);
+});
+
+test('checking again bypasses the cached release result', function () {
+    [$user] = ownerWithWorkspace();
+    Http::fake(['api.github.com/repos/valtlfelipe/financeiro/releases/latest' => Http::sequence()
+        ->push(['tag_name' => 'v1.2.0', 'draft' => false, 'prerelease' => false])
+        ->push(['tag_name' => 'v1.3.0', 'draft' => false, 'prerelease' => false])]);
+
+    $this->actingAs($user)->getJson(route('about.updates'))
+        ->assertJsonPath('latestVersion', '1.2.0');
+    $this->getJson(route('about.updates', ['refresh' => true]))
+        ->assertJsonPath('latestVersion', '1.3.0');
 
     Http::assertSentCount(2);
 });

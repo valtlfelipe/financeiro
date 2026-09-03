@@ -8,23 +8,28 @@ use Illuminate\Support\Facades\Http;
 
 class CheckForUpdates
 {
-    private const string CACHE_KEY = 'financeiro.latest-release.v1';
+    private const string CACHE_KEY = 'financeiro.latest-release.v2';
 
     /** @return array{status: string, latestVersion: ?string, releaseUrl: ?string, checkedAt: string} */
-    public function handle(): array
+    public function handle(bool $refresh = false): array
     {
-        $release = Cache::get(self::CACHE_KEY);
+        $currentVersion = $this->normalizeVersion(config('financeiro.version'));
+        $cacheKey = self::CACHE_KEY.'.'.($currentVersion ?? 'development');
+
+        if ($refresh) {
+            Cache::forget($cacheKey);
+        }
+
+        $release = Cache::get($cacheKey);
 
         if ($release === null) {
             $release = $this->fetchRelease();
-            Cache::put(self::CACHE_KEY, $release, $release['latestVersion'] === null ? 60 : 3600);
+            Cache::put($cacheKey, $release, $release['latestVersion'] === null ? 60 : 3600);
         }
 
         if ($release['latestVersion'] === null) {
             return $release;
         }
-
-        $currentVersion = $this->normalizeVersion(config('financeiro.version'));
 
         return [
             'status' => $currentVersion === null

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Actions\CheckForUpdates;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,9 +18,9 @@ class AboutController extends Controller
         ]);
     }
 
-    public function updates(CheckForUpdates $checkForUpdates): JsonResponse
+    public function updates(Request $request, CheckForUpdates $checkForUpdates): JsonResponse
     {
-        return response()->json($checkForUpdates->handle())
+        return response()->json($checkForUpdates->handle($request->boolean('refresh')))
             ->header('Cache-Control', 'no-store');
     }
 }
