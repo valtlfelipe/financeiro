@@ -8,7 +8,7 @@ O app existe para responder duas perguntas, sem atrito: o que está previsto par
 [![Release](https://img.shields.io/github/v/release/valtlfelipe/financeiro)](https://github.com/valtlfelipe/financeiro/releases)
 [![Licença](https://img.shields.io/badge/licença-AGPL--3.0-blue.svg)](LICENSE)
 
-![Painel do Financeiro com resumo mensal, lançamentos pendentes e saldos de contas fictícias](docs/images/dashboard-demo.jpg)
+![Painel do Financeiro com resumo mensal, lançamentos pendentes e saldos de contas fictícias](docs/images/demo.png)
 
 *Conta de demonstração com dados fictícios.*
 
