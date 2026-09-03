@@ -131,6 +131,7 @@
             "type": "Tipo",
             "initialBalance": "Saldo inicial",
             "balanceDate": "Data do saldo",
+            "balanceDateHint": "Informe o saldo disponível ao fim desta data. Apenas lançamentos realizados com data posterior alteram esse valor.",
             "color": "Cor",
             "archive": "Arquivar",
             "archiveTitle": "Arquivar conta?",

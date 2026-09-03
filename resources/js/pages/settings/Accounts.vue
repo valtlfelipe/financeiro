@@ -136,6 +136,7 @@ function submit(): void {
                     id="initial_balance"
                     v-model="amount"
                     class="font-data"
+                    aria-describedby="balance_date_hint"
                 /><InputError :message="form.errors.initial_balance_minor" />
             </div>
             <div class="grid gap-2">
@@ -147,8 +148,15 @@ function submit(): void {
                     v-model="form.balance_date"
                     type="date"
                     required
+                    aria-describedby="balance_date_hint"
                 />
             </div>
+            <p
+                id="balance_date_hint"
+                class="text-muted-foreground text-xs leading-relaxed sm:col-span-2"
+            >
+                {{ t('finance.accounts.balanceDateHint') }}
+            </p>
             <div class="grid gap-2">
                 <Label for="account_color">{{
                     t('finance.accounts.color')

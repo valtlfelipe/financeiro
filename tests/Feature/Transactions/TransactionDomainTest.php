@@ -65,6 +65,9 @@ test('money and monthly totals remain integer cents and transfers are excluded',
     Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->incomeCategory->id, 'type' => TransactionType::Income, 'amount_minor' => 10001, 'due_on' => '2026-09-03', 'settled_at' => now()]);
     Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->expenseCategory->id, 'type' => TransactionType::Expense, 'amount_minor' => 3334, 'due_on' => '2026-09-04']);
     Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'destination_account_id' => $this->destination->id, 'category_id' => null, 'type' => TransactionType::Transfer, 'amount_minor' => 999999, 'due_on' => '2026-09-05', 'settled_at' => now()]);
+    $deleted = Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->incomeCategory->id, 'type' => TransactionType::Income, 'amount_minor' => 500000, 'due_on' => '2026-09-06', 'settled_at' => now()]);
+    $deleted->delete();
+    Transaction::factory()->create(['type' => TransactionType::Income, 'amount_minor' => 700000, 'due_on' => '2026-09-07', 'settled_at' => now()]);
 
     expect(app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01')))->toBe([
         'planned_income_minor' => 10001,
