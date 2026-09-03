@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { Settings2, Tags, UserRound, Users, WalletCards } from '@lucide/vue';
+import {
+    Info,
+    Settings2,
+    Tags,
+    UserRound,
+    Users,
+    WalletCards,
+} from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
+import { show as about } from '@/routes/about';
 import { index as accounts } from '@/routes/accounts';
 import { index as categories } from '@/routes/categories';
 import { index as members } from '@/routes/invitations';
@@ -43,6 +51,12 @@ const navigation = computed(() =>
             label: t('settings.sections.preferences'),
             href: preferences(),
             icon: Settings2,
+            visible: true,
+        },
+        {
+            label: t('settings.sections.about'),
+            href: about(),
+            icon: Info,
             visible: true,
         },
     ].filter((item) => item.visible),

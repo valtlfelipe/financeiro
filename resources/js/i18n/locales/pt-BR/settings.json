@@ -8,7 +8,8 @@
             "accounts": "Contas",
             "categories": "Categorias",
             "members": "Pessoas",
-            "preferences": "Preferências"
+            "preferences": "Preferências",
+            "about": "Sobre"
         },
         "profile": {
             "title": "Meu perfil",
@@ -52,6 +53,34 @@
             "copyLink": "Copiar link",
             "copied": "Link copiado",
             "pending": "Convites pendentes"
+        },
+        "about": {
+            "description": "Suas finanças, no seu servidor. Organize contas, receitas e despesas com um projeto gratuito e de código aberto.",
+            "installedVersion": "Versão instalada",
+            "developmentVersion": "Em desenvolvimento",
+            "checking": "Verificando atualizações…",
+            "checkingHint": "Consultando a versão estável mais recente no GitHub.",
+            "status": {
+                "available": "A versão {version} está disponível",
+                "current": "Você está em dia",
+                "development": "Versão de desenvolvimento",
+                "unavailable": "Não foi possível verificar"
+            },
+            "hint": {
+                "available": "Veja as novidades e as instruções antes de atualizar sua instalação.",
+                "current": "Não há uma versão estável mais recente para instalar.",
+                "development": "Esta instalação não tem uma versão de release para comparar.",
+                "unavailable": "Confira a conexão e tente novamente em um minuto. Você também pode consultar as versões no repositório."
+            },
+            "checkedAt": "Última consulta: {date}",
+            "viewRelease": "Ver nova versão",
+            "checkAgain": "Verificar novamente",
+            "developedBy": "Desenvolvido por",
+            "license": "Licença",
+            "supportTitle": "Ajude o Financeiro a continuar crescendo",
+            "supportDescription": "Se o projeto faz parte do seu dia a dia, você pode apoiar o desenvolvimento pelo GitHub Sponsors.",
+            "support": "Apoiar o projeto",
+            "repository": "Ver no GitHub"
         }
     }
 }

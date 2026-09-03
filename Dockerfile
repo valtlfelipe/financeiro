@@ -31,6 +31,9 @@ RUN npm run build
 FROM dunglas/frankenphp:1-php8.5-bookworm
 WORKDIR /app
 
+ARG FINANCEIRO_VERSION=dev
+ENV FINANCEIRO_VERSION=${FINANCEIRO_VERSION}
+
 RUN install-php-extensions pdo_pgsql intl zip opcache pcntl
 
 COPY --from=vendor --chown=www-data:www-data /app /app
