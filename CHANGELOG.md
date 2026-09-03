@@ -4,6 +4,23 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-03
+
+### Added
+
+- Seletor de espaços no cabeçalho, com indicação do papel de proprietário ou membro e troca direta para a visão geral.
+- Criação de espaços por usuários que já são proprietários, com conta principal, categorias iniciais, moeda BRL e fuso `America/Sao_Paulo`.
+
+### Changed
+
+- O espaço ativo passa a ser mantido por sessão, usando a preferência salva apenas para iniciar novas sessões e preservando escolhas independentes entre navegadores e dispositivos.
+- Trocas com formulários alterados usam o diálogo da aplicação para confirmar o descarte, mantendo o rascunho quando canceladas.
+
+### Fixed
+
+- Mutações antigas ou sem o identificador do espaço são rejeitadas antes da gravação, evitando que abas desatualizadas alterem outro espaço.
+- Cadastro inicial e aceite de convites inicializam o espaço da sessão, e vínculos removidos são revalidados em cada requisição.
+
 ## [1.3.0] - 2026-09-03
 
 ### Added
@@ -117,7 +134,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/valtlfelipe/financeiro/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/valtlfelipe/financeiro/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/valtlfelipe/financeiro/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/valtlfelipe/financeiro/compare/v1.0.4...v1.1.0
