@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\Settings\AboutController;
 use App\Http\Controllers\Settings\PreferenceController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -51,6 +52,8 @@ Route::middleware(['auth', 'workspace'])->group(function () {
     Route::get('settings/members', [InvitationController::class, 'index'])->name('invitations.index');
     Route::post('settings/invitations', [InvitationController::class, 'store'])
         ->middleware('throttle:10,1')->name('invitations.store');
+    Route::delete('settings/invitations/{invitation}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
+    Route::delete('settings/members/{member}', [MembershipController::class, 'destroy'])->name('members.destroy');
     Route::get('settings/preferences', fn () => Inertia::render('settings/Preferences'))->name('preferences.edit');
     Route::patch('settings/preferences', [PreferenceController::class, 'update'])->name('preferences.update');
     Route::patch('settings/locale', LocaleController::class)->name('locale.update');

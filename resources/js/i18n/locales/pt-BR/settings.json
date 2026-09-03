@@ -52,7 +52,15 @@
             "inviteLink": "Link do convite",
             "copyLink": "Copiar link",
             "copied": "Link copiado",
-            "pending": "Convites pendentes"
+            "pending": "Convites pendentes",
+            "cancelTitle": "Cancelar convite?",
+            "cancelDescription": "O convite para {email} será cancelado e o link deixará de funcionar. Você poderá criar outro convite depois.",
+            "cancelAction": "Cancelar convite",
+            "cancelLabel": "Cancelar convite para {email}",
+            "removeTitle": "Remover membro?",
+            "removeDescription": "{name} perderá o acesso a este espaço financeiro. Os lançamentos serão mantidos. Para voltar, será necessário um novo convite.",
+            "removeAction": "Remover membro",
+            "removeLabel": "Remover {name} do espaço"
         },
         "about": {
             "description": "Suas finanças, no seu servidor. Organize contas, receitas e despesas com um projeto gratuito e de código aberto.",

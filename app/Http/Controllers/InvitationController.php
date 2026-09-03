@@ -75,6 +75,21 @@ class InvitationController extends Controller
         ]);
     }
 
+    public function destroy(Request $request, string $invitation): RedirectResponse
+    {
+        abort_unless($this->isOwner($request), 403);
+
+        $request->user()->currentWorkspaceOrFail()->invitations()
+            ->whereNull('accepted_at')
+            ->findOrFail($invitation)
+            ->delete();
+
+        $request->session()->forget('invitation_url');
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('app.invitation.cancelled')]);
+
+        return to_route('invitations.index');
+    }
+
     public function accept(AcceptInvitationRequest $request, string $token): RedirectResponse
     {
         $invitation = $request->invitation();

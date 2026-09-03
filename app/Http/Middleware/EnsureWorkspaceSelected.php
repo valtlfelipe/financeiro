@@ -24,9 +24,7 @@ class EnsureWorkspaceSelected
         if ($user->current_workspace_id === null) {
             $workspaceId = $user->workspaces()->value('workspaces.id');
 
-            if ($workspaceId === null) {
-                return redirect()->route('setup.create');
-            }
+            abort_if($workspaceId === null, 403);
 
             $user->update(['current_workspace_id' => $workspaceId]);
         }

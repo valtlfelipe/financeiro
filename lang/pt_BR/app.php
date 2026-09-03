@@ -34,6 +34,12 @@ return [
     ],
     'invitation' => [
         'created' => 'Convite criado. Copie o link para compartilhar.',
+        'already_member' => 'Este e-mail já pertence a uma pessoa deste espaço.',
+        'already_pending' => 'Já existe um convite pendente para este e-mail.',
+        'cancelled' => 'Convite cancelado.',
+    ],
+    'membership' => [
+        'removed' => 'Membro removido do espaço.',
     ],
     'locale' => [
         'updated' => 'Idioma atualizado.',

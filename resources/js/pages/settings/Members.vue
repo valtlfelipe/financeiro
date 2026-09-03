@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
-import { Check, Copy, MailPlus, Users } from '@lucide/vue';
+import { Form, Head, useForm } from '@inertiajs/vue3';
+import { Check, Copy, MailPlus, UserMinus, Users, X } from '@lucide/vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputError from '@/components/InputError.vue';
 import UserAvatar from '@/components/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { store } from '@/routes/invitations';
+import { useOnline } from '@/composables/useOnline';
+import { destroy as cancelInvitation, store } from '@/routes/invitations';
+import { destroy as removeMember } from '@/routes/members';
 
 defineProps<{
     members: Array<{
@@ -22,6 +25,22 @@ defineProps<{
 }>();
 const { t } = useI18n();
 const copied = ref(false);
+const online = useOnline();
+const cancelForm = useForm({});
+const removeForm = useForm({});
+
+function cancel(invitationId: number): void {
+    if (cancelForm.processing || !online.value) return;
+    cancelForm.delete(cancelInvitation.url(invitationId), {
+        preserveScroll: true,
+    });
+}
+
+function remove(memberId: number): void {
+    if (removeForm.processing || !online.value) return;
+    removeForm.delete(removeMember.url(memberId), { preserveScroll: true });
+}
+
 async function copyLink(url: string): Promise<void> {
     await navigator.clipboard.writeText(url);
     copied.value = true;
@@ -57,21 +76,24 @@ async function copyLink(url: string): Promise<void> {
             v-bind="store.form()"
             reset-on-success
             v-slot="{ errors, processing }"
-            class="border-border bg-muted/50 grid gap-3 border-b p-5 sm:grid-cols-[1fr_auto] sm:p-6"
+            class="border-border bg-muted/50 grid gap-x-3 gap-y-2 border-b p-5 sm:grid-cols-[1fr_auto] sm:p-6"
         >
-            <div class="grid gap-2">
-                <Label for="invite_email">{{
-                    t('settings.members.email')
-                }}</Label
-                ><Input
-                    id="invite_email"
-                    name="email"
-                    type="email"
-                    required
-                    :placeholder="t('auth.fields.emailPlaceholder')"
-                /><InputError :message="errors.email" />
-            </div>
-            <div class="flex items-end">
+            <Label for="invite_email" class="sm:col-span-2">{{
+                t('settings.members.email')
+            }}</Label>
+            <Input
+                id="invite_email"
+                name="email"
+                type="email"
+                required
+                :placeholder="t('auth.fields.emailPlaceholder')"
+            />
+            <InputError
+                v-if="errors.email"
+                :message="errors.email"
+                class="sm:col-start-1"
+            />
+            <div class="flex sm:col-start-2 sm:row-start-2">
                 <Button type="submit" class="h-11 gap-2" :disabled="processing"
                     ><MailPlus class="size-4" />{{
                         t('settings.members.invite')
@@ -130,6 +152,44 @@ async function copyLink(url: string): Promise<void> {
                         )
                     }}</span
                 >
+                <ConfirmationDialog
+                    v-if="member.role !== 'owner'"
+                    :title="t('settings.members.removeTitle')"
+                    :resource-name="member.name"
+                    :description="
+                        t('settings.members.removeDescription', {
+                            name: member.name,
+                        })
+                    "
+                    :confirm-label="t('settings.members.removeAction')"
+                    :processing="removeForm.processing"
+                    :disabled="!online"
+                    :error="
+                        Object.values(removeForm.errors).find(
+                            (message): message is string =>
+                                typeof message === 'string',
+                        )
+                    "
+                    destructive
+                    @confirm="remove(member.id)"
+                >
+                    <template #trigger>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="text-destructive size-11 shrink-0"
+                            :disabled="!online || removeForm.processing"
+                            :aria-label="
+                                t('settings.members.removeLabel', {
+                                    name: member.name,
+                                })
+                            "
+                            @click="removeForm.clearErrors()"
+                        >
+                            <UserMinus class="size-4" aria-hidden="true" />
+                        </Button>
+                    </template>
+                </ConfirmationDialog>
             </article>
         </div>
 
@@ -142,13 +202,52 @@ async function copyLink(url: string): Promise<void> {
             >
                 {{ t('settings.members.pending') }}
             </h3>
-            <p
+            <div
                 v-for="invitation in pendingInvitations"
                 :key="invitation.id"
-                class="mt-3 text-sm font-semibold"
+                class="mt-3 flex items-center gap-3"
             >
-                {{ invitation.email }}
-            </p>
+                <p class="min-w-0 flex-1 truncate text-sm font-semibold">
+                    {{ invitation.email }}
+                </p>
+                <ConfirmationDialog
+                    :title="t('settings.members.cancelTitle')"
+                    :resource-name="invitation.email"
+                    :description="
+                        t('settings.members.cancelDescription', {
+                            email: invitation.email,
+                        })
+                    "
+                    :confirm-label="t('settings.members.cancelAction')"
+                    :processing="cancelForm.processing"
+                    :disabled="!online"
+                    :error="
+                        Object.values(cancelForm.errors).find(
+                            (message): message is string =>
+                                typeof message === 'string',
+                        )
+                    "
+                    destructive
+                    @confirm="cancel(invitation.id)"
+                >
+                    <template #trigger>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="text-destructive size-11 shrink-0"
+                            :disabled="!online || cancelForm.processing"
+                            :aria-label="
+                                t('settings.members.cancelLabel', {
+                                    email: invitation.email,
+                                })
+                            "
+                            @click="cancelForm.clearErrors()"
+                        >
+                            <X class="size-4" aria-hidden="true" />
+                        </Button>
+                    </template>
+                </ConfirmationDialog>
+            </div>
         </div>
     </section>
 </template>
