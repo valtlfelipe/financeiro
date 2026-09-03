@@ -4,6 +4,19 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-03
+
+### Added
+
+- Cancelamento de convites pendentes pelo proprietário, com confirmação e invalidação do link.
+- Remoção de membros pelo proprietário, com confirmação, revogação dos convites antigos e preservação da conta, dos lançamentos e do acesso a outros espaços. Proprietários não podem ser removidos.
+
+### Fixed
+
+- Convites passam a rejeitar e-mails de membros do mesmo espaço e convites pendentes duplicados, sem diferenciar maiúsculas de minúsculas. Contas de outros espaços continuam podendo ser convidadas.
+- Botão de criar convite permanece alinhado ao campo de e-mail quando há uma mensagem de validação.
+- Membros removidos sem outro espaço recebem acesso negado, evitando um ciclo de redirecionamentos para a configuração inicial.
+
 ## [1.2.0] - 2026-09-03
 
 ### Added
@@ -104,7 +117,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/valtlfelipe/financeiro/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/valtlfelipe/financeiro/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/valtlfelipe/financeiro/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/valtlfelipe/financeiro/compare/v1.0.3...v1.0.4
