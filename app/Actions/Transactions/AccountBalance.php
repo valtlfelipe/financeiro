@@ -27,10 +27,11 @@ class AccountBalance
     private const REALIZED_CONDITION = '(movements.settled_at IS NOT NULL AND (DATE(movements.due_on) <= ? OR movements.settled_at < ?))';
 
     /**
-     * Today's realized position plus every movement still pending on the target date.
+     * Today's realized position plus every movement dated through the target date.
+     * Each ledger row is summed once, so an entry already realized is never added twice.
      * Takes today, today's settlement cutoff, and the target date.
      */
-    private const PROJECTED_CONDITION = '('.self::REALIZED_CONDITION.' OR (movements.settled_at IS NULL AND DATE(movements.due_on) <= ?))';
+    private const PROJECTED_CONDITION = '('.self::REALIZED_CONDITION.' OR DATE(movements.due_on) <= ?)';
 
     /** @return Collection<int, Account> */
     public function currentAccounts(Workspace $workspace): Collection
@@ -134,9 +135,7 @@ class AccountBalance
         return $this->sum(
             $this->movements($account)->where(fn (Builder $query) => $query
                 ->where(fn (Builder $realized) => $this->applyRealized($realized, $account, $today))
-                ->orWhere(fn (Builder $pending) => $pending
-                    ->whereNull('settled_at')
-                    ->whereDate('due_on', '<=', $date->toDateString()))),
+                ->orWhereDate('due_on', '<=', $date->toDateString())),
             $account,
         );
     }
