@@ -63,7 +63,7 @@ class HandleInertiaRequests extends Middleware
         ];
     }
 
-    /** @return array{id: int, name: string, icon: string, currency: string, timezone: string, role: string}|null */
+    /** @return array{id: int, name: string, icon: string, currency: string, timezone: string, today: string, role: string}|null */
     private function workspace(?User $user): ?array
     {
         $workspace = $user?->currentWorkspace;
@@ -80,6 +80,7 @@ class HandleInertiaRequests extends Middleware
             'icon' => $workspace->icon,
             'currency' => $workspace->currency_code,
             'timezone' => $workspace->timezone,
+            'today' => $workspace->today()->toDateString(),
             'role' => $this->roleValue($role),
         ];
     }

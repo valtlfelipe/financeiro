@@ -301,6 +301,21 @@ test('monthly and yearly recurrences clamp calendar boundaries without drifting'
         ->and($yearly->transactions()->orderBy('due_on')->pluck('due_on')->map->format('Y-m-d')->all())->toBe(['2024-02-29', '2025-02-28', '2026-02-28']);
 });
 
+test('recurrence horizon follows the workspace civil date', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-01 02:30:00', 'UTC'));
+    $series = TransactionSeries::factory()->create([
+        'workspace_id' => $this->workspace->id,
+        'account_id' => $this->account->id,
+        'category_id' => $this->expenseCategory->id,
+        'starts_on' => '2026-10-01',
+        'ends_on' => null,
+        'frequency' => RecurrenceFrequency::Monthly,
+    ]);
+
+    expect(app(GenerateSeriesOccurrences::class)->handle($series))->toBe(12)
+        ->and($series->transactions()->latest('due_on')->firstOrFail()->due_on->toDateString())->toBe('2027-09-01');
+});
+
 test('transaction endpoints enforce workspace isolation and settlement returns updated totals', function () {
     $this->travelTo(CarbonImmutable::parse('2026-09-10 12:00:00'));
     [, $otherWorkspace] = ownerWithWorkspace();

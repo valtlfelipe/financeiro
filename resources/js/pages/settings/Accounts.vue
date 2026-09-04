@@ -33,7 +33,7 @@ const form = useForm({
     name: '',
     type: 'checking',
     initial_balance_minor: 0,
-    balance_date: new Date().toISOString().slice(0, 10),
+    balance_date: page.props.workspace?.today ?? '',
     color: '#148A62',
     icon: 'wallet-cards',
 });

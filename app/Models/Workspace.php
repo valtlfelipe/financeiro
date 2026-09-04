@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\MembershipRole;
+use Carbon\CarbonImmutable;
 use Database\Factories\WorkspaceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +33,11 @@ class Workspace extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'icon', 'currency_code', 'timezone'];
+
+    public function today(): CarbonImmutable
+    {
+        return CarbonImmutable::today($this->timezone);
+    }
 
     /** @return BelongsToMany<User, $this> */
     public function users(): BelongsToMany

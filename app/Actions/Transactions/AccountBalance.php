@@ -16,7 +16,7 @@ class AccountBalance
             $this->movements($account)
                 ->whereNotNull('settled_at')
                 ->whereDate('due_on', '>=', $account->balance_date->toDateString())
-                ->whereDate('due_on', '<=', CarbonImmutable::today($account->workspace->timezone)->toDateString()),
+                ->whereDate('due_on', '<=', $account->workspace->today()->toDateString()),
             $account,
         );
     }
@@ -42,7 +42,7 @@ class AccountBalance
             return 0;
         }
 
-        $today = CarbonImmutable::today($account->workspace->timezone);
+        $today = $account->workspace->today();
 
         if ($date->isBefore($today)) {
             return $this->settledThrough($account, $date);

@@ -50,7 +50,7 @@ const form = useForm({
     account_id: '',
     destination_account_id: '',
     category_id: '',
-    due_on: props.defaultDueOn ?? new Date().toISOString().slice(0, 10),
+    due_on: props.defaultDueOn ?? page.props.workspace?.today ?? '',
     notes: '',
     settled: false,
     series_kind: '',
@@ -88,8 +88,7 @@ function hydrate(transaction?: Transaction | null): void {
         amount.value = formatMinorForInput(0, page.props.locale);
         form.account_id = String(props.accounts[0]?.id ?? '');
         form.category_id = '';
-        form.due_on =
-            props.defaultDueOn ?? new Date().toISOString().slice(0, 10);
+        form.due_on = props.defaultDueOn ?? page.props.workspace?.today ?? '';
         return;
     }
 

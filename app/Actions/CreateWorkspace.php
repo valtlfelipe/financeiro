@@ -26,7 +26,7 @@ class CreateWorkspace
                 'name' => __('app.defaults.account'),
                 'type' => AccountType::Checking,
                 'initial_balance_minor' => 0,
-                'balance_date' => today(),
+                'balance_date' => $workspace->today(),
                 'icon' => 'wallet-cards',
                 'color' => '#148A62',
             ]);

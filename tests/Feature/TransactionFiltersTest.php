@@ -4,9 +4,11 @@ use App\CategoryType;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
+use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('list filters do not change the monthly summary', function (string $filter) {
+    $this->travelTo(CarbonImmutable::parse('2026-09-10 12:00:00'));
     [$user, $workspace] = ownerWithWorkspace();
     $account = Account::factory()->for($workspace)->create(['initial_balance_minor' => 0, 'balance_date' => '2026-08-31']);
     $otherAccount = Account::factory()->for($workspace)->create(['initial_balance_minor' => 0, 'balance_date' => '2026-08-31']);
@@ -52,4 +54,12 @@ test('changing months updates totals even when the filtered list is empty', func
             ->where('summary.planned_expense_minor', 45000)
             ->where('summary.opening_balance_minor', 90000)
             ->where('summary.forecast_balance_minor', 45000));
+});
+
+test('the default transaction month follows the workspace timezone', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-01 02:30:00', 'UTC'));
+    [$user] = ownerWithWorkspace();
+
+    $this->actingAs($user)->get(route('transactions.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('month', '2026-09'));
 });

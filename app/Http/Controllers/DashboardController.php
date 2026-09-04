@@ -18,7 +18,7 @@ class DashboardController extends Controller
     public function __invoke(Request $request, AccountBalance $accountBalance): Response
     {
         $workspace = $request->user()->currentWorkspaceOrFail();
-        $month = $this->month($request->string('month')->toString());
+        $month = $this->month($request->string('month')->toString(), $workspace->timezone);
         $transactions = $workspace->transactions()
             ->with(['account', 'destinationAccount', 'category', 'series'])
             ->whereBetween('due_on', [$month->startOfMonth(), $month->endOfMonth()])
@@ -40,12 +40,13 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function month(string $month): CarbonImmutable
+    private function month(string $month, string $timezone): CarbonImmutable
     {
         if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month) !== 1) {
-            return CarbonImmutable::today()->startOfMonth();
+            return CarbonImmutable::today($timezone)->startOfMonth();
         }
 
-        return CarbonImmutable::createFromFormat('!Y-m', $month) ?: CarbonImmutable::today()->startOfMonth();
+        return CarbonImmutable::createFromFormat('!Y-m', $month, $timezone)
+            ?: CarbonImmutable::today($timezone)->startOfMonth();
     }
 }

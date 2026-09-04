@@ -4,6 +4,7 @@ export type Workspace = {
     icon: string;
     currency: string;
     timezone: string;
+    today: string;
     role: 'owner' | 'member';
 };
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ChevronLeft, ChevronRight, Filter, Plus, Search } from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -29,6 +29,7 @@ const props = defineProps<{
     filters: Record<string, string | null>;
 }>();
 const { t } = useI18n();
+const page = usePage();
 const { formatDate, formatMonth } = useFinanceFormat();
 const items = ref([...props.transactions]);
 const summaryState = ref(props.summary);
@@ -116,10 +117,11 @@ const grouped = computed(() =>
     ),
 );
 const defaultDueOn = computed(() => {
-    const today = new Date();
+    const today = page.props.workspace?.today ?? `${props.month}-01`;
+    const todayDay = Number(today.slice(-2));
     const [year, month] = props.month.split('-').map(Number);
     const lastDay = new Date(year, month, 0).getDate();
-    const day = String(Math.min(today.getDate(), lastDay)).padStart(2, '0');
+    const day = String(Math.min(todayDay, lastDay)).padStart(2, '0');
 
     return `${props.month}-${day}`;
 });

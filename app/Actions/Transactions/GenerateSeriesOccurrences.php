@@ -13,7 +13,7 @@ class GenerateSeriesOccurrences
     {
         return $series->kind === SeriesKind::Installment
             ? $this->generateInstallments($series)
-            : $this->generateRecurrences($series, $horizon ?? CarbonImmutable::today()->addMonths(12));
+            : $this->generateRecurrences($series, $horizon ?? $series->workspace->today()->addMonths(12));
     }
 
     private function generateInstallments(TransactionSeries $series): int

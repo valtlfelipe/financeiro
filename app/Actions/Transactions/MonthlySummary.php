@@ -25,7 +25,7 @@ class MonthlySummary
         $income = $this->sumForType(clone $query, TransactionType::Income);
         $expense = $this->sumForType(clone $query, TransactionType::Expense);
         $accounts = $workspace->accounts()->get();
-        $today = CarbonImmutable::today($workspace->timezone);
+        $today = $workspace->today();
         $period = match (true) {
             $month->endOfMonth()->isBefore($today) => 'past',
             $month->isAfter($today->startOfMonth()) => 'future',

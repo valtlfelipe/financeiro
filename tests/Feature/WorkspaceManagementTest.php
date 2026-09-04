@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Workspace;
 use App\WorkspaceIcon;
+use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('an owner can create and select a workspace with the default financial structure', function () {
@@ -43,6 +44,25 @@ test('an owner can create and select a workspace with the default financial stru
     ]);
     $response->assertSessionHas(CurrentWorkspace::SESSION_KEY, $workspace->id);
     expect($workspace->id)->not->toBeIn([$ownedWorkspace->id, $sharedWorkspace->id]);
+});
+
+test('workspace defaults use its civil date at the utc day boundary', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-01 02:30:00', 'UTC'));
+    [$owner] = ownerWithWorkspace();
+
+    $this->actingAs($owner)->post(route('workspaces.store'), [
+        'workspace_name' => 'Fuso correto',
+        'icon' => WorkspaceIcon::House->value,
+    ])->assertRedirect(route('dashboard'));
+
+    $workspace = Workspace::query()->where('name', 'Fuso correto')->firstOrFail();
+
+    expect($workspace->today()->toDateString())->toBe('2026-09-30')
+        ->and($workspace->accounts->sole()->balance_date->toDateString())->toBe('2026-09-30');
+
+    $this->actingAs($owner)->get(route('dashboard'))->assertInertia(
+        fn (Assert $page) => $page->where('workspace.today', '2026-09-30'),
+    );
 });
 
 test('members who do not own any workspace cannot create one', function () {

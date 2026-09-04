@@ -24,7 +24,7 @@ class GenerateRecurringTransactions extends Command
 
         TransactionSeries::query()
             ->where('kind', SeriesKind::Recurring)
-            ->where(fn ($query) => $query->whereNull('ends_on')->orWhere('ends_on', '>=', today()))
+            ->with('workspace')
             ->eachById(function (TransactionSeries $series) use ($generator, &$created, &$failed): void {
                 try {
                     $created += $generator->handle($series);
