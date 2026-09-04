@@ -29,10 +29,17 @@ jobs:
       - run: vendor/bin/pint --test
       - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
       - run: npm run ci
+      - uses: actions/upload-artifact@v7
+        with:
+          name: vite-build
+          path: public/build
+          if-no-files-found: error
+          retention-days: 1
       - run: php artisan test --compact
 
   postgresql:
     name: PostgreSQL 17
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -66,4 +73,8 @@ jobs:
       - run: composer install --no-interaction --prefer-dist
       - run: cp .env.example .env
       - run: php artisan key:generate
+      - uses: actions/download-artifact@v7
+        with:
+          name: vite-build
+          path: public/build
       - run: php artisan test --compact
