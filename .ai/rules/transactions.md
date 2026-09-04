@@ -16,3 +16,6 @@ Keep at least one active account. An account may be archived only at zero curren
 
 ## Serialize money as decimal integer strings
 Database rows keep integer minor units. Aggregates use arbitrary-precision signed decimal arithmetic in PHP, and every monetary value sent to JavaScript is a decimal integer string. The frontend must format and compare those strings with BigInt and must never coerce API money to Number. Form inputs may submit safe integer minor units within their explicit digit limit.
+
+## Enforce financial shapes in the database
+Keep positive transaction and series amounts, known enum values, valid transfer source/destination shapes, paired installment metadata, valid recurrence shapes, nonzero installment allocations, and ordered series dates protected by database constraints. PostgreSQL uses CHECK constraints; SQLite test databases use equivalent INSERT and UPDATE triggers.

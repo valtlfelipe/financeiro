@@ -25,7 +25,9 @@ test('deleting a single transaction preserves other occurrences', function () {
 test('future deletion preserves prior and already settled occurrences', function () {
     [$user, $workspace] = ownerWithWorkspace();
     $account = Account::factory()->for($workspace)->create();
-    $series = TransactionSeries::factory()->for($workspace)->for($account)->create();
+    $series = TransactionSeries::factory()->for($workspace)->for($account)->create([
+        'starts_on' => '2026-08-01',
+    ]);
     $transactions = Transaction::factory()->for($workspace)->for($account)->for($series, 'series')
         ->count(4)->sequence(
             ['due_on' => '2026-08-01'],
