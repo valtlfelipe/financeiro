@@ -165,6 +165,41 @@ test('monthly balances carry actual and forecast positions into the following mo
         ->and($octoberAccounts[$this->account->id]['forecast_balance_minor'])->toBe('100110026');
 });
 
+test('a settled recurring income before a zero balance date carries into the current month', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-04 12:00:00', 'America/Sao_Paulo'));
+    $this->account->update([
+        'initial_balance_minor' => 0,
+        'balance_date' => '2026-09-04',
+    ]);
+
+    app(CreateTransactions::class)->handle($this->workspace, [
+        'type' => TransactionType::Income->value,
+        'amount_minor' => 3424000,
+        'description' => 'Transferea',
+        'account_id' => $this->account->id,
+        'category_id' => $this->incomeCategory->id,
+        'due_on' => '2026-08-31',
+        'settled' => true,
+        'series_kind' => SeriesKind::Recurring->value,
+        'frequency' => RecurrenceFrequency::Monthly->value,
+        'ends_on' => '2026-09-30',
+    ]);
+
+    $august = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-08-01'));
+    $september = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01'));
+
+    expect($august['realized_balance_minor'])->toBe('3424000')
+        ->and($august['forecast_balance_minor'])->toBe('3424000')
+        ->and($september['opening_balance_minor'])->toBe('3424000')
+        ->and($september['realized_balance_minor'])->toBe('3424000')
+        ->and($september['forecast_balance_minor'])->toBe('6848000');
+
+    $septemberAccount = collect($september['account_balances'])->firstWhere('id', $this->account->id);
+
+    expect($septemberAccount['realized_balance_minor'])->toBe('3424000')
+        ->and($septemberAccount['forecast_balance_minor'])->toBe('6848000');
+});
+
 test('monthly summary uses a constant number of aggregate queries as accounts grow', function () {
     $this->travelTo(CarbonImmutable::parse('2026-09-15 12:00:00'));
 

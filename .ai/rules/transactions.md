@@ -19,3 +19,6 @@ Database rows keep integer minor units. Aggregates use arbitrary-precision signe
 
 ## Enforce financial shapes in the database
 Keep positive transaction and series amounts, known enum values, valid transfer source/destination shapes, paired installment metadata, valid recurrence shapes, nonzero installment allocations, and ordered series dates protected by database constraints. PostgreSQL uses CHECK constraints; SQLite test databases use equivalent INSERT and UPDATE triggers.
+
+## Do not let zero opening balances hide history
+Treat a zero initial balance as a neutral baseline rather than a dated snapshot: recorded movements before balance_date must still affect realized and forecast positions. A non-zero initial balance remains a dated snapshot, so movements before balance_date stay excluded to prevent double counting.

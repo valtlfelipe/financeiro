@@ -24,7 +24,7 @@ class AccountBalance
         ], includeArchived: false);
 
         return $accounts->each(function (Account $account) use ($today): void {
-            $balance = $today->isBefore($account->balance_date)
+            $balance = $this->isBeforeOpeningBalance($account, $today)
                 ? '0'
                 : MinorAmount::add($account->initial_balance_minor, $this->rowDelta($account, 'current'));
             $account->setAttribute('balance_minor', $balance);
@@ -66,7 +66,7 @@ class AccountBalance
             $balances = [];
 
             foreach ($positions as $name => $position) {
-                $accountBalance = $position['date']->isBefore($account->balance_date)
+                $accountBalance = $this->isBeforeOpeningBalance($account, $position['date'])
                     ? '0'
                     : MinorAmount::add($account->initial_balance_minor, $this->rowDelta($account, $name));
                 $totals[$name] = MinorAmount::add($totals[$name], $accountBalance);
@@ -90,14 +90,15 @@ class AccountBalance
 
     public function handle(Account $account): string
     {
-        if ($account->workspace->today()->isBefore($account->balance_date)) {
+        if ($this->isBeforeOpeningBalance($account, $account->workspace->today())) {
             return '0';
         }
 
         return $this->sum(
             $this->movements($account)
                 ->whereNotNull('settled_at')
-                ->whereDate('due_on', '>=', $account->balance_date->toDateString())
+                ->when($this->hasDatedOpeningBalance($account), fn (Builder $query) => $query
+                    ->whereDate('due_on', '>=', $account->balance_date->toDateString()))
                 ->whereDate('due_on', '<=', $account->workspace->today()->toDateString()),
             $account,
         );
@@ -105,14 +106,15 @@ class AccountBalance
 
     public function settledThrough(Account $account, CarbonImmutable $date): string
     {
-        if ($date->isBefore($account->balance_date)) {
+        if ($this->isBeforeOpeningBalance($account, $date)) {
             return '0';
         }
 
         return $this->sum(
             $this->movements($account)
                 ->whereNotNull('settled_at')
-                ->whereDate('due_on', '>=', $account->balance_date->toDateString())
+                ->when($this->hasDatedOpeningBalance($account), fn (Builder $query) => $query
+                    ->whereDate('due_on', '>=', $account->balance_date->toDateString()))
                 ->whereDate('due_on', '<=', $date->toDateString()),
             $account,
         );
@@ -120,7 +122,7 @@ class AccountBalance
 
     public function projectedThrough(Account $account, CarbonImmutable $date): string
     {
-        if ($date->isBefore($account->balance_date)) {
+        if ($this->isBeforeOpeningBalance($account, $date)) {
             return '0';
         }
 
@@ -129,7 +131,8 @@ class AccountBalance
         if ($today->isBefore($account->balance_date)) {
             return $this->sum(
                 $this->movements($account)
-                    ->whereDate('due_on', '>=', $account->balance_date->toDateString())
+                    ->when($this->hasDatedOpeningBalance($account), fn (Builder $query) => $query
+                        ->whereDate('due_on', '>=', $account->balance_date->toDateString()))
                     ->whereDate('due_on', '<=', $date->toDateString()),
                 $account,
             );
@@ -141,7 +144,8 @@ class AccountBalance
 
         $projectionDelta = $this->delta(
             $this->movements($account)
-                ->whereDate('due_on', '>=', $account->balance_date->toDateString())
+                ->when($this->hasDatedOpeningBalance($account), fn (Builder $query) => $query
+                    ->whereDate('due_on', '>=', $account->balance_date->toDateString()))
                 ->whereDate('due_on', '<=', $date->toDateString())
                 ->where(fn (Builder $query) => $query
                     ->whereNull('settled_at')
@@ -225,12 +229,12 @@ class AccountBalance
 
         foreach ($positions as $name => $position) {
             $sql = match ($name.'.'.($position['settled_only'] ? 'settled' : 'all')) {
-                'current.settled' => 'COALESCE(SUM(CASE WHEN DATE(movements.due_on) >= DATE(accounts.balance_date) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS current_delta',
-                'opening.settled' => 'COALESCE(SUM(CASE WHEN DATE(movements.due_on) >= DATE(accounts.balance_date) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS opening_delta',
-                'opening.all' => 'COALESCE(SUM(CASE WHEN DATE(movements.due_on) >= DATE(accounts.balance_date) AND DATE(movements.due_on) <= ? THEN movements.delta_minor ELSE 0 END), 0) AS opening_delta',
-                'forecast.settled' => 'COALESCE(SUM(CASE WHEN DATE(movements.due_on) >= DATE(accounts.balance_date) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS forecast_delta',
-                'forecast.all' => 'COALESCE(SUM(CASE WHEN DATE(movements.due_on) >= DATE(accounts.balance_date) AND DATE(movements.due_on) <= ? THEN movements.delta_minor ELSE 0 END), 0) AS forecast_delta',
-                'realized.settled' => 'COALESCE(SUM(CASE WHEN DATE(movements.due_on) >= DATE(accounts.balance_date) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS realized_delta',
+                'current.settled' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS current_delta',
+                'opening.settled' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS opening_delta',
+                'opening.all' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? THEN movements.delta_minor ELSE 0 END), 0) AS opening_delta',
+                'forecast.settled' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS forecast_delta',
+                'forecast.all' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? THEN movements.delta_minor ELSE 0 END), 0) AS forecast_delta',
+                'realized.settled' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS realized_delta',
                 default => throw new \InvalidArgumentException("Unsupported balance position: {$name}"),
             };
             $query->selectRaw($sql, [$position['date']->toDateString()]);
@@ -276,5 +280,15 @@ class AccountBalance
         $delta = $account->getAttribute($position.'_delta');
 
         return is_int($delta) || is_string($delta) ? MinorAmount::normalize($delta) : '0';
+    }
+
+    private function hasDatedOpeningBalance(Account $account): bool
+    {
+        return $account->initial_balance_minor !== 0;
+    }
+
+    private function isBeforeOpeningBalance(Account $account, CarbonImmutable $date): bool
+    {
+        return $this->hasDatedOpeningBalance($account) && $date->isBefore($account->balance_date);
     }
 }
