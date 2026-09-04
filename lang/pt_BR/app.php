@@ -21,6 +21,12 @@ return [
         'created' => 'Conta criada.',
         'updated' => 'Conta atualizada.',
         'archived' => 'Conta arquivada.',
+        'cannot_archive_last' => 'Mantenha pelo menos uma conta ativa no espaço.',
+        'cannot_archive_balance' => 'Zere o saldo atual da conta antes de arquivá-la.',
+        'cannot_archive_pending' => 'Resolva ou mova os lançamentos pendentes desta conta antes de arquivá-la.',
+        'cannot_archive_future' => 'Resolva ou mova os lançamentos futuros desta conta antes de arquivá-la.',
+        'cannot_archive_recurring' => 'Encerre as recorrências desta conta antes de arquivá-la.',
+        'archived_history_locked' => 'Em uma conta arquivada, altere apenas descrição, categoria ou observação para não modificar um saldo oculto.',
     ],
     'category' => [
         'created' => 'Categoria criada.',

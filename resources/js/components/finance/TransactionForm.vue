@@ -316,6 +316,9 @@ function submit(scope: 'single' | 'future'): void {
                         :value="String(account.id)"
                     >
                         {{ account.name }}
+                        <template v-if="account.isArchived">
+                            · {{ t('common.archived') }}
+                        </template>
                     </option>
                 </select>
                 <InputError :message="form.errors.account_id" />
@@ -339,6 +342,9 @@ function submit(scope: 'single' | 'future'): void {
                         :value="String(account.id)"
                     >
                         {{ account.name }}
+                        <template v-if="account.isArchived">
+                            · {{ t('common.archived') }}
+                        </template>
                     </option>
                 </select>
                 <InputError :message="form.errors.destination_account_id" />

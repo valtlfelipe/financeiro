@@ -25,6 +25,7 @@ const props = defineProps<{
     summary: MonthlySummary;
     transactions: Transaction[];
     accounts: Account[];
+    filterAccounts: Account[];
     categories: Category[];
     filters: Record<string, string | null>;
 }>();
@@ -74,9 +75,11 @@ const filterOptions = computed(() => [
         key: 'account_id' as const,
         label: t('finance.transactions.filters.account'),
         all: t('finance.transactions.filters.allAccounts'),
-        options: props.accounts.map((account) => ({
+        options: props.filterAccounts.map((account) => ({
             value: String(account.id),
-            label: account.name,
+            label: account.isArchived
+                ? `${account.name} · ${t('common.archived')}`
+                : account.name,
         })),
     },
     {

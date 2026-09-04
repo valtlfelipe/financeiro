@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { Copy, Pencil, Trash2 } from '@lucide/vue';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,24 @@ const { formatDate, formatMoney } = useFinanceFormat();
 const deleteOpen = ref(false);
 const deleteForm = useForm({ scope: 'single' as 'single' | 'future' });
 const networkOnline = useOnline();
+const formAccounts = computed(() => {
+    const accounts = new Map(
+        props.accounts.map((account) => [account.id, account]),
+    );
+
+    if (props.mode === 'edit' && props.transaction) {
+        accounts.set(props.transaction.account.id, props.transaction.account);
+
+        if (props.transaction.destinationAccount) {
+            accounts.set(
+                props.transaction.destinationAccount.id,
+                props.transaction.destinationAccount,
+            );
+        }
+    }
+
+    return [...accounts.values()];
+});
 
 watch(
     () => props.transaction?.id,
@@ -278,7 +296,7 @@ function remove(scope: 'single' | 'future' = 'single'): void {
                 <TransactionForm
                     :transaction="transaction"
                     :force-create="mode === 'copy'"
-                    :accounts="accounts"
+                    :accounts="formAccounts"
                     :categories="categories"
                     :default-due-on="defaultDueOn"
                     :online="online"

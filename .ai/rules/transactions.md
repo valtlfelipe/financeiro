@@ -10,3 +10,6 @@ Treat initial_balance_minor as the account balance at the start of balance_date,
 
 ## Preserve installment totals
 Installment series store the full purchase amount while each transaction stores its allocated installment amount. Non-monetary edits must preserve the original remainder distribution. When the amount of this and future installments changes, recompute the series total from its active occurrences instead of copying one installment amount into the series total.
+
+## Archive accounts only after financial closure
+Keep at least one active account. An account may be archived only at zero current balance and without pending entries, future movements, or active recurrences. Archived accounts remain part of historical summaries and filters, but new entries cannot target them. Existing history may change only descriptive fields so an archived balance cannot become hidden and nonzero.

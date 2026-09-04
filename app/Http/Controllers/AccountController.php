@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Accounts\ArchiveAccount;
 use App\Http\Requests\StoreAccountRequest;
 use App\Http\Resources\AccountResource;
 use App\Models\Account;
@@ -47,9 +48,9 @@ class AccountController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, string $account): RedirectResponse
+    public function destroy(Request $request, string $account, ArchiveAccount $archiver): RedirectResponse
     {
-        $this->account($request, $account)->update(['is_archived' => true]);
+        $archiver->handle($this->account($request, $account));
 
         return back()->with('toast', ['type' => 'success', 'message' => __('app.account.archived')]);
     }

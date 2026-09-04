@@ -16,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -54,6 +55,7 @@ class TransactionController extends Controller
             'summary' => $summary->handle($workspace, $month),
             'transactions' => TransactionResource::collection($query->orderBy('due_on')->orderBy('id')->get())->resolve(),
             'accounts' => AccountResource::collection($workspace->accounts()->where('is_archived', false)->orderBy('name')->get())->resolve(),
+            'filterAccounts' => AccountResource::collection($workspace->accounts()->orderBy('is_archived')->orderBy('name')->get())->resolve(),
             'categories' => CategoryResource::collection($workspace->categories()->where('is_archived', false)->orderBy('name')->get())->resolve(),
             'filters' => $request->only(['search', 'account_id', 'category_id', 'type', 'status']),
         ]);
@@ -78,6 +80,7 @@ class TransactionController extends Controller
         $request->validate([
             'scope' => [$item->series === null ? 'sometimes' : 'required', 'in:single,future'],
         ]);
+        $this->guardArchivedAccountHistory($request, $item);
         $originalDueOn = $item->due_on->toDateString();
         $originalAmount = $item->amount_minor;
         $attributes = [
@@ -164,8 +167,28 @@ class TransactionController extends Controller
     private function transaction(Request $request, string $id): Transaction
     {
         return $request->user()->currentWorkspaceOrFail()->transactions()
-            ->with('series')
+            ->with(['account', 'destinationAccount', 'series'])
             ->findOrFail($id);
+    }
+
+    private function guardArchivedAccountHistory(UpdateTransactionRequest $request, Transaction $item): void
+    {
+        if (! $item->account->is_archived && ! $item->destinationAccount?->is_archived) {
+            return;
+        }
+
+        $financialFieldsChanged = $request->integer('account_id') !== $item->account_id
+            || ($request->input('destination_account_id') === null ? null : $request->integer('destination_account_id')) !== $item->destination_account_id
+            || $request->string('type')->toString() !== $item->type->value
+            || $request->integer('amount_minor') !== $item->amount_minor
+            || CarbonImmutable::parse($request->string('due_on')->toString())->toDateString() !== $item->due_on->toDateString()
+            || $request->boolean('settled') !== ($item->settled_at !== null);
+
+        if ($financialFieldsChanged) {
+            throw ValidationException::withMessages([
+                'account_id' => __('app.account.archived_history_locked'),
+            ]);
+        }
     }
 
     private function month(string $month, string $timezone): CarbonImmutable

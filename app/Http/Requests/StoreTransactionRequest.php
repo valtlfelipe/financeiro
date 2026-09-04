@@ -10,6 +10,7 @@ use App\TransactionType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 use Illuminate\Validation\Validator;
 
 class StoreTransactionRequest extends FormRequest
@@ -36,17 +37,13 @@ class StoreTransactionRequest extends FormRequest
             'account_id' => [
                 'required',
                 'integer',
-                Rule::exists('accounts', 'id')->where(fn ($query) => $query
-                    ->where('workspace_id', $this->user()?->currentWorkspaceOrFail()->id)
-                    ->where('is_archived', false)),
+                $this->accountExistsRule('account_id'),
             ],
             'destination_account_id' => [
                 'nullable',
                 'required_if:type,'.TransactionType::Transfer->value,
                 'different:account_id',
-                Rule::exists('accounts', 'id')->where(fn ($query) => $query
-                    ->where('workspace_id', $this->user()?->currentWorkspaceOrFail()->id)
-                    ->where('is_archived', false)),
+                $this->accountExistsRule('destination_account_id'),
             ],
             'category_id' => [
                 'nullable',
@@ -73,6 +70,24 @@ class StoreTransactionRequest extends FormRequest
                 'max:120',
             ],
         ];
+    }
+
+    private function accountExistsRule(string $column): Exists
+    {
+        $workspace = $this->user()?->currentWorkspaceOrFail();
+        $currentAccountId = null;
+        $transactionId = $this->route('transaction');
+
+        if ($workspace !== null && is_numeric($transactionId)) {
+            $value = $workspace->transactions()->whereKey((int) $transactionId)->value($column);
+            $currentAccountId = is_numeric($value) ? (int) $value : null;
+        }
+
+        return Rule::exists('accounts', 'id')->where(fn ($query) => $query
+            ->where('workspace_id', $workspace?->id)
+            ->where(fn ($accountQuery) => $accountQuery
+                ->where('is_archived', false)
+                ->when($currentAccountId !== null, fn ($allowedQuery) => $allowedQuery->orWhere('id', $currentAccountId))));
     }
 
     /** @return array<int, callable(Validator): void> */
