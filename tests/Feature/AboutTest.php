@@ -20,7 +20,7 @@ test('the about page shows installed project information without contacting GitH
             ->where('project.author', 'Felipe Valtl de Mello')
             ->where('project.license', 'AGPL-3.0-only')
             ->where('project.repository', 'https://github.com/valtlfelipe/financeiro')
-            ->where('project.sponsors', 'https://github.com/sponsors/valtlfelipe'));
+            ->where('project.sponsors', 'https://apoia.felipevm.com/financeiro'));
 
     Http::assertNothingSent();
 });

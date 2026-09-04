@@ -192,7 +192,7 @@ function updateTransaction(
 </script>
 
 <template>
-    <section class="grid gap-7">
+    <section class="grid gap-6">
         <Head :title="t('finance.transactions.title')" />
         <header class="flex flex-wrap items-center gap-3">
             <div class="mr-auto">
@@ -210,10 +210,8 @@ function updateTransaction(
             </Button>
         </header>
 
-        <section aria-labelledby="month_heading" class="grid gap-4">
-            <header
-                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-            >
+        <section aria-labelledby="month_heading" class="grid gap-3">
+            <header>
                 <div
                     class="border-border/80 bg-card grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-1 rounded-2xl border p-1 sm:w-80"
                 >
@@ -227,6 +225,7 @@ function updateTransaction(
                                     },
                                 })
                             "
+                            preserve-state
                             :aria-label="
                                 t('finance.transactions.previousMonth')
                             "
@@ -251,15 +250,13 @@ function updateTransaction(
                                     },
                                 })
                             "
+                            preserve-state
                             :aria-label="t('finance.transactions.nextMonth')"
                         >
                             <ChevronRight class="size-5" aria-hidden="true" />
                         </Link>
                     </Button>
                 </div>
-                <p class="text-muted-foreground text-sm">
-                    {{ t('finance.transactions.monthSummaryHint') }}
-                </p>
             </header>
             <SummaryGrid :summary="summaryState" />
         </section>
@@ -270,17 +267,12 @@ function updateTransaction(
         >
             <header class="border-border/70 grid gap-4 border-b p-4 sm:p-5">
                 <div class="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                        <h2
-                            id="transaction_list_heading"
-                            class="text-lg font-extrabold"
-                        >
-                            {{ t('finance.transactions.listTitle') }}
-                        </h2>
-                        <p class="text-muted-foreground mt-1 text-sm">
-                            {{ t('finance.transactions.filters.scopeHint') }}
-                        </p>
-                    </div>
+                    <h2
+                        id="transaction_list_heading"
+                        class="text-lg font-extrabold"
+                    >
+                        {{ t('finance.transactions.listTitle') }}
+                    </h2>
                     <Button
                         v-if="hasFilters"
                         variant="ghost"

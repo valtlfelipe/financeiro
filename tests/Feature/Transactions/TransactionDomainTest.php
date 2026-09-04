@@ -15,6 +15,7 @@ use App\SeriesKind;
 use App\Support\MinorAmount;
 use App\TransactionType;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -80,7 +81,9 @@ test('money and monthly totals remain integer cents and transfers are excluded',
     $deleted->delete();
     Transaction::factory()->create(['type' => TransactionType::Income, 'amount_minor' => 700000, 'due_on' => '2026-09-07', 'settled_at' => now()]);
 
-    expect(app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01')))->toBe([
+    $summary = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01'));
+
+    expect(Arr::except($summary, ['account_balances']))->toBe([
         'planned_income_minor' => '10001',
         'planned_expense_minor' => '3334',
         'opening_balance_minor' => '0',
@@ -89,6 +92,13 @@ test('money and monthly totals remain integer cents and transfers are excluded',
         'forecast_balance_minor' => '6667',
         'period' => 'current',
     ]);
+    $accountBalances = collect($summary['account_balances'])->keyBy('id');
+
+    expect($accountBalances)->toHaveCount(2)
+        ->and($accountBalances[$this->account->id]['realized_balance_minor'])->toBe('10001')
+        ->and($accountBalances[$this->account->id]['forecast_balance_minor'])->toBe('-993332')
+        ->and($accountBalances[$this->destination->id]['realized_balance_minor'])->toBe('0')
+        ->and($accountBalances[$this->destination->id]['forecast_balance_minor'])->toBe('999999');
 });
 
 test('monthly balances carry actual and forecast positions into the following month exactly', function () {
@@ -126,7 +136,7 @@ test('monthly balances carry actual and forecast positions into the following mo
     $september = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01'));
     $october = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-10-01'));
 
-    expect($september)->toBe([
+    expect(Arr::except($september, ['account_balances']))->toBe([
         'planned_income_minor' => '100000000',
         'planned_expense_minor' => '2137732',
         'opening_balance_minor' => '0',
@@ -134,7 +144,7 @@ test('monthly balances carry actual and forecast positions into the following mo
         'realized_balance_minor' => '99775413',
         'forecast_balance_minor' => '97862268',
         'period' => 'current',
-    ])->and($october)->toBe([
+    ])->and(Arr::except($october, ['account_balances']))->toBe([
         'planned_income_minor' => '2598200',
         'planned_expense_minor' => '350442',
         'opening_balance_minor' => '97862268',
@@ -143,6 +153,16 @@ test('monthly balances carry actual and forecast positions into the following mo
         'forecast_balance_minor' => '100110026',
         'period' => 'future',
     ]);
+
+    $septemberAccounts = collect($september['account_balances'])->keyBy('id');
+    $octoberAccounts = collect($october['account_balances'])->keyBy('id');
+
+    expect($septemberAccounts)->toHaveCount(2)
+        ->and($septemberAccounts[$this->account->id]['realized_balance_minor'])->toBe('99775413')
+        ->and($septemberAccounts[$this->account->id]['forecast_balance_minor'])->toBe('97862268');
+    expect($octoberAccounts)->toHaveCount(2)
+        ->and($octoberAccounts[$this->account->id]['realized_balance_minor'])->toBe('99775413')
+        ->and($octoberAccounts[$this->account->id]['forecast_balance_minor'])->toBe('100110026');
 });
 
 test('monthly summary uses a constant number of aggregate queries as accounts grow', function () {
@@ -301,6 +321,9 @@ test('transaction pages serialize nested account and category data for inertia',
 
     $response->assertInertia(fn (Assert $page) => $page
         ->component('Transactions/Index')
+        ->has('summary.account_balances', 2)
+        ->where('summary.account_balances.0.id', $this->account->id)
+        ->where('summary.account_balances.0.realized_balance_minor', '0')
         ->where('transactions.0.account.name', $this->account->name)
         ->where('transactions.0.category.name', $this->incomeCategory->name)
         ->where('transactions.0.destinationAccount', null));
@@ -380,7 +403,10 @@ test('transaction endpoints enforce workspace isolation and settlement returns u
 
     $transaction = Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->expenseCategory->id, 'type' => TransactionType::Expense, 'amount_minor' => 1234, 'due_on' => '2026-09-10']);
     $this->actingAs($this->user)->patchJson(route('transactions.settlement', $transaction), ['settled' => true])
-        ->assertOk()->assertJsonPath('transaction.settledAt', fn ($value) => is_string($value))->assertJsonPath('summary.realized_balance_minor', '-1234');
+        ->assertOk()
+        ->assertJsonPath('transaction.settledAt', fn ($value) => is_string($value))
+        ->assertJsonPath('summary.realized_balance_minor', '-1234')
+        ->assertJsonPath('summary.account_balances.0.realized_balance_minor', '-1234');
 });
 
 test('transaction validation rejects mismatched categories and cross-workspace accounts', function () {

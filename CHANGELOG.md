@@ -4,6 +4,22 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.4.3] - 2026-09-04
+
+### Added
+
+- Detalhamento expansível do resumo mensal com saldos atuais e previstos por conta.
+
+### Changed
+
+- Resumo dos lançamentos prioriza o saldo atual e mantém os detalhes abertos ou fechados ao navegar entre meses.
+- Expansão do resumo usa uma transição sutil e respeita a preferência por movimento reduzido.
+- Link de apoio ao projeto passa a usar a página própria do Financeiro, também disponível no GitHub Sponsors.
+
+### Fixed
+
+- Testes com PostgreSQL no CI recebem o build do Vite necessário para executar a suíte completa.
+
 ## [1.4.2] - 2026-09-04
 
 ### Added
@@ -166,7 +182,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.2...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.3...HEAD
+[1.4.3]: https://github.com/valtlfelipe/financeiro/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/valtlfelipe/financeiro/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/valtlfelipe/financeiro/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/valtlfelipe/financeiro/compare/v1.3.0...v1.4.0

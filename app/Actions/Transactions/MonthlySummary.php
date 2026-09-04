@@ -13,7 +13,25 @@ class MonthlySummary
 {
     public function __construct(private AccountBalance $accountBalance) {}
 
-    /** @return array<string, string> */
+    /**
+     * @return array{
+     *     planned_income_minor: string,
+     *     planned_expense_minor: string,
+     *     opening_balance_minor: string,
+     *     forecast_change_minor: string,
+     *     realized_balance_minor: string,
+     *     forecast_balance_minor: string,
+     *     account_balances: list<array{
+     *         id: int,
+     *         name: string,
+     *         color: string,
+     *         is_archived: bool,
+     *         realized_balance_minor: string,
+     *         forecast_balance_minor: string
+     *     }>,
+     *     period: 'past'|'current'|'future'
+     * }
+     */
     public function handle(Workspace $workspace, CarbonImmutable $month): array
     {
         $month = $month->startOfMonth();
@@ -58,6 +76,7 @@ class MonthlySummary
                 'forecast_change_minor' => MinorAmount::subtract($positions['forecast'], $positions['opening']),
                 'realized_balance_minor' => $positions['realized'],
                 'forecast_balance_minor' => $positions['forecast'],
+                'account_balances' => $positions['accounts'],
                 'period' => $period,
             ];
         }, attempts: 3);

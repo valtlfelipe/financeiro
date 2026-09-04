@@ -32,7 +32,19 @@ class AccountBalance
     }
 
     /**
-     * @return array{opening: string, forecast: string, realized: string}
+     * @return array{
+     *     opening: string,
+     *     forecast: string,
+     *     realized: string,
+     *     accounts: list<array{
+     *         id: int,
+     *         name: string,
+     *         color: string,
+     *         is_archived: bool,
+     *         realized_balance_minor: string,
+     *         forecast_balance_minor: string
+     *     }>
+     * }
      */
     public function monthlyPositions(
         Workspace $workspace,
@@ -48,17 +60,32 @@ class AccountBalance
         ];
         $accounts = $this->balanceRows($workspace, $positions, includeArchived: true);
         $totals = ['opening' => '0', 'forecast' => '0', 'realized' => '0'];
+        $accountPositions = [];
 
         foreach ($accounts as $account) {
+            $balances = [];
+
             foreach ($positions as $name => $position) {
                 $accountBalance = $position['date']->isBefore($account->balance_date)
                     ? '0'
                     : MinorAmount::add($account->initial_balance_minor, $this->rowDelta($account, $name));
                 $totals[$name] = MinorAmount::add($totals[$name], $accountBalance);
+                $balances[$name] = $accountBalance;
+            }
+
+            if (! $account->is_archived || $balances['realized'] !== '0' || $balances['forecast'] !== '0') {
+                $accountPositions[] = [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'color' => $account->color,
+                    'is_archived' => $account->is_archived,
+                    'realized_balance_minor' => $balances['realized'],
+                    'forecast_balance_minor' => $balances['forecast'],
+                ];
             }
         }
 
-        return $totals;
+        return [...$totals, 'accounts' => $accountPositions];
     }
 
     public function handle(Account $account): string

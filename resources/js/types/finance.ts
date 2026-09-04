@@ -60,5 +60,15 @@ export type MonthlySummary = {
     forecast_change_minor: MinorAmount;
     realized_balance_minor: MinorAmount;
     forecast_balance_minor: MinorAmount;
+    account_balances: MonthlyAccountBalance[];
     period: 'past' | 'current' | 'future';
+};
+
+export type MonthlyAccountBalance = {
+    id: number;
+    name: string;
+    color: string;
+    is_archived: boolean;
+    realized_balance_minor: MinorAmount;
+    forecast_balance_minor: MinorAmount;
 };
