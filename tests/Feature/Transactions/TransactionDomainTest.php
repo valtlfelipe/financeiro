@@ -274,6 +274,22 @@ test('installments distribute remainder cents exactly and are idempotent', funct
         ->and($series->transactions()->count())->toBe(3);
 });
 
+test('installments cannot create zero value occurrences', function () {
+    $this->actingAs($this->user)->post(route('transactions.store'), [
+        'type' => TransactionType::Expense->value,
+        'amount_minor' => 1,
+        'description' => 'Valor mínimo',
+        'account_id' => $this->account->id,
+        'category_id' => $this->expenseCategory->id,
+        'due_on' => '2026-09-01',
+        'series_kind' => SeriesKind::Installment->value,
+        'installments' => 2,
+    ])->assertSessionHasErrors('installments');
+
+    expect(TransactionSeries::query()->count())->toBe(0)
+        ->and(Transaction::query()->count())->toBe(0);
+});
+
 test('monthly and yearly recurrences clamp calendar boundaries without drifting', function () {
     $monthly = TransactionSeries::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->expenseCategory->id, 'starts_on' => '2024-01-31', 'ends_on' => '2024-03-31', 'frequency' => RecurrenceFrequency::Monthly]);
     app(GenerateSeriesOccurrences::class)->handle($monthly, CarbonImmutable::parse('2024-04-01'));

@@ -80,6 +80,14 @@ class StoreTransactionRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
+                if (
+                    ! $validator->errors()->hasAny(['amount_minor', 'series_kind', 'installments'])
+                    && $this->string('series_kind')->toString() === SeriesKind::Installment->value
+                    && $this->integer('installments') > $this->integer('amount_minor')
+                ) {
+                    $validator->errors()->add('installments', __('app.transaction.installments_too_many'));
+                }
+
                 if ($validator->errors()->hasAny(['type', 'category_id'])) {
                     return;
                 }

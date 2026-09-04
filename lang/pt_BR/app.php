@@ -31,6 +31,7 @@ return [
         'created' => 'Lançamento criado.',
         'updated' => 'Lançamento atualizado.',
         'deleted' => 'Lançamento excluído.',
+        'installments_too_many' => 'Reduza o número de parcelas ou aumente o valor para que nenhuma parcela seja de R$ 0,00.',
     ],
     'invitation' => [
         'created' => 'Convite criado. Copie o link para compartilhar.',

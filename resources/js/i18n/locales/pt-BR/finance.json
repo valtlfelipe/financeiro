@@ -58,6 +58,7 @@
                 "yearly": "Anual",
                 "endsOn": "Termina em",
                 "installments": "Número de parcelas",
+                "zeroValueInstallments": "Reduza as parcelas ou aumente o valor: nenhuma parcela pode ser de R$ 0,00.",
                 "installmentLabel": "{current}/{total}",
                 "installmentProgress": "Parcela {current} de {total}",
                 "onlyThis": "Somente este lançamento",

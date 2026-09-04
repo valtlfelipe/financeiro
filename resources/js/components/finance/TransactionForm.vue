@@ -66,6 +66,13 @@ const editing = computed(
         props.transaction !== undefined &&
         !props.forceCreate,
 );
+const installmentLimit = computed(() => Math.min(120, amountMinor()));
+const hasZeroValueInstallments = computed(
+    () =>
+        !editing.value &&
+        form.series_kind === 'installment' &&
+        Number(form.installments) > amountMinor(),
+);
 const availableCategories = computed(() =>
     props.categories.filter(
         (category) =>
@@ -439,9 +446,16 @@ function submit(scope: 'single' | 'future'): void {
                 v-model="form.installments"
                 type="number"
                 min="2"
-                max="120"
+                :max="installmentLimit"
                 required
             />
+            <p
+                v-if="hasZeroValueInstallments"
+                role="alert"
+                class="text-destructive text-sm"
+            >
+                {{ t('finance.transactions.series.zeroValueInstallments') }}
+            </p>
             <InputError :message="form.errors.installments" />
         </div>
 
@@ -513,6 +527,7 @@ function submit(scope: 'single' | 'future'): void {
                 form.processing ||
                 online === false ||
                 !networkOnline ||
+                hasZeroValueInstallments ||
                 (form.type === 'transfer' && accounts.length < 2)
             "
         >
