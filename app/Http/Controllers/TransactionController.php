@@ -79,6 +79,7 @@ class TransactionController extends Controller
             'scope' => [$item->series === null ? 'sometimes' : 'required', 'in:single,future'],
         ]);
         $originalDueOn = $item->due_on->toDateString();
+        $originalAmount = $item->amount_minor;
         $attributes = [
             ...Arr::only($request->validated(), [
                 'account_id', 'destination_account_id', 'category_id', 'type',
@@ -87,7 +88,7 @@ class TransactionController extends Controller
             'settled_at' => $request->boolean('settled') ? ($item->settled_at ?? now()) : null,
         ];
 
-        DB::transaction(function () use ($item, $attributes, $request, $originalDueOn): void {
+        DB::transaction(function () use ($item, $attributes, $request, $originalDueOn, $originalAmount): void {
             $item->update($attributes);
 
             if ($request->string('scope')->toString() !== 'future' || $item->series === null) {
@@ -103,11 +104,28 @@ class TransactionController extends Controller
                 'description' => $attributes['description'],
                 'notes' => $attributes['notes'] ?? null,
             ];
+
+            if ($item->series->kind === SeriesKind::Installment) {
+                $seriesAttributes = Arr::except($seriesAttributes, ['amount_minor']);
+            }
+
             $item->series->update($seriesAttributes);
+            $futureAttributes = Arr::except($attributes, ['due_on', 'settled_at']);
+
+            if ($item->series->kind === SeriesKind::Installment && $attributes['amount_minor'] === $originalAmount) {
+                $futureAttributes = Arr::except($futureAttributes, ['amount_minor']);
+            }
+
             $item->series->transactions()
                 ->whereDate('due_on', '>', $originalDueOn)
                 ->whereNull('settled_at')
-                ->update(Arr::except($attributes, ['due_on', 'settled_at']));
+                ->update($futureAttributes);
+
+            if ($item->series->kind === SeriesKind::Installment) {
+                $item->series->update([
+                    'amount_minor' => (int) $item->series->transactions()->sum('amount_minor'),
+                ]);
+            }
         });
 
         return back()->with('toast', ['type' => 'success', 'message' => __('app.transaction.updated')]);

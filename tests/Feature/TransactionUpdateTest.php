@@ -1,10 +1,12 @@
 <?php
 
+use App\Actions\Transactions\CreateTransactions;
 use App\CategoryType;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\TransactionSeries;
+use App\SeriesKind;
 use App\TransactionType;
 
 function transactionUpdatePayload(Account $account, Category $category, array $overrides = []): array
@@ -84,4 +86,60 @@ test('updating this and future occurrences uses the original date boundary and p
         ->and($transactions[2]->amount_minor)->toBe(4590)
         ->and($transactions[3]->refresh()->description)->toBe('Realizado')
         ->and($series->refresh()->description)->toBe('Assinatura atualizada');
+});
+
+test('updating installment details preserves its exact remainder distribution', function () {
+    [$user, $workspace] = ownerWithWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->create(['type' => CategoryType::Expense]);
+    $first = app(CreateTransactions::class)->handle($workspace, [
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+        'type' => TransactionType::Expense->value,
+        'amount_minor' => 10000,
+        'description' => 'Compra parcelada',
+        'due_on' => '2026-09-10',
+        'series_kind' => SeriesKind::Installment->value,
+        'installments' => 3,
+    ]);
+
+    $this->actingAs($user)->patch(
+        route('transactions.update', $first),
+        transactionUpdatePayload($account, $category, [
+            'scope' => 'future',
+            'amount_minor' => 3334,
+        ]),
+    )->assertSessionHasNoErrors()->assertRedirect();
+
+    expect($first->series->transactions()->orderBy('installment_number')->pluck('amount_minor')->all())
+        ->toBe([3334, 3333, 3333])
+        ->and($first->series->fresh()->amount_minor)->toBe(10000);
+});
+
+test('changing future installment amounts keeps the series total equal to its occurrences', function () {
+    [$user, $workspace] = ownerWithWorkspace();
+    $account = Account::factory()->for($workspace)->create();
+    $category = Category::factory()->for($workspace)->create(['type' => CategoryType::Expense]);
+    $first = app(CreateTransactions::class)->handle($workspace, [
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+        'type' => TransactionType::Expense->value,
+        'amount_minor' => 10000,
+        'description' => 'Compra parcelada',
+        'due_on' => '2026-09-10',
+        'series_kind' => SeriesKind::Installment->value,
+        'installments' => 3,
+    ]);
+
+    $this->actingAs($user)->patch(
+        route('transactions.update', $first),
+        transactionUpdatePayload($account, $category, [
+            'scope' => 'future',
+            'amount_minor' => 4000,
+        ]),
+    )->assertSessionHasNoErrors()->assertRedirect();
+
+    expect($first->series->transactions()->orderBy('installment_number')->pluck('amount_minor')->all())
+        ->toBe([4000, 4000, 4000])
+        ->and($first->series->fresh()->amount_minor)->toBe(12000);
 });
