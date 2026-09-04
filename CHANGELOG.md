@@ -4,6 +4,16 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.4.5] - 2026-09-04
+
+### Fixed
+
+- Lançamentos quitados antes do vencimento passam a sair do saldo atual no momento da baixa, em vez de só entrarem na data de vencimento. A competência do mês, o saldo previsto e o encadeamento entre meses continuam iguais, e dar baixa em contas atrasadas segue mantendo o movimento na data de vencimento.
+
+### Changed
+
+- A suíte de testes passa a rodar apenas em PostgreSQL, o mesmo banco usado pela aplicação publicada, e o CI deixa de manter uma execução separada em SQLite com regras de integridade duplicadas.
+
 ## [1.4.4] - 2026-09-04
 
 ### Changed
@@ -192,7 +202,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.4...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.5...HEAD
+[1.4.5]: https://github.com/valtlfelipe/financeiro/compare/v1.4.4...v1.4.5
 [1.4.4]: https://github.com/valtlfelipe/financeiro/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/valtlfelipe/financeiro/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/valtlfelipe/financeiro/compare/v1.4.1...v1.4.2
