@@ -14,6 +14,7 @@ use App\RecurrenceFrequency;
 use App\SeriesKind;
 use App\TransactionType;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -141,6 +142,33 @@ test('monthly balances carry actual and forecast positions into the following mo
         'forecast_balance_minor' => '100110026',
         'period' => 'future',
     ]);
+});
+
+test('monthly summary uses a constant number of aggregate queries as accounts grow', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-15 12:00:00'));
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01'));
+    $initialQueryCount = count(DB::getQueryLog());
+
+    DB::disableQueryLog();
+    Account::factory()->count(10)->create([
+        'workspace_id' => $this->workspace->id,
+        'balance_date' => '2026-01-01',
+    ]);
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01'));
+    $expandedQueryCount = count(DB::getQueryLog());
+
+    DB::disableQueryLog();
+
+    expect($initialQueryCount)->toBeLessThanOrEqual(2)
+        ->and($expandedQueryCount)->toBe($initialQueryCount);
 });
 
 test('realized balances use the transaction date instead of the settlement timestamp', function () {

@@ -29,12 +29,12 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'month' => $month->format('Y-m'),
-            'accounts' => $workspace->accounts()->where('is_archived', false)->orderBy('id')->get()
+            'accounts' => $accountBalance->currentAccounts($workspace)
                 ->map(fn (Account $account): array => [
                     'id' => $account->id,
                     'name' => $account->name,
                     'color' => $account->color,
-                    'balanceMinor' => $accountBalance->handle($account),
+                    'balanceMinor' => (string) $account->getAttribute('balance_minor'),
                 ]),
             'recentTransactions' => TransactionResource::collection($transactions)->resolve(),
         ]);
