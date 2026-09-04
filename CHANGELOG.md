@@ -4,6 +4,32 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-09-04
+
+### Added
+
+- Escolha entre ícones predefinidos ao criar ou editar um espaço, com identificação visual no seletor de espaços.
+- Exclusão permanente de espaços pelo proprietário, protegida pela digitação do nome e bloqueada quando é o último espaço do usuário.
+- Escolha entre alterar ou excluir apenas um lançamento de série ou aquele lançamento e os próximos.
+
+### Changed
+
+- Resumo dos lançamentos passa a apresentar o fluxo completo entre saldo anterior, movimentação prevista, saldo previsto e saldo realizado, carregando corretamente a posição entre meses.
+- Cálculos mensais e saldos do dashboard usam consultas agregadas e uma leitura consistente, sem crescer o número de consultas conforme novas contas são adicionadas.
+- CI passa a executar a suíte PHP também no PostgreSQL 17 usado pela aplicação publicada.
+
+### Fixed
+
+- Saldo realizado considera a data financeira do lançamento, inclusive quando a confirmação ocorreu em outra data.
+- Saldo inicial respeita sua data de referência e não aparece antecipadamente quando configurado para o futuro.
+- Projeções partem da posição realizada sem contar lançamentos confirmados duas vezes.
+- Parcelamentos distribuem todos os centavos exatamente, preservam o total nas edições futuras e rejeitam parcelas de valor zero.
+- Exclusões pontuais de recorrências não são recriadas pelo gerador, e falhas em uma série não interrompem silenciosamente as demais.
+- Datas mensais, recorrências e valores padrão respeitam o fuso horário do espaço.
+- Contas só podem ser arquivadas após encerrar corretamente saldo, pendências e transferências relacionadas.
+- Valores monetários permanecem exatos em PHP, JSON e JavaScript mesmo acima do limite numérico seguro do navegador.
+- Restrições financeiras no banco impedem valores, tipos, transferências, parcelas e recorrências estruturalmente inválidos.
+
 ## [1.4.1] - 2026-09-03
 
 ### Fixed
@@ -140,7 +166,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.2...HEAD
+[1.4.2]: https://github.com/valtlfelipe/financeiro/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/valtlfelipe/financeiro/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/valtlfelipe/financeiro/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/valtlfelipe/financeiro/compare/v1.2.0...v1.3.0
