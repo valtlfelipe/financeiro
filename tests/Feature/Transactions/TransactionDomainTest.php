@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Transactions\AccountBalance;
 use App\Actions\Transactions\CreateTransactions;
 use App\Actions\Transactions\GenerateSeriesOccurrences;
 use App\Actions\Transactions\MonthlySummary;
@@ -142,6 +143,33 @@ test('monthly balances carry actual and forecast positions into the following mo
     ]);
 });
 
+test('realized balances use the transaction date instead of the settlement timestamp', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-15 12:00:00'));
+    $this->account->update([
+        'initial_balance_minor' => 100000,
+        'balance_date' => '2026-09-01',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Expense,
+        'amount_minor' => 10000,
+        'due_on' => '2026-09-10',
+        'settled_at' => '2026-09-15 12:00:00',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Expense,
+        'amount_minor' => 20000,
+        'due_on' => '2026-09-20',
+        'settled_at' => '2026-09-02 12:00:00',
+    ]);
+
+    $balance = app(AccountBalance::class);
+
+    expect($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-09')))->toBe(100000)
+        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-10')))->toBe(90000)
+        ->and($balance->handle($this->account->fresh()))->toBe(90000)
+        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-30')))->toBe(70000);
+});
+
 test('transaction resources keep nullable relations as null', function () {
     $transaction = Transaction::factory()->create([
         'workspace_id' => $this->workspace->id,
@@ -219,6 +247,7 @@ test('monthly and yearly recurrences clamp calendar boundaries without drifting'
 });
 
 test('transaction endpoints enforce workspace isolation and settlement returns updated totals', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-10 12:00:00'));
     [, $otherWorkspace] = ownerWithWorkspace();
     $foreignAccount = Account::factory()->create(['workspace_id' => $otherWorkspace->id]);
     $foreignTransaction = Transaction::factory()->create(['workspace_id' => $otherWorkspace->id, 'account_id' => $foreignAccount->id]);

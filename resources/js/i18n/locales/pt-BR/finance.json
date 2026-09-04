@@ -99,7 +99,7 @@
                 "notesPlaceholder": "Inclua algum detalhe útil",
                 "schedule": "Repetição",
                 "settled": "Já foi pago ou recebido",
-                "settledHint": "Será salvo como realizado e incluído no saldo realizado.",
+                "settledHint": "Será salvo como realizado na data do lançamento e incluído no saldo realizado.",
                 "pendingHint": "Será salvo como pendente, incluído apenas na previsão.",
                 "submitCreate": "Adicionar lançamento",
                 "submitUpdate": "Salvar lançamento",

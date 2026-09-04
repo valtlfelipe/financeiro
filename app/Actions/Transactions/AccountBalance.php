@@ -15,7 +15,8 @@ class AccountBalance
         return $this->sum(
             $this->movements($account)
                 ->whereNotNull('settled_at')
-                ->whereDate('settled_at', '>=', $account->balance_date->toDateString()),
+                ->whereDate('due_on', '>=', $account->balance_date->toDateString())
+                ->whereDate('due_on', '<=', CarbonImmutable::today($account->workspace->timezone)->toDateString()),
             $account,
         );
     }
@@ -29,8 +30,8 @@ class AccountBalance
         return $this->sum(
             $this->movements($account)
                 ->whereNotNull('settled_at')
-                ->whereDate('settled_at', '>=', $account->balance_date->toDateString())
-                ->whereDate('settled_at', '<=', $date->toDateString()),
+                ->whereDate('due_on', '>=', $account->balance_date->toDateString())
+                ->whereDate('due_on', '<=', $date->toDateString()),
             $account,
         );
     }

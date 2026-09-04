@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\TransactionType;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -71,6 +72,7 @@ class DashboardTest extends TestCase
 
     public function test_account_balance_counts_settled_movements_from_the_opening_balance_date(): void
     {
+        $this->travelTo(CarbonImmutable::parse('2026-09-20 12:00:00'));
         [$user, $workspace] = ownerWithWorkspace();
         $account = Account::factory()->for($workspace)->create([
             'initial_balance_minor' => 100000,
@@ -138,6 +140,7 @@ class DashboardTest extends TestCase
 
     public function test_account_balance_keeps_exact_negative_cent_values(): void
     {
+        $this->travelTo(CarbonImmutable::parse('2026-09-20 12:00:00'));
         [$user, $workspace] = ownerWithWorkspace();
         $account = Account::factory()->for($workspace)->create([
             'initial_balance_minor' => 100,
