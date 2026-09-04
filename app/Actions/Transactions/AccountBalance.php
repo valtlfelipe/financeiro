@@ -12,6 +12,10 @@ class AccountBalance
 {
     public function handle(Account $account): int
     {
+        if ($account->workspace->today()->isBefore($account->balance_date)) {
+            return 0;
+        }
+
         return $this->sum(
             $this->movements($account)
                 ->whereNotNull('settled_at')
@@ -43,6 +47,15 @@ class AccountBalance
         }
 
         $today = $account->workspace->today();
+
+        if ($today->isBefore($account->balance_date)) {
+            return $this->sum(
+                $this->movements($account)
+                    ->whereDate('due_on', '>=', $account->balance_date->toDateString())
+                    ->whereDate('due_on', '<=', $date->toDateString()),
+                $account,
+            );
+        }
 
         if ($date->isBefore($today)) {
             return $this->settledThrough($account, $date);

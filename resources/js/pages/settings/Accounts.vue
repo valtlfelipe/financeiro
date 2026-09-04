@@ -147,6 +147,7 @@ function submit(): void {
                     id="balance_date"
                     v-model="form.balance_date"
                     type="date"
+                    :max="page.props.workspace?.today"
                     required
                     aria-describedby="balance_date_hint"
                 />

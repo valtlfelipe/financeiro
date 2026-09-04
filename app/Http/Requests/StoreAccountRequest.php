@@ -28,7 +28,10 @@ class StoreAccountRequest extends FormRequest
             'name' => ['required', 'string', 'max:120'],
             'type' => ['required', Rule::enum(AccountType::class)],
             'initial_balance_minor' => ['required', 'integer'],
-            'balance_date' => ['required', 'date'],
+            'balance_date' => [
+                'required',
+                Rule::date()->beforeOrEqual($this->user()?->currentWorkspaceOrFail()->today()),
+            ],
             'icon' => ['nullable', 'string', 'max:40'],
             'color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'is_archived' => ['sometimes', 'boolean'],
