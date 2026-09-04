@@ -4,6 +4,16 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.4.4] - 2026-09-04
+
+### Changed
+
+- Screenshot do README atualizado para refletir o resumo mensal mais recente.
+
+### Fixed
+
+- Lançamentos anteriores à data de uma conta com saldo inicial zero agora compõem corretamente os saldos realizado e previsto, inclusive em recorrências, transferências e no carregamento entre meses.
+
 ## [1.4.3] - 2026-09-04
 
 ### Added
@@ -182,7 +192,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.3...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.4...HEAD
+[1.4.4]: https://github.com/valtlfelipe/financeiro/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/valtlfelipe/financeiro/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/valtlfelipe/financeiro/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/valtlfelipe/financeiro/compare/v1.4.0...v1.4.1
