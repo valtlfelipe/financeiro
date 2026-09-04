@@ -10,6 +10,7 @@ use App\Http\Resources\AccountResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
+use App\SeriesKind;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -126,6 +127,12 @@ class TransactionController extends Controller
             $item->delete();
 
             if ($request->string('scope')->toString() === 'future' && $item->series !== null) {
+                if ($item->series->kind === SeriesKind::Recurring) {
+                    $item->series->update([
+                        'ends_on' => $item->due_on->copy()->subDay(),
+                    ]);
+                }
+
                 $item->series->transactions()
                     ->whereDate('due_on', '>', $item->due_on)
                     ->whereNull('settled_at')

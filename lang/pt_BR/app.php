@@ -59,5 +59,6 @@ return [
     ],
     'recurring' => [
         'generated' => '{0} Nenhum lançamento criado.|{1} :count lançamento criado.|[2,*] :count lançamentos criados.',
+        'failed' => '{1} Não foi possível atualizar 1 série recorrente.|[2,*] Não foi possível atualizar :count séries recorrentes.',
     ],
 ];

@@ -25,7 +25,7 @@ class GenerateSeriesOccurrences
 
         for ($number = 1; $number <= $total; $number++) {
             $dueOn = $this->monthlyOccurrence($series, $number - 1);
-            $transaction = $series->transactions()->firstOrCreate(
+            $transaction = $series->transactions()->withTrashed()->firstOrCreate(
                 ['occurrence_key' => sprintf('installment:%d', $number)],
                 $this->occurrenceAttributes($series, $dueOn, $baseAmount + ($number <= $remainder ? 1 : 0), $number, $total),
             );
@@ -48,7 +48,7 @@ class GenerateSeriesOccurrences
                 break;
             }
 
-            $transaction = $series->transactions()->firstOrCreate(
+            $transaction = $series->transactions()->withTrashed()->firstOrCreate(
                 ['occurrence_key' => 'recurring:'.$dueOn->format('Y-m-d')],
                 $this->occurrenceAttributes($series, $dueOn, $series->amount_minor),
             );
