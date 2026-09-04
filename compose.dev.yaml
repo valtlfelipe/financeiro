@@ -11,6 +11,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-financeiro}
     volumes:
       - financeiro_dev_postgres_data:/var/lib/postgresql/data
+      - ./docker/dev-initdb-testing.sql:/docker-entrypoint-initdb.d/10-testing-database.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s

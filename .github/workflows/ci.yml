@@ -11,37 +11,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          coverage: none
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: composer install --no-interaction --prefer-dist
-      - run: npm install --ignore-scripts
-      - run: cp .env.example .env
-      - run: php artisan key:generate
-      - run: php artisan wayfinder:generate --with-form --no-interaction
-      - run: vendor/bin/pint --test
-      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
-      - run: npm run ci
-      - uses: actions/upload-artifact@v7
-        with:
-          name: vite-build
-          path: public/build
-          if-no-files-found: error
-          retention-days: 1
-      - run: php artisan test --compact
-
-  postgresql:
-    name: PostgreSQL 17
-    needs: test
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
     services:
       postgres:
         image: postgres:17-bookworm
@@ -70,11 +39,17 @@ jobs:
           php-version: '8.5'
           coverage: none
           extensions: pdo_pgsql
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
       - run: composer install --no-interaction --prefer-dist
+      - run: npm install --ignore-scripts
       - run: cp .env.example .env
       - run: php artisan key:generate
-      - uses: actions/download-artifact@v7
-        with:
-          name: vite-build
-          path: public/build
+      - run: php artisan wayfinder:generate --with-form --no-interaction
+      - run: vendor/bin/pint --test
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - run: npm run ci
       - run: php artisan test --compact
+
