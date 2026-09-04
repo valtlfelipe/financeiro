@@ -42,12 +42,23 @@ class AccountBalance
             return 0;
         }
 
-        return $this->sum(
+        $today = CarbonImmutable::today($account->workspace->timezone);
+
+        if ($date->isBefore($today)) {
+            return $this->settledThrough($account, $date);
+        }
+
+        $projectionDelta = $this->delta(
             $this->movements($account)
                 ->whereDate('due_on', '>=', $account->balance_date->toDateString())
-                ->whereDate('due_on', '<=', $date->toDateString()),
+                ->whereDate('due_on', '<=', $date->toDateString())
+                ->where(fn (Builder $query) => $query
+                    ->whereNull('settled_at')
+                    ->orWhereDate('due_on', '>', $today->toDateString())),
             $account,
         );
+
+        return $this->handle($account) + $projectionDelta;
     }
 
     /** @return Builder<Transaction> */
@@ -62,6 +73,12 @@ class AccountBalance
 
     /** @param Builder<Transaction> $query */
     private function sum(Builder $query, Account $account): int
+    {
+        return $account->initial_balance_minor + $this->delta($query, $account);
+    }
+
+    /** @param Builder<Transaction> $query */
+    private function delta(Builder $query, Account $account): int
     {
         $result = $query
             ->toBase()
@@ -89,6 +106,6 @@ class AccountBalance
             ->first();
         $delta = $result?->balance_delta;
 
-        return $account->initial_balance_minor + (is_numeric($delta) ? (int) $delta : 0);
+        return is_numeric($delta) ? (int) $delta : 0;
     }
 }

@@ -170,6 +170,45 @@ test('realized balances use the transaction date instead of the settlement times
         ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-30')))->toBe(70000);
 });
 
+test('forecasts start from the current realized balance without counting settled entries twice', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-15 12:00:00'));
+    $this->account->update([
+        'initial_balance_minor' => 100000,
+        'balance_date' => '2026-08-01',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Expense,
+        'amount_minor' => 10000,
+        'due_on' => '2026-08-31',
+        'settled_at' => '2026-09-02 12:00:00',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Expense,
+        'amount_minor' => 5000,
+        'due_on' => '2026-09-10',
+        'settled_at' => null,
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Expense,
+        'amount_minor' => 20000,
+        'due_on' => '2026-10-10',
+        'settled_at' => '2026-09-02 12:00:00',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Income,
+        'amount_minor' => 100000000,
+        'due_on' => '2026-10-20',
+        'settled_at' => null,
+    ]);
+
+    $balance = app(AccountBalance::class);
+    $account = $this->account->fresh();
+
+    expect($balance->handle($account))->toBe(90000)
+        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-09-30')))->toBe(85000)
+        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-10-31')))->toBe(100065000);
+});
+
 test('transaction resources keep nullable relations as null', function () {
     $transaction = Transaction::factory()->create([
         'workspace_id' => $this->workspace->id,
