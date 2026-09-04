@@ -79,12 +79,12 @@ test('money and monthly totals remain integer cents and transfers are excluded',
     Transaction::factory()->create(['type' => TransactionType::Income, 'amount_minor' => 700000, 'due_on' => '2026-09-07', 'settled_at' => now()]);
 
     expect(app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01')))->toBe([
-        'planned_income_minor' => 10001,
-        'planned_expense_minor' => 3334,
-        'opening_balance_minor' => 0,
-        'forecast_change_minor' => 6667,
-        'realized_balance_minor' => 10001,
-        'forecast_balance_minor' => 6667,
+        'planned_income_minor' => '10001',
+        'planned_expense_minor' => '3334',
+        'opening_balance_minor' => '0',
+        'forecast_change_minor' => '6667',
+        'realized_balance_minor' => '10001',
+        'forecast_balance_minor' => '6667',
         'period' => 'current',
     ]);
 });
@@ -125,20 +125,20 @@ test('monthly balances carry actual and forecast positions into the following mo
     $october = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-10-01'));
 
     expect($september)->toBe([
-        'planned_income_minor' => 100000000,
-        'planned_expense_minor' => 2137732,
-        'opening_balance_minor' => 0,
-        'forecast_change_minor' => 97862268,
-        'realized_balance_minor' => 99775413,
-        'forecast_balance_minor' => 97862268,
+        'planned_income_minor' => '100000000',
+        'planned_expense_minor' => '2137732',
+        'opening_balance_minor' => '0',
+        'forecast_change_minor' => '97862268',
+        'realized_balance_minor' => '99775413',
+        'forecast_balance_minor' => '97862268',
         'period' => 'current',
     ])->and($october)->toBe([
-        'planned_income_minor' => 2598200,
-        'planned_expense_minor' => 350442,
-        'opening_balance_minor' => 97862268,
-        'forecast_change_minor' => 2247758,
-        'realized_balance_minor' => 99775413,
-        'forecast_balance_minor' => 100110026,
+        'planned_income_minor' => '2598200',
+        'planned_expense_minor' => '350442',
+        'opening_balance_minor' => '97862268',
+        'forecast_change_minor' => '2247758',
+        'realized_balance_minor' => '99775413',
+        'forecast_balance_minor' => '100110026',
         'period' => 'future',
     ]);
 });
@@ -164,10 +164,10 @@ test('realized balances use the transaction date instead of the settlement times
 
     $balance = app(AccountBalance::class);
 
-    expect($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-09')))->toBe(100000)
-        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-10')))->toBe(90000)
-        ->and($balance->handle($this->account->fresh()))->toBe(90000)
-        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-30')))->toBe(70000);
+    expect($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-09')))->toBe('100000')
+        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-10')))->toBe('90000')
+        ->and($balance->handle($this->account->fresh()))->toBe('90000')
+        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-30')))->toBe('70000');
 });
 
 test('forecasts start from the current realized balance without counting settled entries twice', function () {
@@ -204,9 +204,34 @@ test('forecasts start from the current realized balance without counting settled
     $balance = app(AccountBalance::class);
     $account = $this->account->fresh();
 
-    expect($balance->handle($account))->toBe(90000)
-        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-09-30')))->toBe(85000)
-        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-10-31')))->toBe(100065000);
+    expect($balance->handle($account))->toBe('90000')
+        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-09-30')))->toBe('85000')
+        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-10-31')))->toBe('100065000');
+});
+
+test('aggregates and json preserve minor amounts beyond javascript safe integers', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-10 12:00:00'));
+    $this->account->update(['balance_date' => '2026-09-01']);
+
+    foreach (range(1, 2) as $day) {
+        Transaction::factory()->for($this->workspace)->for($this->account)->create([
+            'type' => TransactionType::Income,
+            'amount_minor' => 9007199254740991,
+            'due_on' => "2026-09-0{$day}",
+            'settled_at' => "2026-09-0{$day} 12:00:00",
+        ]);
+    }
+
+    $summary = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01'));
+
+    expect(app(AccountBalance::class)->handle($this->account->fresh()))->toBe('18014398509481982')
+        ->and($summary['planned_income_minor'])->toBe('18014398509481982')
+        ->and($summary['realized_balance_minor'])->toBe('18014398509481982');
+
+    $this->actingAs($this->user)->get(route('transactions.index', ['month' => '2026-09']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('transactions.0.amountMinor', '9007199254740991')
+            ->where('summary.planned_income_minor', '18014398509481982'));
 });
 
 test('transaction resources keep nullable relations as null', function () {
@@ -326,7 +351,7 @@ test('transaction endpoints enforce workspace isolation and settlement returns u
 
     $transaction = Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->expenseCategory->id, 'type' => TransactionType::Expense, 'amount_minor' => 1234, 'due_on' => '2026-09-10']);
     $this->actingAs($this->user)->patchJson(route('transactions.settlement', $transaction), ['settled' => true])
-        ->assertOk()->assertJsonPath('transaction.settledAt', fn ($value) => is_string($value))->assertJsonPath('summary.realized_balance_minor', -1234);
+        ->assertOk()->assertJsonPath('transaction.settledAt', fn ($value) => is_string($value))->assertJsonPath('summary.realized_balance_minor', '-1234');
 });
 
 test('transaction validation rejects mismatched categories and cross-workspace accounts', function () {

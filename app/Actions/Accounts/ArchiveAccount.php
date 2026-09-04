@@ -28,7 +28,7 @@ class ArchiveAccount
                 $this->fail('app.account.cannot_archive_last');
             }
 
-            if ($this->accountBalance->handle($account) !== 0) {
+            if ($this->accountBalance->handle($account) !== '0') {
                 $this->fail('app.account.cannot_archive_balance');
             }
 

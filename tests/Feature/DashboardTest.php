@@ -135,7 +135,7 @@ class DashboardTest extends TestCase
         $this->actingAs($user)->get(route('dashboard', ['month' => '2026-09']))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('accounts.0.id', $account->id)
-                ->where('accounts.0.balanceMinor', 124000));
+                ->where('accounts.0.balanceMinor', '124000'));
     }
 
     public function test_account_balance_keeps_exact_negative_cent_values(): void
@@ -155,6 +155,6 @@ class DashboardTest extends TestCase
 
         $this->actingAs($user)->get(route('dashboard', ['month' => '2026-09']))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('accounts.0.balanceMinor', -1));
+                ->where('accounts.0.balanceMinor', '-1'));
     }
 }

@@ -14,7 +14,7 @@ const props = defineProps<{
         id: number;
         name: string;
         color: string;
-        balanceMinor: number;
+        balanceMinor: string;
     }>;
     recentTransactions: Transaction[];
 }>();

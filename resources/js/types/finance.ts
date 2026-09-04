@@ -1,3 +1,5 @@
+import type { MinorAmount } from '@/lib/minor-amount';
+
 export type Workspace = {
     id: number;
     name: string;
@@ -14,9 +16,9 @@ export type Account = {
     id: number;
     name: string;
     type: 'checking' | 'savings' | 'cash' | 'other';
-    initialBalanceMinor: number;
+    initialBalanceMinor: MinorAmount;
     balanceDate: string;
-    balanceMinor?: number;
+    balanceMinor?: MinorAmount;
     icon: string | null;
     color: string;
     isArchived: boolean;
@@ -34,7 +36,7 @@ export type Category = {
 export type Transaction = {
     id: number;
     type: 'income' | 'expense' | 'transfer';
-    amountMinor: number;
+    amountMinor: MinorAmount;
     description: string;
     dueOn: string;
     settledAt: string | null;
@@ -52,11 +54,11 @@ export type Transaction = {
 };
 
 export type MonthlySummary = {
-    planned_income_minor: number;
-    planned_expense_minor: number;
-    opening_balance_minor: number;
-    forecast_change_minor: number;
-    realized_balance_minor: number;
-    forecast_balance_minor: number;
+    planned_income_minor: MinorAmount;
+    planned_expense_minor: MinorAmount;
+    opening_balance_minor: MinorAmount;
+    forecast_change_minor: MinorAmount;
+    realized_balance_minor: MinorAmount;
+    forecast_balance_minor: MinorAmount;
     period: 'past' | 'current' | 'future';
 };

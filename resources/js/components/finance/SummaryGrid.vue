@@ -9,6 +9,7 @@ import {
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
+import { minorIsNegative } from '@/lib/minor-amount';
 import type { MonthlySummary } from '@/types';
 
 const props = defineProps<{ summary: MonthlySummary }>();
@@ -22,13 +23,19 @@ const realizedHint = computed(() =>
     t(`finance.overview.realizedBalanceHint.${props.summary.period}`),
 );
 const realizedTone = computed(() =>
-    props.summary.realized_balance_minor < 0 ? 'text-expense' : 'text-income',
+    minorIsNegative(props.summary.realized_balance_minor)
+        ? 'text-expense'
+        : 'text-income',
 );
 const forecastTone = computed(() =>
-    props.summary.forecast_balance_minor < 0 ? 'text-expense' : 'text-forecast',
+    minorIsNegative(props.summary.forecast_balance_minor)
+        ? 'text-expense'
+        : 'text-forecast',
 );
 const movementTone = computed(() =>
-    props.summary.forecast_change_minor < 0 ? 'text-expense' : 'text-income',
+    minorIsNegative(props.summary.forecast_change_minor)
+        ? 'text-expense'
+        : 'text-income',
 );
 const items = computed(() => [
     {

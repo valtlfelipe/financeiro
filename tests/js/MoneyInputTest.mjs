@@ -7,6 +7,10 @@ import {
     formatMoneyInputWithCaret,
     parseMoneyInputToMinor,
 } from '../../resources/js/lib/money-input.ts';
+import {
+    formatCurrencyMinor,
+    minorIsNegative,
+} from '../../resources/js/lib/minor-amount.ts';
 
 function typeDigits(digits, locale = 'pt-BR') {
     let value = '0,00';
@@ -58,6 +62,19 @@ test('keeps two decimal places after each keystroke and on blur', () => {
     assert.equal(formatMoneyInputOnBlur('', 'pt-BR'), '0,00');
     assert.equal(formatMinorForInput(1860000, 'pt-BR'), '18.600,00');
     assert.equal(formatMinorForInput(5, 'pt-BR'), '0,05');
+    assert.equal(
+        formatMinorForInput('900719925474099100', 'pt-BR'),
+        '9.007.199.254.740.991,00',
+    );
+});
+
+test('formats and compares serialized minor amounts without number coercion', () => {
+    assert.equal(
+        formatCurrencyMinor('900719925474099100', 'pt-BR', 'BRL'),
+        'R$ 9.007.199.254.740.991,00',
+    );
+    assert.equal(minorIsNegative('-1'), true);
+    assert.equal(minorIsNegative('0'), false);
 });
 
 test('treats every digit as integer cents', () => {

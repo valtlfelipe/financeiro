@@ -1,13 +1,16 @@
 import { usePage } from '@inertiajs/vue3';
+import { formatCurrencyMinor } from '@/lib/minor-amount';
+import type { MinorAmount } from '@/lib/minor-amount';
 
 export function useFinanceFormat() {
     const page = usePage();
 
-    const formatMoney = (minor: number): string =>
-        new Intl.NumberFormat(page.props.locale, {
-            style: 'currency',
-            currency: page.props.workspace?.currency ?? 'BRL',
-        }).format(minor / 100);
+    const formatMoney = (minor: MinorAmount): string =>
+        formatCurrencyMinor(
+            minor,
+            page.props.locale,
+            page.props.workspace?.currency ?? 'BRL',
+        );
 
     const formatDate = (
         date: string,

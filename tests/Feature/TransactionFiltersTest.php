@@ -33,11 +33,11 @@ test('list filters do not change the monthly summary', function (string $filter)
             ->has('transactions', 1)
             ->where('transactions.0.id', $target->id)
             ->where("filters.{$filter}", (string) $value)
-            ->where('summary.planned_income_minor', 200000)
-            ->where('summary.planned_expense_minor', 80000)
-            ->where('summary.opening_balance_minor', 0)
-            ->where('summary.realized_balance_minor', 200000)
-            ->where('summary.forecast_balance_minor', 120000));
+            ->where('summary.planned_income_minor', '200000')
+            ->where('summary.planned_expense_minor', '80000')
+            ->where('summary.opening_balance_minor', '0')
+            ->where('summary.realized_balance_minor', '200000')
+            ->where('summary.forecast_balance_minor', '120000'));
 })->with(['search', 'type', 'status', 'account_id', 'category_id']);
 
 test('changing months updates totals even when the filtered list is empty', function () {
@@ -50,10 +50,10 @@ test('changing months updates totals even when the filtered list is empty', func
         ->assertInertia(fn (Assert $page) => $page
             ->where('month', '2026-10')
             ->has('transactions', 0)
-            ->where('summary.planned_income_minor', 0)
-            ->where('summary.planned_expense_minor', 45000)
-            ->where('summary.opening_balance_minor', 90000)
-            ->where('summary.forecast_balance_minor', 45000));
+            ->where('summary.planned_income_minor', '0')
+            ->where('summary.planned_expense_minor', '45000')
+            ->where('summary.opening_balance_minor', '90000')
+            ->where('summary.forecast_balance_minor', '45000'));
 });
 
 test('the default transaction month follows the workspace timezone', function () {

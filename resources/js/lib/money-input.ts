@@ -29,8 +29,12 @@ function digitsAsMinor(value: string): number {
     return Number(digits.slice(0, MAX_MONEY_DIGITS));
 }
 
-export function formatMinorForInput(minor: number, locale: string): string {
-    const normalizedMinor = Math.max(0, Math.round(minor));
+export function formatMinorForInput(
+    minor: number | string,
+    locale: string,
+): string {
+    const parsedMinor = BigInt(minor);
+    const normalizedMinor = parsedMinor < 0n ? 0n : parsedMinor;
     const paddedMinor = normalizedMinor.toString().padStart(3, '0');
     const integerDigits = paddedMinor.slice(0, -2);
     const decimalDigits = paddedMinor.slice(-2);

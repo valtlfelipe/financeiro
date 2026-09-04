@@ -4,16 +4,17 @@ namespace App\Actions\Transactions;
 
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Support\MinorAmount;
 use App\TransactionType;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
 class AccountBalance
 {
-    public function handle(Account $account): int
+    public function handle(Account $account): string
     {
         if ($account->workspace->today()->isBefore($account->balance_date)) {
-            return 0;
+            return '0';
         }
 
         return $this->sum(
@@ -25,10 +26,10 @@ class AccountBalance
         );
     }
 
-    public function settledThrough(Account $account, CarbonImmutable $date): int
+    public function settledThrough(Account $account, CarbonImmutable $date): string
     {
         if ($date->isBefore($account->balance_date)) {
-            return 0;
+            return '0';
         }
 
         return $this->sum(
@@ -40,10 +41,10 @@ class AccountBalance
         );
     }
 
-    public function projectedThrough(Account $account, CarbonImmutable $date): int
+    public function projectedThrough(Account $account, CarbonImmutable $date): string
     {
         if ($date->isBefore($account->balance_date)) {
-            return 0;
+            return '0';
         }
 
         $today = $account->workspace->today();
@@ -71,7 +72,7 @@ class AccountBalance
             $account,
         );
 
-        return $this->handle($account) + $projectionDelta;
+        return MinorAmount::add($this->handle($account), $projectionDelta);
     }
 
     /** @return Builder<Transaction> */
@@ -85,13 +86,13 @@ class AccountBalance
     }
 
     /** @param Builder<Transaction> $query */
-    private function sum(Builder $query, Account $account): int
+    private function sum(Builder $query, Account $account): string
     {
-        return $account->initial_balance_minor + $this->delta($query, $account);
+        return MinorAmount::add($account->initial_balance_minor, $this->delta($query, $account));
     }
 
     /** @param Builder<Transaction> $query */
-    private function delta(Builder $query, Account $account): int
+    private function delta(Builder $query, Account $account): string
     {
         $result = $query
             ->toBase()
@@ -119,6 +120,6 @@ class AccountBalance
             ->first();
         $delta = $result?->balance_delta;
 
-        return is_numeric($delta) ? (int) $delta : 0;
+        return is_int($delta) || is_string($delta) ? MinorAmount::normalize($delta) : '0';
     }
 }

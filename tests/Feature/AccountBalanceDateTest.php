@@ -29,7 +29,7 @@ test('legacy future-dated opening balances do not appear before their date', fun
 
     $balance = app(AccountBalance::class);
 
-    expect($balance->handle($account))->toBe(0)
-        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-09-19')))->toBe(0)
-        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-09-20')))->toBe(100000);
+    expect($balance->handle($account))->toBe('0')
+        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-09-19')))->toBe('0')
+        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-09-20')))->toBe('100000');
 });

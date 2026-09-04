@@ -13,3 +13,6 @@ Installment series store the full purchase amount while each transaction stores 
 
 ## Archive accounts only after financial closure
 Keep at least one active account. An account may be archived only at zero current balance and without pending entries, future movements, or active recurrences. Archived accounts remain part of historical summaries and filters, but new entries cannot target them. Existing history may change only descriptive fields so an archived balance cannot become hidden and nonzero.
+
+## Serialize money as decimal integer strings
+Database rows keep integer minor units. Aggregates use arbitrary-precision signed decimal arithmetic in PHP, and every monetary value sent to JavaScript is a decimal integer string. The frontend must format and compare those strings with BigInt and must never coerce API money to Number. Form inputs may submit safe integer minor units within their explicit digit limit.

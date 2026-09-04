@@ -19,7 +19,7 @@ class TransactionResource extends JsonResource
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'amountMinor' => $this->amount_minor,
+            'amountMinor' => (string) $this->amount_minor,
             'description' => $this->description,
             'dueOn' => $this->due_on->toDateString(),
             'settledAt' => $this->settled_at?->toIso8601String(),
