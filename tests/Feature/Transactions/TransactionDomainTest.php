@@ -74,6 +74,7 @@ test('copying transaction data creates a separate entry without changing the ori
 });
 
 test('money and monthly totals remain integer cents and transfers are excluded', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-04 12:00:00'));
     Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->incomeCategory->id, 'type' => TransactionType::Income, 'amount_minor' => 10001, 'due_on' => '2026-09-03', 'settled_at' => now()]);
     Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'category_id' => $this->expenseCategory->id, 'type' => TransactionType::Expense, 'amount_minor' => 3334, 'due_on' => '2026-09-04']);
     Transaction::factory()->create(['workspace_id' => $this->workspace->id, 'account_id' => $this->account->id, 'destination_account_id' => $this->destination->id, 'category_id' => null, 'type' => TransactionType::Transfer, 'amount_minor' => 999999, 'due_on' => '2026-09-05', 'settled_at' => now()]);
@@ -95,9 +96,9 @@ test('money and monthly totals remain integer cents and transfers are excluded',
     $accountBalances = collect($summary['account_balances'])->keyBy('id');
 
     expect($accountBalances)->toHaveCount(2)
-        ->and($accountBalances[$this->account->id]['realized_balance_minor'])->toBe('10001')
+        ->and($accountBalances[$this->account->id]['realized_balance_minor'])->toBe('-989998')
         ->and($accountBalances[$this->account->id]['forecast_balance_minor'])->toBe('-993332')
-        ->and($accountBalances[$this->destination->id]['realized_balance_minor'])->toBe('0')
+        ->and($accountBalances[$this->destination->id]['realized_balance_minor'])->toBe('999999')
         ->and($accountBalances[$this->destination->id]['forecast_balance_minor'])->toBe('999999');
 });
 
@@ -200,6 +201,80 @@ test('a settled recurring income before a zero balance date carries into the cur
         ->and($septemberAccount['forecast_balance_minor'])->toBe('6848000');
 });
 
+test('expenses settled ahead of their due date leave the current balance immediately', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-04 15:22:00', 'America/Sao_Paulo'));
+    $this->account->update([
+        'initial_balance_minor' => 0,
+        'balance_date' => '2026-09-04',
+    ]);
+
+    $movements = [
+        [TransactionType::Income, 3424000, '2026-08-31', true],
+        [TransactionType::Expense, 1860000, '2026-09-02', true],
+        [TransactionType::Income, 11021, '2026-09-03', true],
+        [TransactionType::Expense, 738200, '2026-09-05', true],
+        [TransactionType::Expense, 200000, '2026-09-05', true],
+        [TransactionType::Expense, 33000, '2026-09-10', true],
+        [TransactionType::Expense, 48184, '2026-09-10', true],
+        [TransactionType::Expense, 5900, '2026-09-10', true],
+        [TransactionType::Income, 3424000, '2026-09-30', false],
+    ];
+
+    foreach ($movements as [$type, $amount, $dueOn, $settled]) {
+        Transaction::factory()->for($this->workspace)->for($this->account)->create([
+            'type' => $type,
+            'amount_minor' => $amount,
+            'due_on' => $dueOn,
+            'settled_at' => $settled ? now() : null,
+        ]);
+    }
+
+    $august = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-08-01'));
+    $september = app(MonthlySummary::class)->handle($this->workspace, CarbonImmutable::parse('2026-09-01'));
+
+    expect($august['realized_balance_minor'])->toBe('3424000')
+        ->and($august['forecast_balance_minor'])->toBe('3424000');
+    expect(Arr::except($september, ['account_balances']))->toBe([
+        'planned_income_minor' => '3435021',
+        'planned_expense_minor' => '2885284',
+        'opening_balance_minor' => '3424000',
+        'forecast_change_minor' => '549737',
+        'realized_balance_minor' => '549737',
+        'forecast_balance_minor' => '3973737',
+        'period' => 'current',
+    ]);
+    expect($september['forecast_change_minor'])->toBe(
+        MinorAmount::subtract($september['planned_income_minor'], $september['planned_expense_minor']),
+    );
+
+    $septemberAccount = collect($september['account_balances'])->firstWhere('id', $this->account->id);
+
+    expect($septemberAccount['realized_balance_minor'])->toBe('549737')
+        ->and($septemberAccount['forecast_balance_minor'])->toBe('3973737');
+});
+
+test('a settlement recorded late at night belongs to the workspace civil day', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-04 23:30:00', 'America/Sao_Paulo'));
+    $this->account->update([
+        'initial_balance_minor' => 0,
+        'balance_date' => '2026-01-01',
+    ]);
+    Transaction::factory()->for($this->workspace)->for($this->account)->create([
+        'type' => TransactionType::Expense,
+        'amount_minor' => 25000,
+        'due_on' => '2026-09-10',
+        'settled_at' => now(),
+    ]);
+
+    $balance = app(AccountBalance::class);
+    $account = $this->account->fresh();
+
+    expect(CarbonImmutable::now()->utc()->toDateString())->toBe('2026-09-05')
+        ->and($balance->settledThrough($account, CarbonImmutable::parse('2026-09-03')))->toBe('0')
+        ->and($balance->settledThrough($account, CarbonImmutable::parse('2026-09-04')))->toBe('-25000')
+        ->and($balance->handle($account))->toBe('-25000');
+});
+
 test('monthly summary uses a constant number of aggregate queries as accounts grow', function () {
     $this->travelTo(CarbonImmutable::parse('2026-09-15 12:00:00'));
 
@@ -227,7 +302,7 @@ test('monthly summary uses a constant number of aggregate queries as accounts gr
         ->and($expandedQueryCount)->toBe($initialQueryCount);
 });
 
-test('realized balances use the transaction date instead of the settlement timestamp', function () {
+test('realized balances follow the earlier of the transaction date and its settlement', function () {
     $this->travelTo(CarbonImmutable::parse('2026-09-15 12:00:00'));
     $this->account->update([
         'initial_balance_minor' => 100000,
@@ -248,9 +323,12 @@ test('realized balances use the transaction date instead of the settlement times
 
     $balance = app(AccountBalance::class);
 
-    expect($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-09')))->toBe('100000')
-        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-10')))->toBe('90000')
-        ->and($balance->handle($this->account->fresh()))->toBe('90000')
+    expect($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-01')))->toBe('100000')
+        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-02')))->toBe('80000')
+        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-09')))->toBe('80000')
+        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-10')))->toBe('70000')
+        ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-14')))->toBe('70000')
+        ->and($balance->handle($this->account->fresh()))->toBe('70000')
         ->and($balance->settledThrough($this->account->fresh(), CarbonImmutable::parse('2026-09-30')))->toBe('70000');
 });
 
@@ -288,8 +366,8 @@ test('forecasts start from the current realized balance without counting settled
     $balance = app(AccountBalance::class);
     $account = $this->account->fresh();
 
-    expect($balance->handle($account))->toBe('90000')
-        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-09-30')))->toBe('85000')
+    expect($balance->handle($account))->toBe('70000')
+        ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-09-30')))->toBe('65000')
         ->and($balance->projectedThrough($account, CarbonImmutable::parse('2026-10-31')))->toBe('100065000');
 });
 

@@ -15,12 +15,29 @@ use Illuminate\Support\Facades\DB;
 
 class AccountBalance
 {
+    /**
+     * Movements recorded before a dated opening balance are already baked into it.
+     */
+    private const OPENING_BALANCE_GUARD = '(accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date))';
+
+    /**
+     * Settled movements reach the account on their due date, or on the day they were
+     * settled when that happened first. Takes the target date and its settlement cutoff.
+     */
+    private const REALIZED_CONDITION = '(movements.settled_at IS NOT NULL AND (DATE(movements.due_on) <= ? OR movements.settled_at < ?))';
+
+    /**
+     * Today's realized position plus every movement still pending on the target date.
+     * Takes today, today's settlement cutoff, and the target date.
+     */
+    private const PROJECTED_CONDITION = '('.self::REALIZED_CONDITION.' OR (movements.settled_at IS NULL AND DATE(movements.due_on) <= ?))';
+
     /** @return Collection<int, Account> */
     public function currentAccounts(Workspace $workspace): Collection
     {
         $today = $workspace->today();
         $accounts = $this->balanceRows($workspace, [
-            'current' => ['date' => $today, 'settled_only' => true],
+            'current' => ['date' => $today, 'projected' => false],
         ], includeArchived: false);
 
         return $accounts->each(function (Account $account) use ($today): void {
@@ -54,9 +71,9 @@ class AccountBalance
     ): array {
         $today = $workspace->today();
         $positions = [
-            'opening' => ['date' => $openingDate, 'settled_only' => $openingDate->isBefore($today)],
-            'forecast' => ['date' => $forecastDate, 'settled_only' => $forecastDate->isBefore($today)],
-            'realized' => ['date' => $realizedDate, 'settled_only' => true],
+            'opening' => ['date' => $openingDate, 'projected' => ! $openingDate->isBefore($today)],
+            'forecast' => ['date' => $forecastDate, 'projected' => ! $forecastDate->isBefore($today)],
+            'realized' => ['date' => $realizedDate, 'projected' => false],
         ];
         $accounts = $this->balanceRows($workspace, $positions, includeArchived: true);
         $totals = ['opening' => '0', 'forecast' => '0', 'realized' => '0'];
@@ -90,18 +107,7 @@ class AccountBalance
 
     public function handle(Account $account): string
     {
-        if ($this->isBeforeOpeningBalance($account, $account->workspace->today())) {
-            return '0';
-        }
-
-        return $this->sum(
-            $this->movements($account)
-                ->whereNotNull('settled_at')
-                ->when($this->hasDatedOpeningBalance($account), fn (Builder $query) => $query
-                    ->whereDate('due_on', '>=', $account->balance_date->toDateString()))
-                ->whereDate('due_on', '<=', $account->workspace->today()->toDateString()),
-            $account,
-        );
+        return $this->settledThrough($account, $account->workspace->today());
     }
 
     public function settledThrough(Account $account, CarbonImmutable $date): string
@@ -110,14 +116,7 @@ class AccountBalance
             return '0';
         }
 
-        return $this->sum(
-            $this->movements($account)
-                ->whereNotNull('settled_at')
-                ->when($this->hasDatedOpeningBalance($account), fn (Builder $query) => $query
-                    ->whereDate('due_on', '>=', $account->balance_date->toDateString()))
-                ->whereDate('due_on', '<=', $date->toDateString()),
-            $account,
-        );
+        return $this->sum($this->realizedMovements($account, $date), $account);
     }
 
     public function projectedThrough(Account $account, CarbonImmutable $date): string
@@ -128,32 +127,18 @@ class AccountBalance
 
         $today = $account->workspace->today();
 
-        if ($today->isBefore($account->balance_date)) {
-            return $this->sum(
-                $this->movements($account)
-                    ->when($this->hasDatedOpeningBalance($account), fn (Builder $query) => $query
-                        ->whereDate('due_on', '>=', $account->balance_date->toDateString()))
-                    ->whereDate('due_on', '<=', $date->toDateString()),
-                $account,
-            );
-        }
-
         if ($date->isBefore($today)) {
             return $this->settledThrough($account, $date);
         }
 
-        $projectionDelta = $this->delta(
-            $this->movements($account)
-                ->when($this->hasDatedOpeningBalance($account), fn (Builder $query) => $query
-                    ->whereDate('due_on', '>=', $account->balance_date->toDateString()))
-                ->whereDate('due_on', '<=', $date->toDateString())
-                ->where(fn (Builder $query) => $query
+        return $this->sum(
+            $this->movements($account)->where(fn (Builder $query) => $query
+                ->where(fn (Builder $realized) => $this->applyRealized($realized, $account, $today))
+                ->orWhere(fn (Builder $pending) => $pending
                     ->whereNull('settled_at')
-                    ->orWhereDate('due_on', '>', $today->toDateString())),
+                    ->whereDate('due_on', '<=', $date->toDateString()))),
             $account,
         );
-
-        return MinorAmount::add($this->handle($account), $projectionDelta);
     }
 
     /** @return Builder<Transaction> */
@@ -163,7 +148,31 @@ class AccountBalance
             ->where('workspace_id', $account->workspace_id)
             ->where(fn (Builder $query) => $query
                 ->where('account_id', $account->id)
-                ->orWhere('destination_account_id', $account->id));
+                ->orWhere('destination_account_id', $account->id))
+            ->when($this->hasDatedOpeningBalance($account), fn (Builder $query) => $query
+                ->whereDate('due_on', '>=', $account->balance_date->toDateString()));
+    }
+
+    /** @return Builder<Transaction> */
+    private function realizedMovements(Account $account, CarbonImmutable $date): Builder
+    {
+        return $this->applyRealized($this->movements($account), $account, $date);
+    }
+
+    /**
+     * A settled movement reaches the account on its due date, or on the day it was
+     * settled when that happened first.
+     *
+     * @param  Builder<Transaction>  $query
+     * @return Builder<Transaction>
+     */
+    private function applyRealized(Builder $query, Account $account, CarbonImmutable $date): Builder
+    {
+        return $query
+            ->whereNotNull('settled_at')
+            ->where(fn (Builder $realized) => $realized
+                ->whereDate('due_on', '<=', $date->toDateString())
+                ->orWhere('settled_at', '<', $this->settlementCutoff($account->workspace, $date)));
     }
 
     /** @param Builder<Transaction> $query */
@@ -205,55 +214,72 @@ class AccountBalance
     }
 
     /**
-     * @param  array<string, array{date: CarbonImmutable, settled_only: bool}>  $positions
+     * @param  array<string, array{date: CarbonImmutable, projected: bool}>  $positions
      * @return Collection<int, Account>
      */
     private function balanceRows(Workspace $workspace, array $positions, bool $includeArchived): Collection
     {
+        $today = $workspace->today();
+        $columns = [
+            'accounts.id',
+            'accounts.workspace_id',
+            'accounts.name',
+            'accounts.type',
+            'accounts.initial_balance_minor',
+            'accounts.balance_date',
+            'accounts.icon',
+            'accounts.color',
+            'accounts.is_archived',
+        ];
         $query = Account::query()
             ->where('accounts.workspace_id', $workspace->id)
             ->when(! $includeArchived, fn (Builder $accountQuery) => $accountQuery->where('accounts.is_archived', false))
             ->leftJoinSub($this->movementLedger($workspace->id), 'movements', fn ($join) => $join
                 ->on('movements.account_id', '=', 'accounts.id'))
-            ->select([
-                'accounts.id',
-                'accounts.workspace_id',
-                'accounts.name',
-                'accounts.type',
-                'accounts.initial_balance_minor',
-                'accounts.balance_date',
-                'accounts.icon',
-                'accounts.color',
-                'accounts.is_archived',
-            ]);
+            ->select($columns);
 
         foreach ($positions as $name => $position) {
-            $sql = match ($name.'.'.($position['settled_only'] ? 'settled' : 'all')) {
-                'current.settled' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS current_delta',
-                'opening.settled' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS opening_delta',
-                'opening.all' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? THEN movements.delta_minor ELSE 0 END), 0) AS opening_delta',
-                'forecast.settled' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS forecast_delta',
-                'forecast.all' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? THEN movements.delta_minor ELSE 0 END), 0) AS forecast_delta',
-                'realized.settled' => 'COALESCE(SUM(CASE WHEN (accounts.initial_balance_minor = 0 OR DATE(movements.due_on) >= DATE(accounts.balance_date)) AND DATE(movements.due_on) <= ? AND movements.settled_at IS NOT NULL THEN movements.delta_minor ELSE 0 END), 0) AS realized_delta',
+            $alias = match ($name) {
+                'current' => 'current_delta',
+                'opening' => 'opening_delta',
+                'forecast' => 'forecast_delta',
+                'realized' => 'realized_delta',
                 default => throw new \InvalidArgumentException("Unsupported balance position: {$name}"),
             };
-            $query->selectRaw($sql, [$position['date']->toDateString()]);
+            $condition = $position['projected'] ? self::PROJECTED_CONDITION : self::REALIZED_CONDITION;
+            $bindings = $position['projected']
+                ? [...$this->realizedBindings($workspace, $today), $position['date']->toDateString()]
+                : $this->realizedBindings($workspace, $position['date']);
+
+            $query->selectRaw(
+                'COALESCE(SUM(CASE WHEN '.self::OPENING_BALANCE_GUARD.' AND '.$condition
+                    .' THEN movements.delta_minor ELSE 0 END), 0) AS '.$alias,
+                $bindings,
+            );
         }
 
         return $query
-            ->groupBy([
-                'accounts.id',
-                'accounts.workspace_id',
-                'accounts.name',
-                'accounts.type',
-                'accounts.initial_balance_minor',
-                'accounts.balance_date',
-                'accounts.icon',
-                'accounts.color',
-                'accounts.is_archived',
-            ])
+            ->groupBy($columns)
             ->orderBy('accounts.id')
             ->get();
+    }
+
+    /** @return list<string> */
+    private function realizedBindings(Workspace $workspace, CarbonImmutable $date): array
+    {
+        return [$date->toDateString(), $this->settlementCutoff($workspace, $date)];
+    }
+
+    /**
+     * The first instant that no longer belongs to the given civil date in the workspace.
+     */
+    private function settlementCutoff(Workspace $workspace, CarbonImmutable $date): string
+    {
+        return CarbonImmutable::parse($date->toDateString(), $workspace->timezone)
+            ->addDay()
+            ->startOfDay()
+            ->utc()
+            ->format('Y-m-d H:i:s');
     }
 
     private function movementLedger(int $workspaceId): QueryBuilder
