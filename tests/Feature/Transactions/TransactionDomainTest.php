@@ -12,6 +12,7 @@ use App\Models\Transaction;
 use App\Models\TransactionSeries;
 use App\RecurrenceFrequency;
 use App\SeriesKind;
+use App\Support\MinorAmount;
 use App\TransactionType;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -319,9 +320,9 @@ test('installments distribute remainder cents exactly and are idempotent', funct
 
     $series = $first->series;
     expect($series)->not->toBeNull()
-        ->and($series->transactions()->orderBy('installment_number')->pluck('amount_minor')->all())->toBe([3334, 3333, 3333])
+        ->and($series->transactions()->orderBy('installment_number')->pluck('amount_minor')->map(fn ($amount): string => (string) $amount)->all())->toBe(['3334', '3333', '3333'])
         ->and($series->transactions()->orderBy('installment_number')->pluck('due_on')->map->format('Y-m-d')->all())->toBe(['2026-01-31', '2026-02-28', '2026-03-31'])
-        ->and($series->transactions()->sum('amount_minor'))->toBe(10000);
+        ->and(MinorAmount::normalize($series->transactions()->sum('amount_minor')))->toBe('10000');
 
     expect(app(GenerateSeriesOccurrences::class)->handle($series))->toBe(0)
         ->and($series->transactions()->count())->toBe(3);

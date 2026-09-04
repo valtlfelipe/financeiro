@@ -25,7 +25,7 @@ class MonthlySummary
         };
 
         return DB::transaction(function () use ($workspace, $month, $today, $period): array {
-            if (DB::getDriverName() === 'pgsql') {
+            if (DB::getDriverName() === 'pgsql' && DB::transactionLevel() === 1) {
                 DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
             }
 
