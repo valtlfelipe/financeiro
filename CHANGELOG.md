@@ -4,6 +4,15 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.4.6] - 2026-09-09
+
+### Fixed
+
+- Navegação e conteúdo respeitam as áreas seguras do iPhone, com mais espaço no rodapé e nas bordas.
+- Formulários de lançamentos mantêm campos de data e seletores dentro da largura disponível, inclusive em recorrências e telas estreitas.
+- Campos nativos usam fonte mínima de 16 px em telas pequenas e dispositivos de toque para evitar zoom automático ao receber foco.
+- Painéis de lançamento têm botão de fechar com área de toque maior e detalhes que se adaptam à largura disponível.
+
 ## [1.4.5] - 2026-09-04
 
 ### Fixed

@@ -68,7 +68,9 @@ function isNavigationItemActive(
 </script>
 
 <template>
-    <div class="bg-background min-h-dvh pb-20 md:pb-0">
+    <div
+        class="bg-background min-h-dvh pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0"
+    >
         <div
             v-if="!online"
             role="status"
@@ -79,10 +81,10 @@ function isNavigationItemActive(
         </div>
 
         <header
-            class="border-border/80 bg-card/95 sticky top-0 z-30 border-b backdrop-blur"
+            class="border-border/80 bg-card/95 sticky top-0 z-30 border-b pt-[env(safe-area-inset-top)] backdrop-blur"
         >
             <div
-                class="mx-auto flex h-16 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8"
+                class="app-gutter mx-auto flex h-16 max-w-7xl items-center gap-3 md:gap-8"
             >
                 <div class="flex min-w-0 items-center gap-1.5">
                     <Link
@@ -189,14 +191,12 @@ function isNavigationItemActive(
             </div>
         </header>
 
-        <main
-            class="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8"
-        >
+        <main class="app-gutter mx-auto w-full max-w-7xl py-5 sm:py-8">
             <slot :online="online" />
         </main>
 
         <nav
-            class="border-border bg-card fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t px-2 pb-[env(safe-area-inset-bottom)] md:hidden"
+            class="border-border bg-card fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden"
             :aria-label="t('common.navigation.primary')"
         >
             <Link

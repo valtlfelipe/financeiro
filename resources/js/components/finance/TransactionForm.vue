@@ -199,7 +199,10 @@ function submit(scope: 'single' | 'future'): void {
 </script>
 
 <template>
-    <form class="grid gap-5" @submit.prevent="requestSubmit">
+    <form
+        class="grid min-w-0 grid-cols-1 gap-5"
+        @submit.prevent="requestSubmit"
+    >
         <div
             class="grid grid-cols-3 gap-2"
             role="group"
@@ -262,7 +265,7 @@ function submit(scope: 'single' | 'future'): void {
             </TooltipProvider>
         </div>
 
-        <div class="grid gap-2">
+        <div class="grid min-w-0 grid-cols-1 gap-2">
             <Label for="description">{{
                 t('finance.transactions.form.description')
             }}</Label>
@@ -277,7 +280,7 @@ function submit(scope: 'single' | 'future'): void {
             <InputError :message="form.errors.description" />
         </div>
 
-        <div class="grid gap-2">
+        <div class="grid min-w-0 grid-cols-1 gap-2">
             <Label for="amount">{{
                 t('finance.transactions.form.amount')
             }}</Label>
@@ -299,15 +302,15 @@ function submit(scope: 'single' | 'future'): void {
             <InputError :message="form.errors.amount_minor" />
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2">
-            <div class="grid gap-2">
+        <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="grid min-w-0 grid-cols-1 gap-2">
                 <Label for="account_id">{{
                     t('finance.transactions.form.account')
                 }}</Label>
                 <select
                     id="account_id"
                     v-model="form.account_id"
-                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
+                    class="border-input bg-card h-11 w-full min-w-0 rounded-xl border px-3 text-sm"
                     required
                 >
                     <option
@@ -323,14 +326,17 @@ function submit(scope: 'single' | 'future'): void {
                 </select>
                 <InputError :message="form.errors.account_id" />
             </div>
-            <div v-if="form.type === 'transfer'" class="grid gap-2">
+            <div
+                v-if="form.type === 'transfer'"
+                class="grid min-w-0 grid-cols-1 gap-2"
+            >
                 <Label for="destination_account_id">{{
                     t('finance.transactions.form.destinationAccount')
                 }}</Label>
                 <select
                     id="destination_account_id"
                     v-model="form.destination_account_id"
-                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
+                    class="border-input bg-card h-11 w-full min-w-0 rounded-xl border px-3 text-sm"
                     required
                 >
                     <option value="" disabled>{{ t('common.select') }}</option>
@@ -349,14 +355,14 @@ function submit(scope: 'single' | 'future'): void {
                 </select>
                 <InputError :message="form.errors.destination_account_id" />
             </div>
-            <div v-else class="grid gap-2">
+            <div v-else class="grid min-w-0 grid-cols-1 gap-2">
                 <Label for="category_id">{{
                     t('finance.transactions.form.category')
                 }}</Label>
                 <select
                     id="category_id"
                     v-model="form.category_id"
-                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
+                    class="border-input bg-card h-11 w-full min-w-0 rounded-xl border px-3 text-sm"
                     :class="{
                         'text-muted-foreground': form.category_id === '',
                     }"
@@ -377,22 +383,22 @@ function submit(scope: 'single' | 'future'): void {
             </div>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2">
-            <div class="grid gap-2">
+        <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="grid min-w-0 grid-cols-1 gap-2">
                 <Label for="due_on">{{
                     t('finance.transactions.form.date')
                 }}</Label>
                 <Input id="due_on" v-model="form.due_on" type="date" required />
                 <InputError :message="form.errors.due_on" />
             </div>
-            <div v-if="!editing" class="grid gap-2">
+            <div v-if="!editing" class="grid min-w-0 grid-cols-1 gap-2">
                 <Label for="series_kind">{{
                     t('finance.transactions.form.schedule')
                 }}</Label>
                 <select
                     id="series_kind"
                     v-model="form.series_kind"
-                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
+                    class="border-input bg-card h-11 w-full min-w-0 rounded-xl border px-3 text-sm"
                 >
                     <option value="">
                         {{ t('finance.transactions.series.single') }}
@@ -409,16 +415,16 @@ function submit(scope: 'single' | 'future'): void {
 
         <div
             v-if="!editing && form.series_kind === 'recurring'"
-            class="bg-muted grid gap-4 rounded-2xl p-4 sm:grid-cols-2"
+            class="bg-muted grid min-w-0 grid-cols-1 gap-4 rounded-2xl p-4 sm:grid-cols-2"
         >
-            <div class="grid gap-2">
+            <div class="grid min-w-0 grid-cols-1 gap-2">
                 <Label for="frequency">{{
                     t('finance.transactions.series.frequency')
                 }}</Label>
                 <select
                     id="frequency"
                     v-model="form.frequency"
-                    class="border-input bg-card h-11 rounded-xl border px-3 text-sm"
+                    class="border-input bg-card h-11 w-full min-w-0 rounded-xl border px-3 text-sm"
                 >
                     <option value="weekly">
                         {{ t('finance.transactions.series.weekly') }}
@@ -431,7 +437,7 @@ function submit(scope: 'single' | 'future'): void {
                     </option>
                 </select>
             </div>
-            <div class="grid gap-2">
+            <div class="grid min-w-0 grid-cols-1 gap-2">
                 <Label for="ends_on">{{
                     t('finance.transactions.series.endsOn')
                 }}</Label>
@@ -441,7 +447,7 @@ function submit(scope: 'single' | 'future'): void {
 
         <div
             v-if="!editing && form.series_kind === 'installment'"
-            class="bg-muted grid gap-2 rounded-2xl p-4"
+            class="bg-muted grid min-w-0 grid-cols-1 gap-2 rounded-2xl p-4"
         >
             <Label for="installments">{{
                 t('finance.transactions.series.installments')
@@ -499,7 +505,7 @@ function submit(scope: 'single' | 'future'): void {
         </div>
         <InputError :message="form.errors.settled" />
 
-        <div class="grid gap-2">
+        <div class="grid min-w-0 grid-cols-1 gap-2">
             <Label for="notes"
                 >{{ t('finance.transactions.form.notes') }}
                 <span class="text-muted-foreground font-normal"

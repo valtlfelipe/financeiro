@@ -93,7 +93,9 @@ function remove(scope: 'single' | 'future' = 'single'): void {
 
 <template>
     <Sheet :open="open" @update:open="emit('update:open', $event)">
-        <SheetContent class="bg-card w-full overflow-y-auto p-0 sm:max-w-xl">
+        <SheetContent
+            class="bg-card w-full min-w-0 overflow-y-auto overscroll-contain p-0 pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] sm:max-w-xl"
+        >
             <div class="border-border border-b px-5 py-5 sm:px-7">
                 <SheetHeader class="pr-8 text-left">
                     <SheetTitle class="text-xl font-extrabold tracking-tight">
@@ -193,14 +195,16 @@ function remove(scope: 'single' | 'future' = 'single'): void {
                             ],
                         ].filter((item) => item[1])"
                         :key="String(item[0])"
-                        class="border-border/70 grid grid-cols-[8rem_1fr] gap-3 border-b py-3 last:border-0"
+                        class="border-border/70 grid grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] gap-3 border-b py-3 last:border-0"
                     >
                         <dt
                             class="text-muted-foreground text-xs font-bold tracking-wider uppercase"
                         >
                             {{ item[0] }}
                         </dt>
-                        <dd class="text-sm font-semibold">{{ item[1] }}</dd>
+                        <dd class="text-sm font-semibold wrap-anywhere">
+                            {{ item[1] }}
+                        </dd>
                     </div>
                 </dl>
 
@@ -292,7 +296,7 @@ function remove(scope: 'single' | 'future' = 'single'): void {
                 />
             </div>
 
-            <div v-else class="p-5 sm:p-7">
+            <div v-else class="min-w-0 p-5 sm:p-7">
                 <TransactionForm
                     :transaction="transaction"
                     :force-create="mode === 'copy'"

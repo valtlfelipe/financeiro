@@ -202,3 +202,46 @@
         font-variant-numeric: tabular-nums;
     }
 }
+
+/* Native date controls must be allowed to shrink inside narrow Safari grids. */
+input[type='date'],
+input[type='month'],
+input[type='datetime-local'] {
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+}
+
+input::-webkit-date-and-time-value {
+    min-width: 0;
+    text-align: left;
+}
+
+@media (width < 48rem), (pointer: coarse) {
+    /* Keep iOS from zooming the page when a native form control receives focus. */
+    input:not([type='checkbox'], [type='radio'], [type='color']),
+    select,
+    textarea {
+        font-size: max(16px, 1rem);
+        min-width: 0;
+        max-width: 100%;
+    }
+}
+
+.app-gutter {
+    --page-gutter: 1rem;
+    padding-left: max(var(--page-gutter), env(safe-area-inset-left));
+    padding-right: max(var(--page-gutter), env(safe-area-inset-right));
+}
+
+@media (width >= 40rem) {
+    .app-gutter {
+        --page-gutter: 1.5rem;
+    }
+}
+
+@media (width >= 64rem) {
+    .app-gutter {
+        --page-gutter: 2rem;
+    }
+}
