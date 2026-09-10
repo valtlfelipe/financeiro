@@ -1,8 +1,11 @@
 {
     "finance": {
         "overview": {
-            "greeting": "Olá, {name}",
-            "title": "Seu mês em uma página",
+            "greeting": {
+                "morning": "Bom dia, {name}",
+                "afternoon": "Boa tarde, {name}",
+                "evening": "Boa noite, {name}"
+            },
             "plannedIncome": "Receitas do mês",
             "plannedExpense": "Despesas do mês",
             "realizedBalance": {
@@ -28,7 +31,9 @@
             "forecastMovement": "Movimentação prevista",
             "forecastBalance": "Saldo previsto no fim do mês",
             "pendingTitle": "Próximos lançamentos",
-            "pendingDescription": "O que ainda precisa do seu joinha neste mês.",
+            "pendingDescription": "O que ainda está pendente neste mês.",
+            "remainingTransaction": "Mais {count} lançamento",
+            "remainingTransactions": "Mais {count} lançamentos",
             "viewAll": "Ver todos os lançamentos",
             "accountsTitle": "Saldos das contas"
         },
@@ -45,6 +50,7 @@
             "status": {
                 "pending": "Pendente",
                 "settled": "Realizado",
+                "overdue": "Atrasado",
                 "markExpenseSettled": "Marcar como pago",
                 "markIncomeSettled": "Marcar como recebido",
                 "markPending": "Marcar como pendente"

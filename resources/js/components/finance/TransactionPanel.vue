@@ -15,7 +15,7 @@ import {
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
 import { useOnline } from '@/composables/useOnline';
 import { destroy } from '@/routes/transactions';
-import type { Account, Category, Transaction } from '@/types';
+import type { Account, Category, MonthlySummary, Transaction } from '@/types';
 import SettlementButton from './SettlementButton.vue';
 import TransactionForm from './TransactionForm.vue';
 import TransactionScopeDialog from './TransactionScopeDialog.vue';
@@ -30,6 +30,7 @@ const props = withDefaults(
         categories: Category[];
         defaultDueOn?: string;
         online?: boolean;
+        reloadProps?: string[];
     }>(),
     {
         online: true,
@@ -38,7 +39,7 @@ const props = withDefaults(
 const emit = defineEmits<{
     'update:open': [open: boolean];
     'update:mode': [mode: PanelMode];
-    transactionUpdate: [transaction: Transaction];
+    transactionUpdate: [transaction: Transaction, summary?: MonthlySummary];
 }>();
 const { t } = useI18n();
 const { formatDate, formatMoney } = useFinanceFormat();
@@ -161,7 +162,11 @@ function remove(scope: 'single' | 'future' = 'single'): void {
                         <SettlementButton
                             :transaction="transaction"
                             :online="online"
-                            @update="emit('transactionUpdate', $event)"
+                            :reload-props="reloadProps"
+                            @update="
+                                (item, summary) =>
+                                    emit('transactionUpdate', item, summary)
+                            "
                         />
                     </div>
                 </div>

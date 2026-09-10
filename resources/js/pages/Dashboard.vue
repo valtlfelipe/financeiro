@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ArrowRight, Landmark, Sparkles } from '@lucide/vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { ArrowRight, Landmark } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import TransactionPanel from '@/components/finance/TransactionPanel.vue';
 import TransactionRow from '@/components/finance/TransactionRow.vue';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
+import { greetingPeriodForHour } from '@/lib/greeting';
 import { index as transactions } from '@/routes/transactions';
-import type { Transaction } from '@/types';
+import type { Account, Category, Transaction } from '@/types';
 
 const props = defineProps<{
     month: string;
@@ -17,11 +19,23 @@ const props = defineProps<{
         balanceMinor: string;
     }>;
     recentTransactions: Transaction[];
+    remainingTransactionsCount: number;
+    formAccounts: Account[];
+    categories: Category[];
 }>();
 const { t } = useI18n();
 const page = usePage();
-const { formatMoney, formatMonth } = useFinanceFormat();
+const { formatMoney } = useFinanceFormat();
 const recent = ref([...props.recentTransactions]);
+const panelOpen = ref(false);
+const panelMode = ref<'detail' | 'edit' | 'copy'>('detail');
+const selected = ref<Transaction | null>(null);
+const greetingPeriod = greetingPeriodForHour(new Date().getHours());
+const dashboardReloadProps = [
+    'accounts',
+    'recentTransactions',
+    'remainingTransactionsCount',
+];
 
 watch(
     () => props.recentTransactions,
@@ -30,11 +44,20 @@ watch(
     },
 );
 
+function openDetail(transaction: Transaction): void {
+    selected.value = transaction;
+    panelMode.value = 'detail';
+    panelOpen.value = true;
+}
+
 function updateTransaction(item: Transaction): void {
     recent.value = recent.value.map((transaction) =>
         transaction.id === item.id ? item : transaction,
     );
-    router.reload({ only: ['accounts'] });
+
+    if (selected.value?.id === item.id) {
+        selected.value = item;
+    }
 }
 </script>
 
@@ -42,26 +65,16 @@ function updateTransaction(item: Transaction): void {
     <section class="grid gap-7">
         <Head :title="t('common.navigation.overview')" />
         <header
-            class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"
+            class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"
         >
             <div>
-                <p
-                    class="text-primary flex items-center gap-2 text-xs font-bold tracking-[0.18em] uppercase"
-                >
-                    <Sparkles class="size-4" />{{ formatMonth(month) }}
-                </p>
-                <h1
-                    class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl"
-                >
+                <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
                     {{
-                        t('finance.overview.greeting', {
+                        t(`finance.overview.greeting.${greetingPeriod}`, {
                             name: page.props.auth.user.name.split(' ')[0],
                         })
                     }}
                 </h1>
-                <p class="text-muted-foreground mt-2 text-sm">
-                    {{ t('finance.overview.title') }}
-                </p>
             </div>
             <Link
                 :href="transactions({ query: { month } })"
@@ -90,7 +103,9 @@ function updateTransaction(item: Transaction): void {
                         v-for="item in recent"
                         :key="item.id"
                         :transaction="item"
+                        :reload-props="dashboardReloadProps"
                         show-date
+                        @open="openDetail"
                         @update="updateTransaction"
                     />
                 </div>
@@ -100,6 +115,21 @@ function updateTransaction(item: Transaction): void {
                 >
                     {{ t('common.empty') }}
                 </div>
+                <Link
+                    v-if="remainingTransactionsCount > 0"
+                    :href="transactions({ query: { month } })"
+                    class="border-border/70 text-muted-foreground hover:bg-muted/60 hover:text-foreground flex min-h-11 items-center justify-center gap-2 border-t px-5 py-3 text-sm font-bold transition-colors"
+                >
+                    {{
+                        t(
+                            remainingTransactionsCount === 1
+                                ? 'finance.overview.remainingTransaction'
+                                : 'finance.overview.remainingTransactions',
+                            { count: remainingTransactionsCount },
+                        )
+                    }}
+                    <ArrowRight class="size-4" aria-hidden="true" />
+                </Link>
             </section>
 
             <aside
@@ -134,5 +164,16 @@ function updateTransaction(item: Transaction): void {
                 </div>
             </aside>
         </div>
+
+        <TransactionPanel
+            v-model:open="panelOpen"
+            v-model:mode="panelMode"
+            :transaction="selected"
+            :accounts="formAccounts"
+            :categories="categories"
+            :default-due-on="page.props.workspace?.today"
+            :reload-props="dashboardReloadProps"
+            @transaction-update="updateTransaction"
+        />
     </section>
 </template>

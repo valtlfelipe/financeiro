@@ -63,11 +63,31 @@ class DashboardTest extends TestCase
             ->component('Dashboard')
             ->missing('summary')
             ->has('accounts', 1)
+            ->has('formAccounts', 1)
+            ->where('formAccounts.0.id', $account->id)
+            ->has('categories', 1)
+            ->where('categories.0.id', $category->id)
             ->has('recentTransactions', 1)
+            ->where('remainingTransactionsCount', 0)
             ->where('recentTransactions.0.description', 'Receita pendente')
             ->where('recentTransactions.0.dueOn', '2026-09-02')
             ->where('recentTransactions.0.account.name', $account->name)
             ->where('recentTransactions.0.category.name', $category->name));
+    }
+
+    public function test_dashboard_reports_pending_transactions_not_shown_in_the_preview(): void
+    {
+        [$user, $workspace] = ownerWithWorkspace();
+        $account = Account::factory()->for($workspace)->create();
+        Transaction::factory()->for($workspace)->for($account)->count(8)->create([
+            'due_on' => '2026-09-10',
+            'settled_at' => null,
+        ]);
+
+        $this->actingAs($user)->get(route('dashboard', ['month' => '2026-09']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('recentTransactions', 6)
+                ->where('remainingTransactionsCount', 2));
     }
 
     public function test_account_balance_counts_settled_movements_from_the_opening_balance_date(): void

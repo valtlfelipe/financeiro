@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ArrowRight, CalendarClock, Repeat2 } from '@lucide/vue';
+import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
 import { formatDayMonth } from '@/lib/dates';
+import { isTransactionOverdue } from '@/lib/transaction-status';
 import type { MonthlySummary, Transaction } from '@/types';
 import SettlementButton from './SettlementButton.vue';
 
@@ -11,6 +13,7 @@ const props = withDefaults(
     defineProps<{
         transaction: Transaction;
         online?: boolean;
+        reloadProps?: string[];
         showDate?: boolean;
     }>(),
     { online: true, showDate: false },
@@ -20,7 +23,16 @@ const emit = defineEmits<{
     update: [transaction: Transaction, summary: MonthlySummary];
 }>();
 const { t } = useI18n();
+const page = usePage();
 const { formatMoney, formatDate } = useFinanceFormat();
+const overdue = computed(() =>
+    isTransactionOverdue(props.transaction, page.props.workspace?.today),
+);
+const rowLabel = computed(() =>
+    overdue.value
+        ? `${props.transaction.description}. ${t('finance.transactions.status.overdue')}.`
+        : props.transaction.description,
+);
 const amountClass = computed(() =>
     props.transaction.type === 'expense'
         ? 'text-expense'
@@ -32,10 +44,15 @@ const amountClass = computed(() =>
 
 <template>
     <article
-        class="group border-border/60 hover:bg-muted/60 grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 border-b px-3 py-3 transition-colors last:border-0 sm:grid-cols-[auto_minmax(0,1fr)_minmax(8rem,auto)_auto] sm:px-5"
+        class="group border-border/60 focus-visible:ring-ring grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 border-b px-3 py-3 transition-colors last:border-0 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset sm:grid-cols-[auto_minmax(0,1fr)_minmax(8rem,auto)_auto] sm:px-5"
+        :class="
+            overdue
+                ? 'bg-expense/5 hover:bg-expense/10 dark:bg-expense/10 dark:hover:bg-expense/15'
+                : 'hover:bg-muted/60 focus-visible:bg-muted/60'
+        "
         role="button"
         tabindex="0"
-        :aria-label="transaction.description"
+        :aria-label="rowLabel"
         @click="emit('open', transaction)"
         @keydown.enter="emit('open', transaction)"
         @keydown.space.prevent="emit('open', transaction)"
@@ -44,7 +61,12 @@ const amountClass = computed(() =>
             v-if="showDate"
             :datetime="transaction.dueOn"
             :aria-label="formatDate(transaction.dueOn, { dateStyle: 'long' })"
-            class="bg-muted text-foreground font-data grid h-11 w-14 shrink-0 place-items-center rounded-xl text-sm font-medium"
+            class="font-data grid h-11 w-14 shrink-0 place-items-center rounded-xl text-sm font-medium"
+            :class="
+                overdue
+                    ? 'bg-expense/12 text-expense'
+                    : 'bg-muted text-foreground'
+            "
             >{{ formatDayMonth(transaction.dueOn) }}</time
         >
         <span
@@ -116,6 +138,7 @@ const amountClass = computed(() =>
             class="col-start-3 row-span-2 row-start-1 sm:col-start-4 sm:row-span-1"
             :transaction="transaction"
             :online="online"
+            :reload-props="reloadProps"
             @update="(item, summary) => emit('update', item, summary)"
         />
     </article>

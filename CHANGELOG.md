@@ -4,6 +4,23 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-09-10
+
+### Added
+
+- Lançamentos do dashboard abrem seus detalhes ao clicar, com acesso às ações de edição e cópia.
+- A lista de próximos lançamentos indica quantos itens adicionais estão disponíveis quando o resumo mensal ultrapassa seis registros.
+
+### Changed
+
+- O cumprimento do dashboard acompanha a hora local do usuário, alternando entre bom dia, boa tarde e boa noite.
+- O cabeçalho e a descrição de próximos lançamentos foram simplificados para comunicar apenas informações úteis.
+
+### Fixed
+
+- Lançamentos atrasados e ainda pendentes recebem um destaque visual nas listas do dashboard e de lançamentos.
+- Alterações feitas nos detalhes e o desfazer da baixa atualizam imediatamente os lançamentos e os saldos do dashboard.
+
 ## [1.4.6] - 2026-09-09
 
 ### Fixed
@@ -211,7 +228,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.4.6...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/valtlfelipe/financeiro/compare/v1.4.6...v1.5.0
 [1.4.6]: https://github.com/valtlfelipe/financeiro/compare/v1.4.5...v1.4.6
 [1.4.5]: https://github.com/valtlfelipe/financeiro/compare/v1.4.4...v1.4.5
 [1.4.4]: https://github.com/valtlfelipe/financeiro/compare/v1.4.3...v1.4.4

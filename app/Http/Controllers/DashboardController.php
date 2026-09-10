@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Transactions\AccountBalance;
+use App\Http\Resources\AccountResource;
+use App\Http\Resources\CategoryResource;
 use App\Http\Resources\TransactionResource;
 use App\Models\Account;
 use Carbon\CarbonImmutable;
@@ -19,12 +21,15 @@ class DashboardController extends Controller
     {
         $workspace = $request->user()->currentWorkspaceOrFail();
         $month = $this->month($request->string('month')->toString(), $workspace->timezone);
-        $transactions = $workspace->transactions()
+        $transactionLimit = 6;
+        $pendingTransactions = $workspace->transactions()
             ->with(['account', 'destinationAccount', 'category', 'series'])
             ->whereBetween('due_on', [$month->startOfMonth(), $month->endOfMonth()])
-            ->whereNull('settled_at')
+            ->whereNull('settled_at');
+        $pendingTransactionsCount = (clone $pendingTransactions)->count();
+        $transactions = $pendingTransactions
             ->orderBy('due_on')
-            ->limit(6)
+            ->limit($transactionLimit)
             ->get();
 
         return Inertia::render('Dashboard', [
@@ -37,6 +42,13 @@ class DashboardController extends Controller
                     'balanceMinor' => (string) $account->getAttribute('balance_minor'),
                 ]),
             'recentTransactions' => TransactionResource::collection($transactions)->resolve(),
+            'remainingTransactionsCount' => max($pendingTransactionsCount - $transactions->count(), 0),
+            'formAccounts' => AccountResource::collection(
+                $workspace->accounts()->where('is_archived', false)->orderBy('name')->get(),
+            )->resolve(),
+            'categories' => CategoryResource::collection(
+                $workspace->categories()->where('is_archived', false)->orderBy('name')->get(),
+            )->resolve(),
         ]);
     }
 

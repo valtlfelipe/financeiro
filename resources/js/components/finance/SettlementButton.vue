@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { router } from '@inertiajs/vue3';
 import { ThumbsDown, ThumbsUp } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { settlement } from '@/routes/transactions';
 import { useOnline } from '@/composables/useOnline';
+import { settlementReloadOptions } from '@/lib/settlement-refresh';
 import type { MonthlySummary, Transaction } from '@/types';
 import {
     beginWorkspaceRequest,
@@ -16,6 +18,7 @@ const props = withDefaults(
     defineProps<{
         transaction: Transaction;
         online?: boolean;
+        reloadProps?: string[];
     }>(),
     {
         online: true,
@@ -80,6 +83,13 @@ async function persist(nextSettled: boolean, showUndo: boolean): Promise<void> {
             summary: MonthlySummary;
         };
         emit('update', data.transaction, data.summary);
+
+        const reloadOptions = settlementReloadOptions(props.reloadProps);
+
+        if (reloadOptions) {
+            router.reload(reloadOptions);
+        }
+
         pending.value = false;
 
         if (showUndo) {
