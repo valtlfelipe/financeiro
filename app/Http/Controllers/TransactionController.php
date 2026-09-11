@@ -35,9 +35,14 @@ class TransactionController extends Controller
             ->with(['account', 'destinationAccount', 'category', 'series'])
             ->whereBetween('due_on', [$month->startOfMonth(), $month->endOfMonth()]);
 
-        if ($request->filled('search')) {
-            $search = str_replace(['%', '_'], ['\\%', '\\_'], $request->string('search')->toString());
-            $query->where('description', 'like', '%'.$search.'%');
+        $searchTerms = $request->string('search')->split('/\s+/u', flags: PREG_SPLIT_NO_EMPTY)->unique();
+
+        foreach ($searchTerms as $term) {
+            $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
+            $query->whereRaw(<<<'SQL'
+                regexp_replace(normalize(description, NFD), U&'[\0300-\036f]', '', 'g')
+                ILIKE regexp_replace(normalize(?, NFD), U&'[\0300-\036f]', '', 'g')
+                SQL, ['%'.$search.'%']);
         }
 
         if ($request->filled('account_id')) {

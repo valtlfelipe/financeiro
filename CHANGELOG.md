@@ -11,6 +11,7 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ### Fixed
 
+- A busca de lançamentos ignora maiúsculas, minúsculas, acentos e espaços extras, encontra partes das palavras em qualquer ordem e trata caracteres especiais como texto literal.
 - O filtro por conta encontra transferências tanto na origem quanto no destino, sem duplicar lançamentos.
 - Categorias arquivadas permanecem disponíveis nos filtros históricos, identificadas e ordenadas depois das categorias ativas.
 - Listas, contagens, resumo mensal e subtotais são recarregados após realizar, desfazer, editar ou excluir um lançamento.
