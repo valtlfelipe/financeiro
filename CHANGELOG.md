@@ -4,6 +4,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-09-11
+
 ### Added
 
 - A visão geral destaca pendências antigas, com contagem, prévia dos seis lançamentos mais antigos e acesso à lista completa.
@@ -240,7 +242,8 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 - CI gera as rotas do Wayfinder e o build do Vite antes dos testes.
 - A imagem Docker copia o helper Wayfinder para o build do frontend.
 
-[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/valtlfelipe/financeiro/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/valtlfelipe/financeiro/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/valtlfelipe/financeiro/compare/v1.4.6...v1.5.0
 [1.4.6]: https://github.com/valtlfelipe/financeiro/compare/v1.4.5...v1.4.6
 [1.4.5]: https://github.com/valtlfelipe/financeiro/compare/v1.4.4...v1.4.5
