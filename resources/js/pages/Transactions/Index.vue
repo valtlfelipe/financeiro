@@ -1,12 +1,25 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight, Filter, Plus, Search } from '@lucide/vue';
+import {
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    CircleAlert,
+    Filter,
+    Plus,
+    Search,
+} from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SummaryGrid from '@/components/finance/SummaryGrid.vue';
 import TransactionPanel from '@/components/finance/TransactionPanel.vue';
 import TransactionRow from '@/components/finance/TransactionRow.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -18,22 +31,36 @@ import {
 } from '@/components/ui/select';
 import { useFinanceFormat } from '@/composables/useFinanceFormat';
 import { index } from '@/routes/transactions';
-import type { Account, Category, MonthlySummary, Transaction } from '@/types';
+import type {
+    Account,
+    Category,
+    MonthlySummary,
+    Transaction,
+    TransactionSubtotal,
+} from '@/types';
 
 const props = defineProps<{
     month: string;
     summary: MonthlySummary;
+    subtotal: TransactionSubtotal;
     transactions: Transaction[];
+    overdueTransactions: Transaction[];
+    overdueTransactionsCount: number;
+    overdueOpen: boolean;
     accounts: Account[];
     filterAccounts: Account[];
     categories: Category[];
+    filterCategories: Category[];
     filters: Record<string, string | null>;
 }>();
 const { t } = useI18n();
 const page = usePage();
-const { formatDate, formatMonth } = useFinanceFormat();
+const { formatDate, formatMoney, formatMonth } = useFinanceFormat();
 const items = ref([...props.transactions]);
+const overdueItems = ref([...props.overdueTransactions]);
 const summaryState = ref(props.summary);
+const subtotalState = ref(props.subtotal);
+const overdueOpen = ref(props.overdueOpen);
 const panelOpen = ref(false);
 const panelMode = ref<'create' | 'detail' | 'edit' | 'copy'>('create');
 const selectedId = ref<number | null>(null);
@@ -46,6 +73,7 @@ const filterState = reactive({
     status: props.filters.status ?? '',
 });
 const hasFilters = computed(() => Object.values(props.filters).some(Boolean));
+const showSubtotal = computed(() => hasFilters.value);
 const activeFilterCount = computed(
     () =>
         Object.entries(props.filters).filter(
@@ -86,9 +114,11 @@ const filterOptions = computed(() => [
         key: 'category_id' as const,
         label: t('finance.transactions.filters.category'),
         all: t('finance.transactions.filters.allCategories'),
-        options: props.categories.map((category) => ({
+        options: props.filterCategories.map((category) => ({
             value: String(category.id),
-            label: category.name,
+            label: category.isArchived
+                ? `${category.name} · ${t('common.archived')}`
+                : category.name,
         })),
     },
 ]);
@@ -106,7 +136,10 @@ watch(
     },
 );
 const selected = computed(
-    () => items.value.find((item) => item.id === selectedId.value) ?? null,
+    () =>
+        items.value.find((item) => item.id === selectedId.value) ??
+        overdueItems.value.find((item) => item.id === selectedId.value) ??
+        null,
 );
 const grouped = computed(() =>
     Object.entries(
@@ -133,12 +166,42 @@ watch(
     () => props.transactions,
     (next) => {
         items.value = [...next];
+
+        if (
+            selectedId.value !== null &&
+            !next.some((item) => item.id === selectedId.value) &&
+            !overdueItems.value.some((item) => item.id === selectedId.value)
+        ) {
+            panelOpen.value = false;
+            selectedId.value = null;
+        }
+    },
+);
+watch(
+    () => props.overdueTransactions,
+    (next) => {
+        overdueItems.value = [...next];
+
+        if (
+            selectedId.value !== null &&
+            !items.value.some((item) => item.id === selectedId.value) &&
+            !next.some((item) => item.id === selectedId.value)
+        ) {
+            panelOpen.value = false;
+            selectedId.value = null;
+        }
     },
 );
 watch(
     () => props.summary,
     (next) => {
         summaryState.value = next;
+    },
+);
+watch(
+    () => props.subtotal,
+    (next) => {
+        subtotalState.value = next;
     },
 );
 
@@ -164,7 +227,11 @@ function clearFilters(): void {
         type: '',
         status: '',
     });
-    applyFilters();
+    router.get(
+        index.url(),
+        { month: props.month },
+        { preserveState: true, replace: true, preserveScroll: true },
+    );
 }
 
 function openCreate(): void {
@@ -179,16 +246,22 @@ function openDetail(transaction: Transaction): void {
     panelOpen.value = true;
 }
 
-function updateTransaction(
-    transaction: Transaction,
-    summary?: MonthlySummary,
-): void {
+function updateTransaction(transaction: Transaction): void {
     items.value = items.value.map((item) =>
         item.id === transaction.id ? transaction : item,
     );
-    if (summary && 'planned_income_minor' in summary)
-        summaryState.value = summary;
+    overdueItems.value = overdueItems.value.map((item) =>
+        item.id === transaction.id ? transaction : item,
+    );
 }
+
+const transactionReloadProps = [
+    'transactions',
+    'subtotal',
+    'summary',
+    'overdueTransactions',
+    'overdueTransactionsCount',
+];
 </script>
 
 <template>
@@ -209,6 +282,86 @@ function updateTransaction(
                 }}
             </Button>
         </header>
+
+        <Collapsible
+            v-if="overdueTransactionsCount > 0"
+            v-model:open="overdueOpen"
+        >
+            <section
+                class="border-expense/25 bg-card overflow-hidden rounded-3xl border"
+                aria-labelledby="overdue_transactions_heading"
+            >
+                <div
+                    class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 p-4 sm:p-5"
+                >
+                    <div class="flex min-w-0 gap-3">
+                        <span
+                            class="bg-expense/12 text-expense grid size-10 shrink-0 place-items-center rounded-2xl"
+                        >
+                            <CircleAlert class="size-5" aria-hidden="true" />
+                        </span>
+                        <div class="min-w-0">
+                            <h2
+                                id="overdue_transactions_heading"
+                                class="text-base font-extrabold tracking-tight sm:text-lg"
+                            >
+                                {{
+                                    t(
+                                        overdueTransactionsCount === 1
+                                            ? 'finance.transactions.overdue.title'
+                                            : 'finance.transactions.overdue.titlePlural',
+                                        { count: overdueTransactionsCount },
+                                    )
+                                }}
+                            </h2>
+                            <p
+                                class="text-muted-foreground mt-1 text-sm leading-5"
+                            >
+                                {{
+                                    t(
+                                        'finance.transactions.overdue.description',
+                                    )
+                                }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <CollapsibleTrigger as-child>
+                        <Button
+                            variant="ghost"
+                            class="text-expense hover:bg-expense/10 -mr-2 min-h-11 shrink-0 gap-2 rounded-xl px-3"
+                        >
+                            {{
+                                overdueOpen
+                                    ? t('finance.transactions.overdue.hide')
+                                    : t('finance.transactions.overdue.show')
+                            }}
+                            <ChevronDown
+                                class="size-4 transition-transform duration-200 motion-reduce:transition-none"
+                                :class="{ 'rotate-180': overdueOpen }"
+                                aria-hidden="true"
+                            />
+                        </Button>
+                    </CollapsibleTrigger>
+                </div>
+
+                <CollapsibleContent
+                    class="data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-1 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-1 duration-200 motion-reduce:animate-none"
+                >
+                    <div class="border-expense/20 border-t">
+                        <TransactionRow
+                            v-for="item in overdueItems"
+                            :key="item.id"
+                            :transaction="item"
+                            :reload-props="transactionReloadProps"
+                            show-date
+                            @open="openDetail"
+                            @update="updateTransaction"
+                        />
+                    </div>
+                </CollapsibleContent>
+            </section>
+        </Collapsible>
 
         <section aria-labelledby="month_heading" class="grid gap-3">
             <header>
@@ -379,6 +532,60 @@ function updateTransaction(
                 </form>
             </header>
 
+            <section
+                v-if="showSubtotal"
+                class="border-border/70 bg-muted/25 grid gap-4 border-b p-4 sm:grid-cols-4 sm:p-5"
+                :aria-label="t('finance.transactions.subtotal.title')"
+                aria-live="polite"
+            >
+                <div>
+                    <p
+                        class="text-muted-foreground text-xs font-bold tracking-wider uppercase"
+                    >
+                        {{ t('finance.transactions.subtotal.count') }}
+                    </p>
+                    <p class="font-data mt-1 text-base font-semibold">
+                        {{ subtotalState.count }}
+                    </p>
+                </div>
+                <div>
+                    <p
+                        class="text-muted-foreground text-xs font-bold tracking-wider uppercase"
+                    >
+                        {{ t('finance.transactions.subtotal.income') }}
+                    </p>
+                    <p
+                        class="font-data text-income mt-1 text-base font-semibold"
+                    >
+                        {{ formatMoney(subtotalState.income_minor) }}
+                    </p>
+                </div>
+                <div>
+                    <p
+                        class="text-muted-foreground text-xs font-bold tracking-wider uppercase"
+                    >
+                        {{ t('finance.transactions.subtotal.expense') }}
+                    </p>
+                    <p
+                        class="font-data text-expense mt-1 text-base font-semibold"
+                    >
+                        {{ formatMoney(subtotalState.expense_minor) }}
+                    </p>
+                </div>
+                <div>
+                    <p
+                        class="text-muted-foreground text-xs font-bold tracking-wider uppercase"
+                    >
+                        {{ t('finance.transactions.subtotal.transfer') }}
+                    </p>
+                    <p
+                        class="font-data text-forecast mt-1 text-base font-semibold"
+                    >
+                        {{ formatMoney(subtotalState.transfer_minor) }}
+                    </p>
+                </div>
+            </section>
+
             <div v-if="grouped.length">
                 <section v-for="[date, dayItems] in grouped" :key="date">
                     <h3
@@ -396,6 +603,7 @@ function updateTransaction(
                         v-for="item in dayItems"
                         :key="item.id"
                         :transaction="item"
+                        :reload-props="transactionReloadProps"
                         @open="openDetail"
                         @update="updateTransaction"
                     />
@@ -452,6 +660,7 @@ function updateTransaction(
             :accounts="accounts"
             :categories="categories"
             :default-due-on="defaultDueOn"
+            :reload-props="transactionReloadProps"
             @transaction-update="updateTransaction"
         />
     </section>

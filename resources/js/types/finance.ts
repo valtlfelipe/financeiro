@@ -72,3 +72,10 @@ export type MonthlyAccountBalance = {
     realized_balance_minor: MinorAmount;
     forecast_balance_minor: MinorAmount;
 };
+
+export type TransactionSubtotal = {
+    count: number;
+    income_minor: MinorAmount;
+    expense_minor: MinorAmount;
+    transfer_minor: MinorAmount;
+};

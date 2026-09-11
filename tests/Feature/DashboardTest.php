@@ -33,6 +33,7 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_lists_only_pending_transactions_with_nested_relations(): void
     {
+        $this->travelTo(CarbonImmutable::parse('2026-09-01 12:00:00'));
         [$user, $workspace] = ownerWithWorkspace();
         $account = Account::factory()->create(['workspace_id' => $workspace->id]);
         $category = Category::factory()->create([
@@ -77,6 +78,7 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_reports_pending_transactions_not_shown_in_the_preview(): void
     {
+        $this->travelTo(CarbonImmutable::parse('2026-09-10 12:00:00'));
         [$user, $workspace] = ownerWithWorkspace();
         $account = Account::factory()->for($workspace)->create();
         Transaction::factory()->for($workspace)->for($account)->count(8)->create([
@@ -88,6 +90,46 @@ class DashboardTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('recentTransactions', 6)
                 ->where('remainingTransactionsCount', 2));
+    }
+
+    public function test_dashboard_separates_and_limits_overdue_transactions(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-09-10 12:00:00', 'America/Sao_Paulo'));
+        [$user, $workspace] = ownerWithWorkspace();
+        $account = Account::factory()->for($workspace)->create();
+        $overdue = Transaction::factory()->for($workspace)->for($account)->count(7)->sequence(
+            fn ($sequence): array => [
+                'description' => 'Atrasado '.($sequence->index + 1),
+                'due_on' => CarbonImmutable::parse('2026-08-01')->addDays($sequence->index),
+                'settled_at' => null,
+            ],
+        )->create();
+        $today = Transaction::factory()->for($workspace)->for($account)->create([
+            'description' => 'Vence hoje',
+            'due_on' => '2026-09-10',
+            'settled_at' => null,
+        ]);
+        Transaction::factory()->for($workspace)->for($account)->create([
+            'description' => 'Atrasado realizado',
+            'due_on' => '2026-07-01',
+            'settled_at' => '2026-07-01 12:00:00',
+        ]);
+        $deleted = Transaction::factory()->for($workspace)->for($account)->create([
+            'description' => 'Atrasado excluído',
+            'due_on' => '2026-07-02',
+            'settled_at' => null,
+        ]);
+        $deleted->delete();
+
+        $this->actingAs($user)->get(route('dashboard', ['month' => '2026-09']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('overdueTransactionsCount', 7)
+                ->has('overdueTransactions', 6)
+                ->where('overdueTransactions.0.id', $overdue[0]->id)
+                ->where('overdueTransactions.5.id', $overdue[5]->id)
+                ->has('recentTransactions', 1)
+                ->where('recentTransactions.0.id', $today->id)
+                ->where('remainingTransactionsCount', 0));
     }
 
     public function test_account_balance_counts_settled_movements_from_the_opening_balance_date(): void

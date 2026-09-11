@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ArrowRight, Landmark } from '@lucide/vue';
+import { ArrowRight, CircleAlert, Landmark } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import TransactionPanel from '@/components/finance/TransactionPanel.vue';
@@ -20,6 +20,8 @@ const props = defineProps<{
     }>;
     recentTransactions: Transaction[];
     remainingTransactionsCount: number;
+    overdueTransactions: Transaction[];
+    overdueTransactionsCount: number;
     formAccounts: Account[];
     categories: Category[];
 }>();
@@ -27,6 +29,7 @@ const { t } = useI18n();
 const page = usePage();
 const { formatMoney } = useFinanceFormat();
 const recent = ref([...props.recentTransactions]);
+const overdue = ref([...props.overdueTransactions]);
 const panelOpen = ref(false);
 const panelMode = ref<'detail' | 'edit' | 'copy'>('detail');
 const selected = ref<Transaction | null>(null);
@@ -35,12 +38,20 @@ const dashboardReloadProps = [
     'accounts',
     'recentTransactions',
     'remainingTransactionsCount',
+    'overdueTransactions',
+    'overdueTransactionsCount',
 ];
 
 watch(
     () => props.recentTransactions,
     (transactions) => {
         recent.value = [...transactions];
+    },
+);
+watch(
+    () => props.overdueTransactions,
+    (transactions) => {
+        overdue.value = [...transactions];
     },
 );
 
@@ -52,6 +63,9 @@ function openDetail(transaction: Transaction): void {
 
 function updateTransaction(item: Transaction): void {
     recent.value = recent.value.map((transaction) =>
+        transaction.id === item.id ? item : transaction,
+    );
+    overdue.value = overdue.value.map((transaction) =>
         transaction.id === item.id ? item : transaction,
     );
 
@@ -83,6 +97,60 @@ function updateTransaction(item: Transaction): void {
                 {{ t('finance.overview.viewAll') }}<ArrowRight class="size-4" />
             </Link>
         </header>
+
+        <section
+            v-if="overdueTransactionsCount > 0"
+            class="border-expense/25 bg-card overflow-hidden rounded-3xl border"
+            aria-labelledby="overdue_transactions_heading"
+        >
+            <header
+                class="border-expense/20 bg-expense/5 dark:bg-expense/10 flex flex-wrap items-start justify-between gap-4 border-b px-5 py-5"
+            >
+                <div class="flex min-w-0 gap-3">
+                    <span
+                        class="bg-expense/12 text-expense grid size-10 shrink-0 place-items-center rounded-2xl"
+                    >
+                        <CircleAlert class="size-5" aria-hidden="true" />
+                    </span>
+                    <div>
+                        <h2
+                            id="overdue_transactions_heading"
+                            class="text-lg font-extrabold tracking-tight"
+                        >
+                            {{ t('finance.overview.overdueTitle') }}
+                        </h2>
+                        <p class="text-muted-foreground mt-1 text-sm">
+                            {{
+                                t(
+                                    overdueTransactionsCount === 1
+                                        ? 'finance.overview.overdueDescription'
+                                        : 'finance.overview.overdueDescriptionPlural',
+                                    { count: overdueTransactionsCount },
+                                )
+                            }}
+                        </p>
+                    </div>
+                </div>
+                <Link
+                    :href="transactions({ query: { month, overdue: 1 } })"
+                    class="text-expense hover:bg-expense/10 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-bold transition-colors"
+                >
+                    {{ t('finance.overview.viewAllOverdue') }}
+                    <ArrowRight class="size-4" aria-hidden="true" />
+                </Link>
+            </header>
+            <div>
+                <TransactionRow
+                    v-for="item in overdue"
+                    :key="item.id"
+                    :transaction="item"
+                    :reload-props="dashboardReloadProps"
+                    show-date
+                    @open="openDetail"
+                    @update="updateTransaction"
+                />
+            </div>
+        </section>
 
         <div
             class="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(17rem,0.65fr)]"

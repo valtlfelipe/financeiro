@@ -32,6 +32,10 @@
             "forecastBalance": "Saldo previsto no fim do mês",
             "pendingTitle": "Próximos lançamentos",
             "pendingDescription": "O que ainda está pendente neste mês.",
+            "overdueTitle": "Atrasados",
+            "overdueDescription": "{count} lançamento pendente de uma data anterior.",
+            "overdueDescriptionPlural": "{count} lançamentos pendentes de datas anteriores.",
+            "viewAllOverdue": "Ver todos",
             "remainingTransaction": "Mais {count} lançamento",
             "remainingTransactions": "Mais {count} lançamentos",
             "viewAll": "Ver todos os lançamentos",
@@ -41,6 +45,13 @@
             "title": "Lançamentos",
             "subtitle": "Um mês inteiro, com cada pendência no lugar.",
             "listTitle": "Lançamentos do mês",
+            "overdue": {
+                "title": "{count} lançamento atrasado",
+                "titlePlural": "{count} lançamentos atrasados",
+                "description": "Pendências de datas anteriores, em todos os meses.",
+                "show": "Mostrar",
+                "hide": "Ocultar"
+            },
             "new": "Novo lançamento",
             "previousMonth": "Mês anterior",
             "nextMonth": "Próximo mês",
@@ -146,6 +157,13 @@
                 "allAccounts": "Todas as contas",
                 "allCategories": "Todas as categorias",
                 "apply": "Aplicar filtros"
+            },
+            "subtotal": {
+                "title": "Subtotal filtrado",
+                "count": "Lançamentos",
+                "income": "Receitas",
+                "expense": "Despesas",
+                "transfer": "Transferências"
             }
         },
         "accounts": {

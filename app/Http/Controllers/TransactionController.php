@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Transactions\CreateTransactions;
 use App\Actions\Transactions\MonthlySummary;
+use App\Actions\Transactions\TransactionSubtotal;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use App\Http\Resources\AccountResource;
@@ -12,6 +13,7 @@ use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
 use App\SeriesKind;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -25,7 +27,7 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request, MonthlySummary $summary): Response
+    public function index(Request $request, MonthlySummary $summary, TransactionSubtotal $subtotal): Response
     {
         $workspace = $request->user()->currentWorkspaceOrFail();
         $month = $this->month($request->string('month')->toString(), $workspace->timezone);
@@ -38,7 +40,15 @@ class TransactionController extends Controller
             $query->where('description', 'like', '%'.$search.'%');
         }
 
-        foreach (['account_id', 'category_id', 'type'] as $filter) {
+        if ($request->filled('account_id')) {
+            $accountId = $request->integer('account_id');
+            $query->where(function (Builder $query) use ($accountId): void {
+                $query->where('account_id', $accountId)
+                    ->orWhere('destination_account_id', $accountId);
+            });
+        }
+
+        foreach (['category_id', 'type'] as $filter) {
             if ($request->filled($filter)) {
                 $query->where($filter, $request->input($filter));
             }
@@ -50,14 +60,30 @@ class TransactionController extends Controller
             default => null,
         };
 
+        $filters = $request->only(['search', 'account_id', 'category_id', 'type', 'status']);
+        $overdueTransactions = $workspace->transactions()
+            ->with(['account', 'destinationAccount', 'category', 'series'])
+            ->whereNull('settled_at')
+            ->whereDate('due_on', '<', $workspace->today())
+            ->orderBy('due_on')
+            ->orderBy('id')
+            ->get();
+
         return Inertia::render('Transactions/Index', [
             'month' => $month->format('Y-m'),
             'summary' => $summary->handle($workspace, $month),
+            'subtotal' => $subtotal->handle($query->getQuery()),
             'transactions' => TransactionResource::collection($query->orderBy('due_on')->orderBy('id')->get())->resolve(),
+            'overdueTransactions' => TransactionResource::collection($overdueTransactions)->resolve(),
+            'overdueTransactionsCount' => $overdueTransactions->count(),
+            'overdueOpen' => $request->boolean('overdue'),
             'accounts' => AccountResource::collection($workspace->accounts()->where('is_archived', false)->orderBy('name')->get())->resolve(),
             'filterAccounts' => AccountResource::collection($workspace->accounts()->orderBy('is_archived')->orderBy('name')->get())->resolve(),
             'categories' => CategoryResource::collection($workspace->categories()->where('is_archived', false)->orderBy('name')->get())->resolve(),
-            'filters' => $request->only(['search', 'account_id', 'category_id', 'type', 'status']),
+            'filterCategories' => CategoryResource::collection(
+                $workspace->categories()->orderBy('is_archived')->orderBy('name')->get(),
+            )->resolve(),
+            'filters' => $filters,
         ]);
     }
 

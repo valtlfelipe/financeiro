@@ -22,9 +22,21 @@ class DashboardController extends Controller
         $workspace = $request->user()->currentWorkspaceOrFail();
         $month = $this->month($request->string('month')->toString(), $workspace->timezone);
         $transactionLimit = 6;
+        $today = $workspace->today();
+        $overdueTransactions = $workspace->transactions()
+            ->with(['account', 'destinationAccount', 'category', 'series'])
+            ->whereNull('settled_at')
+            ->whereDate('due_on', '<', $today);
+        $overdueTransactionsCount = (clone $overdueTransactions)->count();
+        $overdue = $overdueTransactions
+            ->orderBy('due_on')
+            ->orderBy('id')
+            ->limit($transactionLimit)
+            ->get();
         $pendingTransactions = $workspace->transactions()
             ->with(['account', 'destinationAccount', 'category', 'series'])
             ->whereBetween('due_on', [$month->startOfMonth(), $month->endOfMonth()])
+            ->whereDate('due_on', '>=', $today)
             ->whereNull('settled_at');
         $pendingTransactionsCount = (clone $pendingTransactions)->count();
         $transactions = $pendingTransactions
@@ -43,6 +55,8 @@ class DashboardController extends Controller
                 ]),
             'recentTransactions' => TransactionResource::collection($transactions)->resolve(),
             'remainingTransactionsCount' => max($pendingTransactionsCount - $transactions->count(), 0),
+            'overdueTransactions' => TransactionResource::collection($overdue)->resolve(),
+            'overdueTransactionsCount' => $overdueTransactionsCount,
             'formAccounts' => AccountResource::collection(
                 $workspace->accounts()->where('is_archived', false)->orderBy('name')->get(),
             )->resolve(),

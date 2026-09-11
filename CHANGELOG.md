@@ -4,6 +4,17 @@ Todas as mudanças relevantes serão registradas aqui. O formato segue Keep a Ch
 
 ## [Unreleased]
 
+### Added
+
+- A visão geral destaca pendências antigas, com contagem, prévia dos seis lançamentos mais antigos e acesso à lista completa.
+- A tela de lançamentos reúne todos os atrasados em um bloco expansível acima do seletor mensal e exibe subtotais separados por tipo quando há filtros aplicados.
+
+### Fixed
+
+- O filtro por conta encontra transferências tanto na origem quanto no destino, sem duplicar lançamentos.
+- Categorias arquivadas permanecem disponíveis nos filtros históricos, identificadas e ordenadas depois das categorias ativas.
+- Listas, contagens, resumo mensal e subtotais são recarregados após realizar, desfazer, editar ou excluir um lançamento.
+
 ## [1.5.0] - 2026-09-10
 
 ### Added
